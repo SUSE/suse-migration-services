@@ -1,0 +1,52 @@
+#
+# spec file for package suse-migration-services
+#
+# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#
+
+
+Name:             suse-migration-services
+Version:          %%VERSION
+Release:          0
+Url:              https://github.com/SUSE/suse-migration-services
+Summary:          suse-migration-services - SUSE Distribution Migration Services
+License:          GPL-3.0+
+Group:            System/Management
+Source:           suse_migration_services.tar.gz
+BuildRoot:        %{_tmppath}/%{name}-%{version}-build
+BuildRequires:    python3-devel
+BuildRequires:    python3-setuptools
+BuildRequires:    systemd-rpm-macros
+Requires:         python3-setuptools
+Requires(preun):  systemd
+Requires(postun): systemd
+BuildArch:        noarch
+
+%description
+Systemd services to prepare and run a distribution migration process.
+
+%prep
+%setup -q -n suse_migration_services-%{version}
+
+%build
+python3 setup.py build
+
+%install
+python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
+
+%files
+%defattr(-,root,root,-)
+%{python3_sitelib}/*
+
+%changelog
