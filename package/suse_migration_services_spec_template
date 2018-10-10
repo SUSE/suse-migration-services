@@ -29,6 +29,7 @@ BuildRequires:    python3-devel
 BuildRequires:    python3-setuptools
 BuildRequires:    systemd-rpm-macros
 Requires:         python3-setuptools
+Requires:         util-linux
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
@@ -45,8 +46,14 @@ python3 setup.py build
 %install
 python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
 
+install -D -m 644 systemd/suse-migration-mount-system.service \
+    %{buildroot}%{_unitdir}/suse-migration-mount-system.service
+
 %files
 %defattr(-,root,root,-)
 %{python3_sitelib}/*
+
+%{_bindir}/suse-migration-mount-system
+%{_unitdir}//suse-migration-mount-system.service
 
 %changelog

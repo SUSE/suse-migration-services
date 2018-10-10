@@ -25,6 +25,7 @@ config = {
     'packages': ['suse_migration_services'],
     'entry_points': {
         'console_scripts': [
+            'suse-migration-mount-system=suse_migration_services.units.mount_system:main'
         ]
     },
     'include_package_data': True,
