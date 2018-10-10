@@ -1,4 +1,4 @@
-version := $(shell python -c 'from suse_migration_services.version import __VERSION__; print(__VERSION__)')
+version := $(shell python3 -c 'from suse_migration_services.version import __VERSION__; print(__VERSION__)')
 
 build: check test
 	rm -f dist/*
@@ -8,7 +8,7 @@ build: check test
 	# managed in the spec file
 	sed -ie "s@>=[0-9.]*'@'@g" setup.py
 	# build the sdist source tarball
-	python setup.py sdist
+	python3 setup.py sdist
 	# restore original setup.py backed up from sed
 	mv setup.pye setup.py
 	# provide rpm source tarball
