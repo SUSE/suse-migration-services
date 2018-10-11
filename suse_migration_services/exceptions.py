@@ -45,3 +45,17 @@ class DistMigrationCommandNotFoundException(DistMigrationException):
     Exception raised if any executable command cannot be found in
     the evironment PATH variable.
     """
+
+
+class DistMigrationSystemNotFoundException(DistMigrationException):
+    """
+    Exception raised if no fstab file could be found on the
+    existing partition nodes
+    """
+
+
+class DistMigrationSystemMountException(DistMigrationException):
+    """
+    Exception raised if a mount process in the list of
+    filesystems from the fstab file has failed
+    """
