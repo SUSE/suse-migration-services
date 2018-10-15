@@ -59,3 +59,17 @@ class DistMigrationSystemMountException(DistMigrationException):
     Exception raised if a mount process in the list of
     filesystems from the fstab file has failed
     """
+
+
+class DistMigrationNameResolverException(DistMigrationException):
+    """
+    Exception raised if the migration host system does not provide
+    an /etc/resolv.conf file
+    """
+
+
+class DistMigrationHostNetworkException(DistMigrationException):
+    """
+    Exception raised if the activation of the migration host network
+    failed for the reason reported by either mount or systemctl
+    """
