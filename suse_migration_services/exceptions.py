@@ -73,3 +73,17 @@ class DistMigrationHostNetworkException(DistMigrationException):
     Exception raised if the activation of the migration host network
     failed for the reason reported by either mount or systemctl
     """
+
+
+class DistMigrationSUSEConnectException(DistMigrationException):
+    """
+    Exception raised if the migration host system does not provide
+    an /etc/SUSEConnect file
+    """
+
+
+class DistMigrationZypperMetaDataException(DistMigrationException):
+    """
+    Exception raised if the bind mount import of the migration
+    host /etc/zypp location failed
+    """

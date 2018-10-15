@@ -1,6 +1,7 @@
 [Unit]
 Description=Setup Migration Host Network
 After=suse-migration-mount-system.service
+Requires=suse-migration-mount-system.service
 Before=network.target
 
 [Service]

@@ -1,0 +1,11 @@
+[Unit]
+Description=Prepare For Migration
+After=suse-migration-setup-host-network.service network.target
+Requires=suse-migration-mount-system.service suse-migration-setup-host-network.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-prepare
+
+[Install]
+WantedBy=multi-user.target
