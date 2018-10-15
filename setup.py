@@ -26,6 +26,7 @@ config = {
     'entry_points': {
         'console_scripts': [
             'suse-migration-mount-system=suse_migration_services.units.mount_system:main'
+            'suse-migration-setup-host-network=suse_migration_services.units.setup_host_network:main'
         ]
     },
     'include_package_data': True,
