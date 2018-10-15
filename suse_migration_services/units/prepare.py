@@ -32,17 +32,13 @@ def main():
     """
     DistMigration prepare for migration
 
-    Prepare migration live system to allow zypper migration to
-    perform its job. The zypper migration process contacts one
-    of SUSE's subscription management services SCC/RMT/SMT
-    and switches the repository setup as it is required for
-    the migration process. To do that the migration live
-    system has to import /etc/SUSEConnect from the migration
-    host as well as bind mount /etc/zypp from the migration host
-    to the migration live system. The repo setup in /etc/zypp
-    will be permanently changed to the new distribution and
-    must also be available on the migration live system during
-    the process.
+    Prepare the migration live system to allow zypper migration to
+    upgrade the system across major distribution versions. The zypper
+    migration process contacts the service that provides the configured
+    repositories on the system being migrated. The service must be one
+    of SUSE's repository services, SCC, RMT, or SMT. This requiers
+    information from the target system. This service makes the necessary
+    information available inside the live system that performs the migration.
     """
     root_path = Defaults.get_system_root_path()
 
