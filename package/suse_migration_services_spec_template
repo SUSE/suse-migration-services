@@ -52,6 +52,9 @@ install -D -m 644 systemd/suse-migration-mount-system.service \
 install -D -m 644 systemd/suse-migration-setup-host-network.service \
     %{buildroot}%{_unitdir}/suse-migration-setup-host-network.service
 
+install -D -m 644 systemd/suse-migration-prepare.service \
+    %{buildroot}%{_unitdir}/suse-migration-prepare.service
+
 %files
 %defattr(-,root,root,-)
 %{python3_sitelib}/*
@@ -61,5 +64,8 @@ install -D -m 644 systemd/suse-migration-setup-host-network.service \
 
 %{_bindir}/suse-migration-setup-host-network
 %{_unitdir}//suse-migration-setup-host-network.service
+
+%{_bindir}/suse-migration-prepare
+%{_unitdir}//suse-migration-prepare.service
 
 %changelog
