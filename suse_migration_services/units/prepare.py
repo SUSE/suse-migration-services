@@ -23,7 +23,6 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 
 from suse_migration_services.exceptions import (
-    DistMigrationSUSEConnectException,
     DistMigrationZypperMetaDataException
 )
 
@@ -45,14 +44,10 @@ def main():
     suse_connect_setup = os.sep.join(
         [root_path, 'etc', 'SUSEConnect']
     )
-    if not os.path.exists(suse_connect_setup):
-        raise DistMigrationSUSEConnectException(
-            'Could not find {0} on migration host'.format(suse_connect_setup)
+    if os.path.exists(suse_connect_setup):
+        shutil.copy(
+            suse_connect_setup, '/etc/SUSEConnect'
         )
-
-    shutil.copy(
-        suse_connect_setup, '/etc/SUSEConnect'
-    )
 
     zypp_metadata = os.sep.join(
         [root_path, 'etc', 'zypp']
