@@ -75,13 +75,6 @@ class DistMigrationHostNetworkException(DistMigrationException):
     """
 
 
-class DistMigrationSUSEConnectException(DistMigrationException):
-    """
-    Exception raised if the migration host system does not provide
-    an /etc/SUSEConnect file
-    """
-
-
 class DistMigrationZypperMetaDataException(DistMigrationException):
     """
     Exception raised if the bind mount import of the migration

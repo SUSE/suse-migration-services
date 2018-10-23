@@ -5,18 +5,11 @@ from pytest import raises
 
 from suse_migration_services.units.prepare import main
 from suse_migration_services.exceptions import (
-    DistMigrationSUSEConnectException,
     DistMigrationZypperMetaDataException
 )
 
 
 class TestSetupPrepare(object):
-    @patch('os.path.exists')
-    def test_main_suseconnect_not_present(self, mock_os_path_exists):
-        mock_os_path_exists.return_value = False
-        with raises(DistMigrationSUSEConnectException):
-            main()
-
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.exists')
     @patch('shutil.copy')
