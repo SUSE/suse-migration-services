@@ -60,6 +60,9 @@ def main():
         Command.run(
             ['systemctl', 'daemon-reload']
         )
+        Command.run(
+            ['systemctl', 'restart', 'network']
+        )
     except Exception as issue:
         raise DistMigrationHostNetworkException(
             'Preparation of migration host network failed with {0}'.format(

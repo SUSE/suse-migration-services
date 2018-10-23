@@ -48,5 +48,8 @@ class TestSetupHostNetwork(object):
             ),
             call(
                 ['systemctl', 'daemon-reload']
+            ),
+            call(
+                ['systemctl', 'restart', 'network']
             )
         ]
