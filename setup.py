@@ -27,7 +27,8 @@ config = {
         'console_scripts': [
             'suse-migration-mount-system=suse_migration_services.units.mount_system:main',
             'suse-migration-setup-host-network=suse_migration_services.units.setup_host_network:main',
-            'suse-migration-prepare=suse_migration_services.units.prepare:main'
+            'suse-migration-prepare=suse_migration_services.units.prepare:main',
+            'suse-migration=suse_migration_services.units.migrate:main'
         ]
     },
     'include_package_data': True,
