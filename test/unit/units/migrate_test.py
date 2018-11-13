@@ -27,7 +27,7 @@ class TestMigration(object):
                 '--non-interactive',
                 '--gpg-auto-import-keys',
                 '--no-selfupdate',
-                '--auto-agree-with-linceses',
+                '--auto-agree-with-licenses',
                 '--product', 'foo',
                 '--root', '/system-root'
             ]
