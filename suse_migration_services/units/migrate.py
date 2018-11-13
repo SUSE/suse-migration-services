@@ -41,7 +41,7 @@ def main():
                 '--non-interactive',
                 '--gpg-auto-import-keys',
                 '--no-selfupdate',
-                '--auto-agree-with-linceses',
+                '--auto-agree-with-licenses',
                 '--product', get_migration_product(),
                 '--root', root_path
             ]
