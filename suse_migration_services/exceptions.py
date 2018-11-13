@@ -80,3 +80,9 @@ class DistMigrationZypperMetaDataException(DistMigrationException):
     Exception raised if the bind mount import of the migration
     host /etc/zypp location failed
     """
+
+
+class DistMigrationZypperException(DistMigrationException):
+    """
+    Exception raised if the zypper migration call has failed
+    """
