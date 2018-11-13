@@ -38,9 +38,9 @@ def main():
         Command.run(
             [
                 'zypper', 'migration',
+                '--non-interactive',
                 '--gpg-auto-import-keys',
                 '--no-selfupdate',
-                '--migration', get_product_selection_index(),
                 '--auto-agree-with-linceses',
                 '--product', get_migration_product(),
                 '--root', root_path
@@ -52,21 +52,6 @@ def main():
                 issue
             )
         )
-
-
-def get_product_selection_index():
-    """
-    Returns migration index
-
-    The zypper migration module can provide several migration targets
-    which gets indexed by a number. In the scope of this service the
-    explicit selection of a product also fix the index number to '1'
-    However for the case the specified product is not listed as the
-    first entry in the list we allow to specify the product index
-    in the configuration file too
-    """
-    config = _read_migration_config()
-    return config['migration']['target'].get('product_index') or '1'
 
 
 def get_migration_product():

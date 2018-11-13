@@ -24,9 +24,9 @@ class TestMigration(object):
         mock_Command_run.assert_called_once_with(
             [
                 'zypper', 'migration',
+                '--non-interactive',
                 '--gpg-auto-import-keys',
                 '--no-selfupdate',
-                '--migration', '1',
                 '--auto-agree-with-linceses',
                 '--product', 'foo',
                 '--root', '/system-root'
