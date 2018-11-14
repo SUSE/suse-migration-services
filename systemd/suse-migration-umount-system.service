@@ -1,7 +1,7 @@
 [Unit]
 Description=Umount Upgraded System
-After=suse-migration.service
-Requires=suse-migration.service
+After=suse-migration-grub-setup.service
+Requires=suse-migration-grub-setup.service
 
 [Service]
 Type=oneshot
