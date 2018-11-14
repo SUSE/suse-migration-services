@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-import os
-
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
@@ -36,23 +34,11 @@ def main():
     reboot of the migration host with a potential active mount
     is something we take into account intentionally
     """
-    root_path = Defaults.get_system_root_path()
-
-    for shared_location in ['/etc/sysconfig/network', '/etc/zypp']:
-        Command.run(
-            ['umount', shared_location], raise_on_error=False
-        )
-
-    fstab_file = os.sep.join(
-        [root_path, 'etc', 'fstab']
+    system_mount = Fstab()
+    system_mount.read(
+        Defaults.get_system_mount_info_file()
     )
-    if os.path.exists(fstab_file):
-        fstab = Fstab(fstab_file)
-        for fstab_entry in reversed(fstab.get_devices()):
-            if fstab_entry.mountpoint != 'swap':
-                mountpoint = ''.join(
-                    [root_path, fstab_entry.mountpoint]
-                )
-                Command.run(
-                    ['umount', mountpoint], raise_on_error=False
-                )
+    for mount in reversed(system_mount.get_devices()):
+        Command.run(
+            ['umount', mount.mountpoint], raise_on_error=False
+        )

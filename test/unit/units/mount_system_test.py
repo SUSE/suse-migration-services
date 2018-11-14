@@ -43,9 +43,10 @@ class TestMountSystem(object):
 
         mock_Command_run.side_effect = command_calls
         with raises(DistMigrationSystemMountException):
+            fstab = Fstab()
+            fstab.read('../data/fstab')
             mount_system(
-                Defaults.get_system_root_path(),
-                Fstab('../data/fstab')
+                Defaults.get_system_root_path(), fstab
             )
         assert mock_Command_run.call_args_list == [
             call([
@@ -73,8 +74,12 @@ class TestMountSystem(object):
         self, mock_os_path_exists, mock_Fstab,
         mock_path_create, mock_Command_run
     ):
+        fstab = Fstab()
+        fstab_mock = Mock()
+        fstab_mock.read.return_value = fstab.read('../data/fstab')
+        fstab_mock.get_devices.return_value = fstab.get_devices()
         mock_os_path_exists.return_value = True
-        mock_Fstab.return_value = Fstab('../data/fstab')
+        mock_Fstab.return_value = fstab_mock
         command = Mock()
         command.output = '/dev/sda1 part'
         mock_Command_run.return_value = command
@@ -104,3 +109,28 @@ class TestMountSystem(object):
                 '/dev/mynode',
                 '/system-root/foo'
             ])]
+        assert fstab_mock.add_entry.call_args_list == [
+            call(
+                '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
+                '/system-root/',
+                'ext4'
+            ),
+            call(
+                '/dev/disk/by-uuid/FCF7-B051',
+                '/system-root/boot/efi',
+                'vfat',
+            ),
+            call(
+                '/dev/disk/by-label/foo',
+                '/system-root/home',
+                'ext4'
+            ),
+            call(
+                '/dev/mynode',
+                '/system-root/foo',
+                'ext4'
+            )
+        ]
+        fstab_mock.export.assert_called_once_with(
+            '/etc/system-root.fstab'
+        )

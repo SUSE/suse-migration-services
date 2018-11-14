@@ -1,0 +1,6 @@
+/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2 /system-root/ ext4 defaults 0 0
+/dev/disk/by-uuid/FCF7-B051 /system-root/boot/efi vfat defaults 0 0
+/dev/disk/by-label/foo /system-root/home          ext4 defaults 0 0
+/dev/mynode /system-root/foo                      ext4 defaults 0 0
+/system-root/etc/zypp /etc/zypp none defaults 0 0
+/system-root/etc/sysconfig/network /etc/sysconfig/network none defaults 0 0

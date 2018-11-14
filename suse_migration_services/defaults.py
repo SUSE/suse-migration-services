@@ -30,3 +30,7 @@ class Defaults(object):
     @classmethod
     def get_migration_config_file(self):
         return '/etc/migration-config.yml'
+
+    @classmethod
+    def get_system_mount_info_file(self):
+        return '/etc/system-root.fstab'

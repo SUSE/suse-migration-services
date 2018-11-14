@@ -1,5 +1,5 @@
 from unittest.mock import (
-    patch, call
+    patch, call, Mock
 )
 
 from suse_migration_services.units.umount_system import main
@@ -13,8 +13,12 @@ class TestUMountSystem(object):
     def test_main(
         self, mock_os_path_exists, mock_Fstab, mock_Command_run
     ):
+        fstab = Fstab()
+        fstab_mock = Mock()
+        fstab_mock.read.return_value = fstab.read('../data/system-root.fstab')
+        fstab_mock.get_devices.return_value = fstab.get_devices()
+        mock_Fstab.return_value = fstab_mock
         mock_os_path_exists.return_value = True
-        mock_Fstab.return_value = Fstab('../data/fstab')
         main()
         assert mock_Command_run.call_args_list == [
             call(['umount', '/etc/sysconfig/network'], raise_on_error=False),
