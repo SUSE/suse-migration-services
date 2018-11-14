@@ -86,3 +86,9 @@ class DistMigrationZypperException(DistMigrationException):
     """
     Exception raised if the zypper migration call has failed
     """
+
+
+class DistMigrationGrubException(DistMigrationException):
+    """
+    Exception raised if the grub update call has failed
+    """

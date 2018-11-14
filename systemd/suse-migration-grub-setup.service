@@ -1,0 +1,9 @@
+[Unit]
+Description=Update grub to migrated version
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-grub-setup
+
+[Install]
+WantedBy=multi-user.target

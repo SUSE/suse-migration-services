@@ -29,7 +29,8 @@ config = {
             'suse-migration-umount-system=suse_migration_services.units.umount_system:main',
             'suse-migration-setup-host-network=suse_migration_services.units.setup_host_network:main',
             'suse-migration-prepare=suse_migration_services.units.prepare:main',
-            'suse-migration=suse_migration_services.units.migrate:main'
+            'suse-migration=suse_migration_services.units.migrate:main',
+            'suse-migration-grub-setup=suse_migration_services.units.grub_setup:main'
         ]
     },
     'include_package_data': True,

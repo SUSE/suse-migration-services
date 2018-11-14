@@ -62,6 +62,9 @@ install -D -m 644 systemd/suse-migration.service \
 install -D -m 644 systemd/suse-migration-umount-system.service \
     %{buildroot}%{_unitdir}/suse-migration-umount-system.service
 
+install -D -m 644 systemd/suse-migration-grub-setup.service \
+    %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
+
 %files
 %defattr(-,root,root,-)
 %{python3_sitelib}/*
@@ -80,5 +83,8 @@ install -D -m 644 systemd/suse-migration-umount-system.service \
 
 %{_bindir}/suse-migration-umount-system
 %{_unitdir}/suse-migration-umount-system.service
+
+%{_bindir}/suse-migration-grub-setup
+%{_unitdir}/suse-migration-grub-setup.service
 
 %changelog
