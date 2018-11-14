@@ -36,7 +36,7 @@ def main():
     Searches on all partitions for a fstab file. The first
     fstab file found is used as the system to upgrade.
     Filesystems relevant for an upgrade process are read from
-    that fstab in order and mounted such that the system roofs
+    that fstab in order and mounted such that the system rootfs
     is available for a zypper based migration process.
     """
     root_path = Defaults.get_system_root_path()
