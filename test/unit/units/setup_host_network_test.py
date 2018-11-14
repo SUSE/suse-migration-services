@@ -1,5 +1,5 @@
 from unittest.mock import (
-    patch, call
+    patch, call, Mock
 )
 from pytest import raises
 
@@ -18,10 +18,12 @@ class TestSetupHostNetwork(object):
             main()
 
     @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.setup_host_network.Fstab')
     @patch('os.path.exists')
     @patch('shutil.copy')
     def test_main_raises_on_host_network_activation(
-        self, mock_shutil_copy, mock_os_path_exists, mock_Command_run
+        self, mock_shutil_copy, mock_os_path_exists,
+        mock_Fstab, mock_Command_run
     ):
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
@@ -29,11 +31,15 @@ class TestSetupHostNetwork(object):
             main()
 
     @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.setup_host_network.Fstab')
     @patch('os.path.exists')
     @patch('shutil.copy')
     def test_main(
-        self, mock_shutil_copy, mock_os_path_exists, mock_Command_run
+        self, mock_shutil_copy, mock_os_path_exists,
+        mock_Fstab, mock_Command_run
     ):
+        fstab = Mock()
+        mock_Fstab.return_value = fstab
         mock_os_path_exists.return_value = True
         main()
         mock_shutil_copy.assert_called_once_with(
@@ -53,3 +59,12 @@ class TestSetupHostNetwork(object):
                 ['systemctl', 'restart', 'network']
             )
         ]
+        fstab.read.assert_called_once_with(
+            '/etc/system-root.fstab'
+        )
+        fstab.add_entry.assert_called_once_with(
+            '/system-root/etc/sysconfig/network', '/etc/sysconfig/network'
+        )
+        fstab.export.assert_called_once_with(
+            '/etc/system-root.fstab'
+        )

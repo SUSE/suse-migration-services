@@ -1,0 +1,11 @@
+[Unit]
+Description=Umount Upgraded System
+After=suse-migration-grub-setup.service
+Requires=suse-migration-grub-setup.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-umount-system
+
+[Install]
+WantedBy=multi-user.target

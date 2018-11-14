@@ -20,6 +20,7 @@ import shutil
 
 # project
 from suse_migration_services.command import Command
+from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 
 from suse_migration_services.exceptions import (
@@ -53,8 +54,18 @@ def main():
         [root_path, 'etc', 'zypp']
     )
     try:
+        system_mount = Fstab()
+        system_mount.read(
+            Defaults.get_system_mount_info_file()
+        )
         Command.run(
             ['mount', '--bind', zypp_metadata, '/etc/zypp']
+        )
+        system_mount.add_entry(
+            zypp_metadata, '/etc/zypp'
+        )
+        system_mount.export(
+            Defaults.get_system_mount_info_file()
         )
     except Exception as issue:
         raise DistMigrationZypperMetaDataException(

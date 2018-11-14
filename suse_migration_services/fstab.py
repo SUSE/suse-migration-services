@@ -20,39 +20,73 @@ from collections import namedtuple
 
 class Fstab(object):
     """
-    **Reading fstab values**
+    **Managing fstab values**
     """
-    def __init__(self, filename):
+    def __init__(self):
+        self.fstab = []
+        self.fstab_entry_type = namedtuple(
+            'fstab_entry_type', ['fstype', 'mountpoint', 'device', 'options']
+        )
+
+    def read(self, filename):
         """
         Import specified fstab file
 
+        Ignore special filesystems not important in the scope of
+        the migration e.g swap
+
         :param string filename: path to a fstab file
         """
-        fstab_entry_type = namedtuple(
-            'fstab_entry_type', ['mountpoint', 'device', 'options']
-        )
         self.fstab = []
         with open(filename) as fstab:
             for line in fstab.readlines():
                 mount_record = line.split()
                 device = mount_record[0]
                 mountpoint = mount_record[1]
+                fstype = mount_record[2]
                 options = mount_record[3]
-                if device.startswith('UUID'):
-                    device_path = ''.join(
-                        ['/dev/disk/by-uuid/', device.split('=')[1]]
+                if fstype != 'swap':
+                    if device.startswith('UUID'):
+                        device_path = ''.join(
+                            ['/dev/disk/by-uuid/', device.split('=')[1]]
+                        )
+                    elif device.startswith('LABEL'):
+                        device_path = ''.join(
+                            ['/dev/disk/by-label/', device.split('=')[1]]
+                        )
+                    else:
+                        device_path = device
+                    self.fstab.append(
+                        self.fstab_entry_type(
+                            fstype=fstype,
+                            mountpoint=mountpoint,
+                            device=device_path,
+                            options=options
+                        )
                     )
-                elif device.startswith('LABEL'):
-                    device_path = ''.join(
-                        ['/dev/disk/by-label/', device.split('=')[1]]
-                    )
-                else:
-                    device_path = device
-                self.fstab.append(
-                    fstab_entry_type(
-                        mountpoint=mountpoint,
-                        device=device_path,
-                        options=options
+
+    def add_entry(self, device, mountpoint, fstype=None, options=None):
+        self.fstab.append(
+            self.fstab_entry_type(
+                fstype=fstype or 'none',
+                mountpoint=mountpoint,
+                device=device,
+                options=options or 'defaults'
+            )
+        )
+
+    def export(self, filename):
+        """
+        Export entries, do not apply on boot checks
+
+        :param string filename: path to file name
+        """
+        with open(filename, 'w') as fstab:
+            for entry in self.fstab:
+                fstab.write(
+                    '{0} {1} {2} {3} 0 0'.format(
+                        entry.device, entry.mountpoint,
+                        entry.fstype, entry.options
                     )
                 )
 

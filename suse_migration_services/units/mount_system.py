@@ -68,7 +68,8 @@ def main():
                 )
                 fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
                 if os.path.exists(fstab_file):
-                    fstab = Fstab(fstab_file)
+                    fstab = Fstab()
+                    fstab.read(fstab_file)
                     break
             finally:
                 Command.run(
@@ -88,22 +89,28 @@ def main():
 
 def mount_system(root_path, fstab):
     mount_list = []
+    system_mount = Fstab()
     for fstab_entry in fstab.get_devices():
-        if fstab_entry.mountpoint != 'swap':
-            try:
-                mountpoint = ''.join(
-                    [root_path, fstab_entry.mountpoint]
-                )
-                Command.run(
-                    [
-                        'mount', '-o', fstab_entry.options,
-                        fstab_entry.device, mountpoint
-                    ]
-                )
-                mount_list.append(mountpoint)
-            except Exception as issue:
-                for mountpoint in reversed(mount_list):
-                    Command.run(['umount', mountpoint])
-                raise DistMigrationSystemMountException(
-                    'Mounting system for upgrade failed with {0}'.format(issue)
-                )
+        try:
+            mountpoint = ''.join(
+                [root_path, fstab_entry.mountpoint]
+            )
+            Command.run(
+                [
+                    'mount', '-o', fstab_entry.options,
+                    fstab_entry.device, mountpoint
+                ]
+            )
+            system_mount.add_entry(
+                fstab_entry.device, mountpoint, fstab_entry.fstype
+            )
+            mount_list.append(mountpoint)
+        except Exception as issue:
+            for mountpoint in reversed(mount_list):
+                Command.run(['umount', mountpoint])
+            raise DistMigrationSystemMountException(
+                'Mounting system for upgrade failed with {0}'.format(issue)
+            )
+    system_mount.export(
+        Defaults.get_system_mount_info_file()
+    )

@@ -20,6 +20,7 @@ import shutil
 
 # project
 from suse_migration_services.command import Command
+from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 
 from suse_migration_services.exceptions import (
@@ -54,14 +55,24 @@ def main():
         [root_path, 'etc', 'sysconfig', 'network']
     )
     try:
+        system_mount = Fstab()
+        system_mount.read(
+            Defaults.get_system_mount_info_file()
+        )
         Command.run(
             ['mount', '--bind', sysconfig_network, '/etc/sysconfig/network']
+        )
+        system_mount.add_entry(
+            sysconfig_network, '/etc/sysconfig/network'
         )
         Command.run(
             ['systemctl', 'daemon-reload']
         )
         Command.run(
             ['systemctl', 'restart', 'network']
+        )
+        system_mount.export(
+            Defaults.get_system_mount_info_file()
         )
     except Exception as issue:
         raise DistMigrationHostNetworkException(
