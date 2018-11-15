@@ -50,10 +50,7 @@ def main():
             ['mount', '--bind', '/proc', proc_mount_point]
         )
         Command.run(
-            ['chroot', root_path]
-        ),
-        Command.run(
-            ['grub2-mkconfig', '-o', grub_config_file]
+            ['chroot', root_path, 'grub2-mkconfig', '-o', grub_config_file]
         )
     except Exception as issue:
         raise DistMigrationGrubConfigException(
