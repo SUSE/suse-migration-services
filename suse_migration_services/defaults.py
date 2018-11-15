@@ -36,5 +36,5 @@ class Defaults(object):
         return '/etc/system-root.fstab'
 
     @classmethod
-    def get_grub_path(self):
+    def get_grub_config_file(self):
         return '/boot/grub2/grub.cfg'

@@ -22,7 +22,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 
 from suse_migration_services.exceptions import (
-    DistMigrationGrubException
+    DistMigrationGrubConfigException
 )
 
 
@@ -33,7 +33,7 @@ def main():
     Setup and update grub with content from the migrated system
     """
     root_path = Defaults.get_system_root_path()
-    grub_path = Defaults.get_grub_path()
+    grub_config_file = Defaults.get_grub_config_file()
 
     proc_mount_point = os.sep.join(
         [root_path, 'proc']
@@ -51,12 +51,12 @@ def main():
         )
         Command.run(
             ['chroot', root_path]
-        )
+        ),
         Command.run(
-            ['grub2-mkconfig', '-o', grub_path]
+            ['grub2-mkconfig', '-o', grub_config_file]
         )
     except Exception as issue:
-        raise DistMigrationGrubException(
+        raise DistMigrationGrubConfigException(
             'Update grub failed with {0}'.format(
                 issue
             )

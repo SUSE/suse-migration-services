@@ -88,7 +88,7 @@ class DistMigrationZypperException(DistMigrationException):
     """
 
 
-class DistMigrationGrubException(DistMigrationException):
+class DistMigrationGrubConfigException(DistMigrationException):
     """
     Exception raised if the grub update call has failed
     """
