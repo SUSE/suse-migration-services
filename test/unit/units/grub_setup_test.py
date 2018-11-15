@@ -49,3 +49,12 @@ class TestSetupHostNetwork(object):
                 ]
             )
         ]
+        fstab.add_entry.assert_has_calls(
+            [
+                call('/dev', '/system-root/dev'),
+                call('/proc', '/system-root/proc')
+            ]
+        )
+        fstab.export.assert_called_once_with(
+            '/etc/system-root.fstab'
+        )
