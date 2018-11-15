@@ -36,12 +36,14 @@ def main():
     root_path = Defaults.get_system_root_path()
     grub_config_file = Defaults.get_grub_config_file()
 
+    dev_mount_point = os.sep.join(
+        [root_path, 'dev']
+    )
     proc_mount_point = os.sep.join(
         [root_path, 'proc']
     )
-
-    dev_mount_point = os.sep.join(
-        [root_path, 'dev']
+    sys_mount_point = os.sep.join(
+        [root_path, 'sys']
     )
     try:
         system_mount = Fstab()
@@ -59,6 +61,12 @@ def main():
         )
         system_mount.add_entry(
             '/proc', proc_mount_point
+        )
+        Command.run(
+            ['mount', '--bind', '/sys', sys_mount_point]
+        )
+        system_mount.add_entry(
+            '/sys', sys_mount_point
         )
         Command.run(
             [

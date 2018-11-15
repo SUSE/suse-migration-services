@@ -44,6 +44,12 @@ class TestSetupHostNetwork(object):
             ),
             call(
                 [
+                    'mount', '--bind', '/sys',
+                    '/system-root/sys'
+                ]
+            ),
+            call(
+                [
                     'chroot', '/system-root',
                     'grub2-mkconfig', '-o', '/boot/grub2/grub.cfg'
                 ]
@@ -52,7 +58,8 @@ class TestSetupHostNetwork(object):
         fstab.add_entry.assert_has_calls(
             [
                 call('/dev', '/system-root/dev'),
-                call('/proc', '/system-root/proc')
+                call('/proc', '/system-root/proc'),
+                call('/sys', '/system-root/sys')
             ]
         )
         fstab.export.assert_called_once_with(
