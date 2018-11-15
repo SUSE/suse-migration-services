@@ -19,6 +19,7 @@ import os
 
 # project
 from suse_migration_services.command import Command
+from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 
 from suse_migration_services.exceptions import (
@@ -43,14 +44,30 @@ def main():
         [root_path, 'dev']
     )
     try:
+        system_mount = Fstab()
+        system_mount.read(
+            Defaults.get_system_mount_info_file()
+        )
         Command.run(
             ['mount', '--bind', '/dev', dev_mount_point]
+        )
+        system_mount.add_entry(
+            '/dev', dev_mount_point
         )
         Command.run(
             ['mount', '--bind', '/proc', proc_mount_point]
         )
+        system_mount.add_entry(
+            '/proc', proc_mount_point
+        )
         Command.run(
-            ['chroot', root_path, 'grub2-mkconfig', '-o', grub_config_file]
+            [
+                'chroot', root_path,
+                'grub2-mkconfig', '-o', grub_config_file
+            ]
+        )
+        system_mount.export(
+            Defaults.get_system_mount_info_file()
         )
     except Exception as issue:
         raise DistMigrationGrubConfigException(

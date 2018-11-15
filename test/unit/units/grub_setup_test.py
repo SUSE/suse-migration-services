@@ -1,11 +1,11 @@
 from unittest.mock import (
-    patch, call
+    patch, call, Mock
 )
 from pytest import raises
 
 from suse_migration_services.units.grub_setup import main
 from suse_migration_services.exceptions import (
-    DistMigrationGrubException
+    DistMigrationGrubConfigException
 )
 
 
@@ -15,14 +15,20 @@ class TestSetupHostNetwork(object):
         self, mock_Command_run
     ):
         mock_Command_run.side_effect = Exception
-        with raises(DistMigrationGrubException):
+        with raises(DistMigrationGrubConfigException):
             main()
 
     @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.grub_setup.Fstab')
     def test_main(
-        self, mock_Command_run
+            self, mock_Fstab, mock_Command_run
     ):
+        fstab = Mock()
+        mock_Fstab.return_value = fstab
         main()
+        fstab.read.assert_called_once_with(
+            '/etc/system-root.fstab'
+        )
         assert mock_Command_run.call_args_list == [
             call(
                 [
@@ -37,9 +43,9 @@ class TestSetupHostNetwork(object):
                 ]
             ),
             call(
-                ['chroot', '/system-root']
-            ),
-            call(
-                ['grub2-mkconfig', '-o', '/boot/grub2/grub.cfg']
+                [
+                    'chroot', '/system-root',
+                    'grub2-mkconfig', '-o', '/boot/grub2/grub.cfg'
+                ]
             )
         ]
