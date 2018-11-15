@@ -1,5 +1,7 @@
 [Unit]
-Description=Update grub to migrated version
+Description=Recreate grub configuration file from migrated version
+After=suse-migration.service
+Requires=suse-migration.service
 
 [Service]
 Type=oneshot
