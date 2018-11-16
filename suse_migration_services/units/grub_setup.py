@@ -78,6 +78,11 @@ def main():
             Defaults.get_system_mount_info_file()
         )
     except Exception as issue:
+        devices = system_mount.get_devices()
+        for entry in devices:
+            Command.run(
+                ['umount', entry.mountpoint], raise_on_exception=False
+            )
         raise DistMigrationGrubConfigException(
             'Update grub failed with {0}'.format(
                 issue
