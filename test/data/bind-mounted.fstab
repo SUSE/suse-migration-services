@@ -1,0 +1,3 @@
+/dev /system-root/dev tmpfs  defaults 0 0
+/proc /system-root/proc proc defaults 0 0
+/sys /system-root/sys sysfs defaults 0 0

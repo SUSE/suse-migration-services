@@ -34,3 +34,7 @@ class Defaults(object):
     @classmethod
     def get_system_mount_info_file(self):
         return '/etc/system-root.fstab'
+
+    @classmethod
+    def get_grub_config_file(self):
+        return '/boot/grub2/grub.cfg'

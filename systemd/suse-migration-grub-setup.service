@@ -1,0 +1,11 @@
+[Unit]
+Description=Recreate grub configuration file from migrated version
+After=suse-migration.service
+Requires=suse-migration.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-grub-setup
+
+[Install]
+WantedBy=multi-user.target
