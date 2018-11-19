@@ -61,5 +61,5 @@ class TestFstab(object):
                 'filename', 'w'
             )
             assert file_handle.write.call_args_list == [
-                call('/dev/sda /foo none defaults 0 0')
+                call('/dev/sda /foo none defaults 0 0\n')
             ]

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import os
+
 from collections import namedtuple
 
 
@@ -84,9 +86,10 @@ class Fstab(object):
         with open(filename, 'w') as fstab:
             for entry in self.fstab:
                 fstab.write(
-                    '{0} {1} {2} {3} 0 0'.format(
+                    '{0} {1} {2} {3} 0 0{4}'.format(
                         entry.device, entry.mountpoint,
-                        entry.fstype, entry.options
+                        entry.fstype, entry.options,
+                        os.linesep
                     )
                 )
 
