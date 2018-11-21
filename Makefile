@@ -13,14 +13,16 @@ build: check test
 	mv setup.pye setup.py
 	# provide rpm source tarball
 	mv dist/suse_migration_services-${version}.tar.gz \
-		dist/suse_migration_services.tar.gz
+		dist/suse-migration-services.tar.gz
 	# provide rpm changelog from git changelog
 	git log | helper/changelog_generator |\
-		helper/changelog_descending > dist/suse_migration_services.changes
+		helper/changelog_descending > dist/suse-migration-services.changes
 	# update package version in spec file
-	cat package/suse_migration_services_spec_template \
+	cat package/suse-migration-services-spec-template \
 		| sed -e s'@%%VERSION@${version}@' \
-		> dist/suse_migration_services.spec
+		> dist/suse-migration-services.spec
+	# provide rpm rpmlintrc
+	cp package/suse-migration-services-rpmlintrc dist
 
 .PHONY: test
 test:
