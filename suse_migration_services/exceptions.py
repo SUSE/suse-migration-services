@@ -92,3 +92,9 @@ class DistMigrationGrubConfigException(DistMigrationException):
     """
     Exception raised if the grub update call has failed
     """
+
+
+class DistMigrationKernelRebootException(DistMigrationException):
+    """
+    Exception raised if the kernel reboot call has failed
+    """

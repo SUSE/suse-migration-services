@@ -1,0 +1,11 @@
+[Unit]
+Description=Load the new migrated kernel and reboot the system
+After=umount-system.service
+Requires=umount-system.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-kernel-load
+
+[Install]
+WantedBy=multi-user.target
