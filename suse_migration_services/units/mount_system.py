@@ -42,10 +42,7 @@ def main():
     root_path = Defaults.get_system_root_path()
     Path.create(root_path)
 
-    mountpoint_call = Command.run(
-        ['mountpoint', '-q', root_path], raise_on_error=False
-    )
-    if mountpoint_call.returncode == 0:
+    if is_mounted(root_path):
         # root_path is already a mount point, better not continue
         # The condition is not handled as an error because the
         # existing mount point under this service created root_path
@@ -53,6 +50,17 @@ def main():
         # not something else. Thus if already mounted, let's use
         # what is there.
         return
+
+    # Check if booted via loopback grub
+    isoscan_loop_mount = '/run/initramfs/isoscan'
+    if is_mounted(isoscan_loop_mount):
+        # The system to become migrated was booted via a grub
+        # loopback menuentry. This means the disk is blocked by
+        # that readonly loopback mount and needs to be
+        # remounted for read write access first
+        Command.run(
+            ['mount', '-o', 'remount,rw', isoscan_loop_mount]
+        )
 
     fstab = None
     lsblk_call = Command.run(
@@ -114,3 +122,13 @@ def mount_system(root_path, fstab):
     system_mount.export(
         Defaults.get_system_mount_info_file()
     )
+
+
+def is_mounted(mount_point):
+    if os.path.exists(mount_point):
+        mountpoint_call = Command.run(
+            ['mountpoint', '-q', mount_point], raise_on_error=False
+        )
+        if mountpoint_call.returncode == 0:
+            return True
+    return False
