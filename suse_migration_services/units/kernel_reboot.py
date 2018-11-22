@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-
-# project
 import re
 import os
+
+# project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 
@@ -62,7 +62,7 @@ def main():
         )
 
 
-def _get_cmdline(vmlinuz):
+def _get_cmdline(kernel_name):
     grub_config_file_path = Defaults.get_grub_config_file()
     if not os.path.exists(grub_config_file_path):
         raise DistMigrationKernelRebootException(
@@ -70,13 +70,13 @@ def _get_cmdline(vmlinuz):
                 grub_config_file_path
             )
         )
-    pattern = r'(?<=linux\t).*'
+    pattern = r'(?<=linux)[ \t]+{}.*'.format(kernel_name)
     with open(grub_config_file_path) as grub_config_file:
         grub_content = grub_config_file.read()
     cmd_line = re.findall(pattern, grub_content)[0]
     cmd_line = cmd_line.split()
     cmd_line_options = []
     for option in cmd_line:
-        if vmlinuz not in option:
+        if kernel_name not in option:
             cmd_line_options.append(option)
     return ' '.join(cmd_line_options)
