@@ -17,9 +17,11 @@ from suse_migration_services.exceptions import (
 class TestMountSystem(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
+    @patch('os.path.exists')
     def test_main_system_already_mounted(
-        self, mock_path_create, mock_Command_run
+        self, mock_path_exists, mock_path_create, mock_Command_run
     ):
+        mock_path_exists.return_value = True
         command = Mock()
         command.returncode = 0
         mock_Command_run.return_value = command
@@ -69,23 +71,31 @@ class TestMountSystem(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
     @patch('suse_migration_services.units.mount_system.Fstab')
+    @patch('suse_migration_services.units.mount_system.is_mounted')
     @patch('os.path.exists')
     def test_main(
-        self, mock_os_path_exists, mock_Fstab,
+        self, mock_path_exists, mock_is_mounted, mock_Fstab,
         mock_path_create, mock_Command_run
     ):
+        def _is_mounted(path):
+            if path == '/run/initramfs/isoscan':
+                return True
+            return False
+
         fstab = Fstab()
         fstab_mock = Mock()
         fstab_mock.read.return_value = fstab.read('../data/fstab')
         fstab_mock.get_devices.return_value = fstab.get_devices()
-        mock_os_path_exists.return_value = True
+        mock_is_mounted.side_effect = _is_mounted
+        mock_path_exists.return_value = True
         mock_Fstab.return_value = fstab_mock
         command = Mock()
+        command.returncode = 1
         command.output = '/dev/sda1 part'
         mock_Command_run.return_value = command
         main()
         assert mock_Command_run.call_args_list == [
-            call(['mountpoint', '-q', '/system-root'], raise_on_error=False),
+            call(['mount', '-o', 'remount,rw', '/run/initramfs/isoscan']),
             call(['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']),
             call(['mount', '/dev/sda1', '/system-root'], raise_on_error=False),
             call(['umount', '/system-root'], raise_on_error=False),

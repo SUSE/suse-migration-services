@@ -1,0 +1,16 @@
+# While the package provides services all services are one-shot.
+# Additionally this services runs as part of a live ISO migration
+# system which is used and booted only once. It's contents are
+# packed into a readonly squashfs layer. Therefore there is no
+# need for use of the "standard" systemd service handling macros.
+addFilter("systemd-service-without-service_add_pre .*")
+addFilter("systemd-service-without-service_add_post .*")
+addFilter("systemd-service-without-service_del_postun .*")
+addFilter("systemd-service-without-service_del_preun .*")
+
+# Migration services runs once and never manually
+addFilter("suse-missing-rclink .*")
+
+# etc/grub.d plugins are called in the scope of grub2-mkconfig
+# None of them has a shebang because never called standalone
+addFilter("script-without-shebang .*")

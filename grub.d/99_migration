@@ -1,0 +1,33 @@
+# SUSE Migration activation menu entry
+
+. /usr/share/grub2/grub-mkconfig_lib
+
+CLASS="--class memtest86 --class gnu --class tools"
+
+if [ -z "${GRUB_DISTRIBUTOR}" ] ; then
+    OS=Migration
+else
+    OS="${GRUB_DISTRIBUTOR} Migration"
+    CLASS="--class $(
+        echo "${GRUB_DISTRIBUTOR}" | tr '[:upper:]' '[:lower:]' | cut -d' ' -f1
+    ) ${CLASS}"
+fi
+
+migration_iso=$(echo /usr/share/migration-image/*-Migration.*.iso)
+
+if grub_file_is_not_garbage "${migration_iso}"; then
+    kernel="(loop)/boot/x86_64/loader/linux"
+    initrd="(loop)/boot/x86_64/loader/initrd"
+    boot_device_id="$(grub_get_device_id "${GRUB_DEVICE_BOOT}")"
+    boot_options="rd.live.image root=live:CDLABEL=CDROM"
+    printf "menuentry '%s' %s \${menuentry_id_option} '%s' {\n" \
+        "${OS}" "${CLASS}" "Migration-${boot_device_id}"
+    printf "    set isofile='%s'\n" \
+        "${migration_iso}"
+    printf "    loopback loop (\$root)\$isofile\n"
+    printf "    linux %s iso-scan/filename=\$isofile %s\n" \
+        "${kernel}" "${boot_options}"
+    printf "    initrd %s\n" \
+        "${initrd}"
+    printf "}\n"
+fi

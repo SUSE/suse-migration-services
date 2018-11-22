@@ -20,10 +20,10 @@ Name:             suse-migration-services
 Version:          %%VERSION
 Release:          0
 Url:              https://github.com/SUSE/suse-migration-services
-Summary:          suse-migration-services - SUSE Distribution Migration Services
+Summary:          SUSE Distribution Migration Services
 License:          GPL-3.0+
 Group:            System/Management
-Source:           suse_migration_services.tar.gz
+Source:           suse-migration-services.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildRequires:    python3-devel
 BuildRequires:    python3-setuptools
@@ -37,6 +37,16 @@ BuildArch:        noarch
 
 %description
 Systemd services to prepare and run a distribution migration process.
+
+%package -n suse-migration-activation
+Summary:        LoopBack Grub Activation
+License:        GPL-3.0+
+Group:          System/Management
+
+%description -n suse-migration-activation
+Script code to activate the migration image to be booted at next
+reboot of the machine. The script provided here is typically used
+as post script of the package provding the migration image
 
 %prep
 %setup -q -n suse_migration_services-%{version}
@@ -65,6 +75,16 @@ install -D -m 644 systemd/suse-migration-umount-system.service \
 install -D -m 644 systemd/suse-migration-grub-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
 
+install -D -m 755 grub.d/99_migration \
+    %{buildroot}/etc/grub.d/99_migration
+
+# preun / postun
+# While the package provides services all services are one-shot.
+# Additionally this services runs as part of a live ISO migration
+# system which is used and booted only once. It's contents are
+# packed into a readonly squashfs layer. Therefore there is no
+# need for use of the "standard" systemd service handling macros.
+
 %files
 %defattr(-,root,root,-)
 %{python3_sitelib}/*
@@ -86,5 +106,10 @@ install -D -m 644 systemd/suse-migration-grub-setup.service \
 
 %{_bindir}/suse-migration-grub-setup
 %{_unitdir}/suse-migration-grub-setup.service
+
+%files -n suse-migration-activation
+%defattr(-,root,root,-)
+%dir /etc/grub.d
+/etc/grub.d/*
 
 %changelog
