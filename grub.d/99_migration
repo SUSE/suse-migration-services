@@ -30,4 +30,7 @@ if grub_file_is_not_garbage "${migration_iso}"; then
     printf "    initrd %s\n" \
         "${initrd}"
     printf "}\n"
+
+    printf "set default='%s'\n" "${OS}"
+    printf "set timeout=1\n"
 fi
