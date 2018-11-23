@@ -30,7 +30,8 @@ config = {
             'suse-migration-setup-host-network=suse_migration_services.units.setup_host_network:main',
             'suse-migration-prepare=suse_migration_services.units.prepare:main',
             'suse-migration=suse_migration_services.units.migrate:main',
-            'suse-migration-grub-setup=suse_migration_services.units.grub_setup:main'
+            'suse-migration-grub-setup=suse_migration_services.units.grub_setup:main',
+            'suse-migration-kernel-reboot=suse_migration_services.units.kernel_reboot:main'
         ]
     },
     'include_package_data': True,
