@@ -31,7 +31,7 @@ BuildRequires:    systemd-rpm-macros
 Requires:         python3-PyYAML
 Requires:         python3-setuptools
 Requires:         util-linux
-Requires:	  kexec-tools
+Requires:         kexec-tools
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
