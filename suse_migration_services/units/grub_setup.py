@@ -50,6 +50,11 @@ def main():
         system_mount.read(
             Defaults.get_system_mount_info_file()
         )
+        # uninstall suse-migration-activation so new grub
+        # menu does not have the migration entry
+        Command.run(
+            ['rpm', '-e', 'suse-migration-activation']
+        )
         Command.run(
             ['mount', '--bind', '/dev', dev_mount_point]
         )
