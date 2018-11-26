@@ -44,6 +44,11 @@ class TestSetupHostNetwork(object):
         assert mock_Command_run.call_args_list == [
             call(
                 [
+                    'rpm', '-e', 'suse-migration-activation'
+                ]
+            ),
+            call(
+                [
                     'mount', '--bind', '/dev',
                     '/system-root/dev'
                 ]
