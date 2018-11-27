@@ -44,6 +44,7 @@ class TestSetupHostNetwork(object):
         assert mock_Command_run.call_args_list == [
             call(
                 [
+                    'chroot', '/system-root',
                     'rpm', '-e', 'suse-migration-activation'
                 ]
             ),
