@@ -1,0 +1,11 @@
+[Unit]
+Description=Load the migrated system kernel/initrd
+After=suse-migration-grub-setup.service
+Requires=suse-migration-grub-setup.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-kernel-load
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Reboot System
+After=suse-migration-umount-system.service
+Requires=suse-migration-umount-system.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-reboot
+
+[Install]
+WantedBy=multi-user.target

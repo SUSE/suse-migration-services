@@ -29,19 +29,15 @@ from suse_migration_services.exceptions import (
 
 def main():
     """
-    DistMigration reboot with  new kernel
+    DistMigration load new kernel for kexec reboot
 
-    Reads the info of the new kernel and loads the latest (new migrated kernel)
-    version for rebooting.
+    Loads the new kernel/initrd after migration for system reboot
     """
     root_path = Defaults.get_system_root_path()
 
     target_kernel = Defaults.get_target_kernel()
     target_initrd = Defaults.get_target_initrd()
     try:
-        Command.run(
-            ['kexec', '--unload']
-        )
         Command.run(
             [
                 'kexec',
@@ -50,15 +46,9 @@ def main():
                 '--command-line', _get_cmdline(target_kernel)
             ]
         )
-        Command.run(
-            ['kexec', '--exec']
-        )
     except Exception as issue:
-        Command.run(
-            ['kexec', '--unload']
-        )
         raise DistMigrationKernelRebootException(
-            'Kernel rebooting failed with {0}'.format(
+            'Failed to load kernel/initrd into memory: {0}'.format(
                 issue
             )
         )
