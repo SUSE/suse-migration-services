@@ -45,8 +45,9 @@ class TestSetupHostNetwork(object):
             call(
                 [
                     'chroot', '/system-root',
-                    'rpm', '-e', 'suse-migration-activation'
-                ]
+                    'zypper', '--non-interactive', '--no-gpg-checks',
+                    'remove', '-u', 'suse-migration-activation'
+                ], raise_on_error=False
             ),
             call(
                 [

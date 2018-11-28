@@ -53,8 +53,11 @@ def main():
         # uninstall suse-migration-activation so new grub
         # menu does not have the migration entry
         Command.run(
-            ['chroot', root_path,
-             'rpm', '-e', 'suse-migration-activation']
+            [
+                'chroot', root_path,
+                'zypper', '--non-interactive', '--no-gpg-checks',
+                'remove', '-u', 'suse-migration-activation'
+            ], raise_on_error=False
         )
         Command.run(
             ['mount', '--bind', '/dev', dev_mount_point]
