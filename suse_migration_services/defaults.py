@@ -37,12 +37,12 @@ class Defaults(object):
 
     @classmethod
     def get_grub_config_file(self):
-        return '/boot/grub2/grub.cfg'
+        return 'boot/grub2/grub.cfg'
 
     @classmethod
     def get_target_kernel(self):
-        return '/boot/vmlinuz'
+        return 'boot/vmlinuz'
 
     @classmethod
     def get_target_initrd(self):
-        return '/boot/initrd'
+        return 'boot/initrd'

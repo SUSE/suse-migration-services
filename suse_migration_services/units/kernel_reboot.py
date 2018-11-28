@@ -34,6 +34,8 @@ def main():
     Reads the info of the new kernel and loads the latest (new migrated kernel)
     version for rebooting.
     """
+    root_path = Defaults.get_system_root_path()
+
     target_kernel = Defaults.get_target_kernel()
     target_initrd = Defaults.get_target_initrd()
     try:
@@ -43,8 +45,8 @@ def main():
         Command.run(
             [
                 'kexec',
-                '--load', target_kernel,
-                '--initrd', target_initrd,
+                '--load', os.sep.join([root_path, target_kernel]),
+                '--initrd', os.sep.join([root_path, target_initrd]),
                 '--command-line', _get_cmdline(target_kernel)
             ]
         )
@@ -63,14 +65,16 @@ def main():
 
 
 def _get_cmdline(kernel_name):
-    grub_config_file_path = Defaults.get_grub_config_file()
+    grub_config_file_path = os.sep.join(
+        [Defaults.get_system_root_path(), Defaults.get_grub_config_file()]
+    )
     if not os.path.exists(grub_config_file_path):
         raise DistMigrationKernelRebootException(
             'Could not find {0} to load the kernel options'.format(
                 grub_config_file_path
             )
         )
-    pattern = r'(?<=linux)[ \t]+{}.*'.format(kernel_name)
+    pattern = r'(?<=linux)[ \t]+{0}{1}.*'.format(os.sep, kernel_name)
     with open(grub_config_file_path) as grub_config_file:
         grub_content = grub_config_file.read()
     cmd_line = re.findall(pattern, grub_content)[0]
