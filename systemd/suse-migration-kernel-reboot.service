@@ -5,7 +5,7 @@ Requires=suse-migration-grub-setup.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/suse-migration-kernel-load
+ExecStart=/usr/bin/suse-migration-kernel-reboot
 
 [Install]
 WantedBy=multi-user.target
