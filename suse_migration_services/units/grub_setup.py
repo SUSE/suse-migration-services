@@ -76,8 +76,8 @@ def main():
         )
         Command.run(
             [
-                'chroot', root_path,
-                'grub2-mkconfig', '-o', grub_config_file
+                'chroot', root_path, 'grub2-mkconfig', '-o',
+                '{0}{1}'.format(os.sep, grub_config_file)
             ]
         )
         system_mount.export(
