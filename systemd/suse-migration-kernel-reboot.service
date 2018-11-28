@@ -1,7 +1,7 @@
 [Unit]
 Description=Load the new migrated kernel and reboot the system
-After=umount-system.service
-Requires=umount-system.service
+After=suse-migration-umount-system.service
+Requires=suse-migration-grub-setup.service
 
 [Service]
 Type=oneshot
