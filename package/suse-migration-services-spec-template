@@ -76,8 +76,11 @@ install -D -m 644 systemd/suse-migration-umount-system.service \
 install -D -m 644 systemd/suse-migration-grub-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
 
-install -D -m 644 systemd/suse-migration-kernel-reboot.service \
-    %{buildroot}%{_unitdir}/suse-migration-kernel-reboot.service
+install -D -m 644 systemd/suse-migration-kernel-load.service \
+    %{buildroot}%{_unitdir}/suse-migration-kernel-load.service
+
+install -D -m 644 systemd/suse-migration-reboot.service \
+    %{buildroot}%{_unitdir}/suse-migration-reboot.service
 
 install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
@@ -111,8 +114,11 @@ install -D -m 755 grub.d/99_migration \
 %{_bindir}/suse-migration-grub-setup
 %{_unitdir}/suse-migration-grub-setup.service
 
-%{_bindir}/suse-migration-kernel-reboot
-%{_unitdir}/suse-migration-kernel-reboot.service
+%{_bindir}/suse-migration-kernel-load
+%{_unitdir}/suse-migration-kernel-load.service
+
+%{_bindir}/suse-migration-reboot
+%{_unitdir}/suse-migration-reboot.service
 
 %files -n suse-migration-activation
 %defattr(-,root,root,-)

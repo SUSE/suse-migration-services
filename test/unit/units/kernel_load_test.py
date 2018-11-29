@@ -4,7 +4,7 @@ from unittest.mock import (
 )
 from pytest import raises
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.units.kernel_reboot import (
+from suse_migration_services.units.kernel_load import (
     main, _get_cmdline
 )
 from suse_migration_services.exceptions import (
@@ -12,7 +12,7 @@ from suse_migration_services.exceptions import (
 )
 
 
-class TestKernelReboot(object):
+class TestKernelLoad(object):
     @patch('os.path.exists')
     def test_get_cmd_line_grub_cfg_not_present(self, mock_os_path_exists):
         mock_os_path_exists.return_value = False
@@ -38,7 +38,7 @@ class TestKernelReboot(object):
             assert result == grub_cmd_content
 
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.kernel_reboot._get_cmdline')
+    @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main_raises_on_kernel_load(
             self, mock_get_cmdline, mock_Command_run
     ):
@@ -46,18 +46,10 @@ class TestKernelReboot(object):
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
             'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
         mock_get_cmdline.return_value = cmd_line
-        mock_Command_run.side_effect = [
-            mock_Command_run.DEFAULT,
-            mock_Command_run.DEFAULT,
-            Exception,
-            mock_Command_run.DEFAULT
-        ]
+        mock_Command_run.side_effect = Exception
         with raises(DistMigrationKernelRebootException):
             main()
         assert mock_Command_run.call_args_list == [
-            call(
-                ['kexec', '--unload']
-            ),
             call(
                 [
                     'kexec',
@@ -65,17 +57,11 @@ class TestKernelReboot(object):
                     '--initrd', '/system-root/boot/initrd',
                     '--command-line', cmd_line
                 ]
-            ),
-            call(
-                ['kexec', '--exec']
-            ),
-            call(
-                ['kexec', '--unload']
             )
         ]
 
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.kernel_reboot._get_cmdline')
+    @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main(
             self, mock_get_cmdline, mock_Command_run
     ):
@@ -86,17 +72,11 @@ class TestKernelReboot(object):
         main()
         assert mock_Command_run.call_args_list == [
             call(
-                ['kexec', '--unload']
-            ),
-            call(
                 [
                     'kexec',
                     '--load', '/system-root/boot/vmlinuz',
                     '--initrd', '/system-root/boot/initrd',
                     '--command-line', cmd_line
                 ]
-            ),
-            call(
-                ['kexec', '--exec']
             )
         ]
