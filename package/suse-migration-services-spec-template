@@ -96,6 +96,9 @@ install -D -m 755 grub.d/99_migration \
 %defattr(-,root,root,-)
 %{python3_sitelib}/*
 
+%{_bindir}/suse-migration-ssh-keys
+%{_unitdir}/syse-migration-ssh-keys.service
+
 %{_bindir}/suse-migration-mount-system
 %{_unitdir}/suse-migration-mount-system.service
 
