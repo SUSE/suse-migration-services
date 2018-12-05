@@ -10,7 +10,7 @@ from suse_migration_services.exceptions import (
 )
 
 
-class TestSetupHostNetwork(object):
+class TestGrubSetup(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.grub_setup.Fstab')
     def test_main_raises_on_grub_update(
