@@ -1,0 +1,11 @@
+[Unit]
+Description=Copy the authorized key files content into one file
+After=suse-migration-mount-system.service
+Requires=suse-migration-mount-system.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-ssh-keys
+
+[Install]
+WantedBy=multi-user.target

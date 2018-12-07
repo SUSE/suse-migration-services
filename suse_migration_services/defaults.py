@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import os
 
 
 class Defaults(object):
@@ -46,3 +47,17 @@ class Defaults(object):
     @classmethod
     def get_target_initrd(self):
         return 'boot/initrd'
+
+    @classmethod
+    def get_ssh_keys_paths(self):
+        return [
+            self._get_ssh_keys_path(self, 'home/*'),
+            self._get_ssh_keys_path(self, 'root')
+        ]
+
+    @classmethod
+    def get_migration_ssh_file(self):
+        return '/home/migration/.ssh/authorized_keys'
+
+    def _get_ssh_keys_path(self, prefix_path):
+        return os.sep.join([self.get_system_root_path(), prefix_path, '.ssh/authorized_keys'])
