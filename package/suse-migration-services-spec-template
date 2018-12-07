@@ -82,6 +82,9 @@ install -D -m 644 systemd/suse-migration-kernel-load.service \
 install -D -m 644 systemd/suse-migration-reboot.service \
     %{buildroot}%{_unitdir}/suse-migration-reboot.service
 
+install -D -m 644 systemd/suse-migration-ssh-keys.service \
+    %{buildroot}%{_unitdir}/suse-migration-ssh-keys.service
+
 install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
 
