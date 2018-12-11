@@ -33,6 +33,12 @@ class Defaults(object):
         return '/etc/migration-config.yml'
 
     @classmethod
+    def get_migration_log_file(self):
+        return os.sep.join(
+            [self.get_system_root_path(), 'var/log/zypper_migrate.log']
+        )
+
+    @classmethod
     def get_system_mount_info_file(self):
         return '/etc/system-root.fstab'
 
@@ -60,4 +66,6 @@ class Defaults(object):
         return '/home/migration/.ssh/authorized_keys'
 
     def _get_ssh_keys_path(self, prefix_path):
-        return os.sep.join([self.get_system_root_path(), prefix_path, '.ssh/authorized_keys'])
+        return os.sep.join(
+            [self.get_system_root_path(), prefix_path, '.ssh/authorized_keys']
+        )

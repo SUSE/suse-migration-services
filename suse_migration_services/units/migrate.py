@@ -30,12 +30,13 @@ def main():
     """
     DistMigration run zypper based migration
 
-    Call zypper migration plugin and migrate the system
+    Call zypper migration plugin and migrate the system.
+    The output of the call is logged on the system to migrate
     """
     root_path = Defaults.get_system_root_path()
 
     try:
-        Command.run(
+        bash_command = ' '.join(
             [
                 'zypper', 'migration',
                 '--non-interactive',
@@ -43,8 +44,12 @@ def main():
                 '--no-selfupdate',
                 '--auto-agree-with-licenses',
                 '--product', get_migration_product(),
-                '--root', root_path
+                '--root', root_path,
+                '&>', Defaults.get_migration_log_file()
             ]
+        )
+        Command.run(
+            ['bash', '-c', bash_command]
         )
     except Exception as issue:
         raise DistMigrationZypperException(

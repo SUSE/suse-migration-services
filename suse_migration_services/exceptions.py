@@ -98,3 +98,10 @@ class DistMigrationKernelRebootException(DistMigrationException):
     """
     Exception raised if the kernel reboot call has failed
     """
+
+
+class DistMigrationLoggingException(DistMigrationException):
+    """
+    Exception raised if the initial creation of the log file to
+    store the zypper migration plugin output has failed
+    """

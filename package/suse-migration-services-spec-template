@@ -85,6 +85,9 @@ install -D -m 644 systemd/suse-migration-reboot.service \
 install -D -m 644 systemd/suse-migration-ssh-keys.service \
     %{buildroot}%{_unitdir}/suse-migration-ssh-keys.service
 
+install -D -m 644 systemd/suse-migration-console-log.service \
+    %{buildroot}%{_unitdir}/suse-migration-console-log.service
+
 install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
 
@@ -113,6 +116,7 @@ install -D -m 755 grub.d/99_migration \
 
 %{_bindir}/suse-migration
 %{_unitdir}/suse-migration.service
+%{_unitdir}/suse-migration-console-log.service
 
 %{_bindir}/suse-migration-umount-system
 %{_unitdir}/suse-migration-umount-system.service
