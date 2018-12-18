@@ -25,7 +25,8 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
 
 from suse_migration_services.exceptions import (
-    DistMigrationZypperMetaDataException
+    DistMigrationZypperMetaDataException,
+    DistMigrationLoggingException
 )
 
 
@@ -77,6 +78,16 @@ def main():
         )
         raise DistMigrationZypperMetaDataException(
             'Preparation of zypper metadata failed with {0}'.format(
+                issue
+            )
+        )
+
+    try:
+        with open(Defaults.get_migration_log_file(), 'w'):
+            pass
+    except Exception as issue:
+        raise DistMigrationLoggingException(
+            'Migration log file init failed with {0}'.format(
                 issue
             )
         )

@@ -33,13 +33,15 @@ class TestMigration(object):
         main()
         mock_Command_run.assert_called_once_with(
             [
-                'zypper', 'migration',
-                '--non-interactive',
-                '--gpg-auto-import-keys',
-                '--no-selfupdate',
-                '--auto-agree-with-licenses',
-                '--product', 'foo',
-                '--root', '/system-root'
+                'bash', '-c',
+                'zypper migration '
+                '--non-interactive '
+                '--gpg-auto-import-keys '
+                '--no-selfupdate '
+                '--auto-agree-with-licenses '
+                '--product foo '
+                '--root /system-root '
+                '&> /system-root/var/log/zypper_migrate.log'
             ]
         )
         assert mock_info.called

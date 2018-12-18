@@ -102,5 +102,6 @@ class DistMigrationKernelRebootException(DistMigrationException):
 
 class DistMigrationLoggingException(DistMigrationException):
     """
-    Exception raised if setting log file call has failed
+    Exception raised if the initial creation of the log file to
+    store the zypper migration plugin output has failed
     """

@@ -33,6 +33,12 @@ class Defaults(object):
         return '/etc/migration-config.yml'
 
     @classmethod
+    def get_migration_log_file(self):
+        return os.sep.join(
+            [self.get_system_root_path(), 'var/log/zypper_migrate.log']
+        )
+
+    @classmethod
     def get_system_mount_info_file(self):
         return '/etc/system-root.fstab'
 
