@@ -69,9 +69,3 @@ class Defaults(object):
         return os.sep.join(
             [self.get_system_root_path(), prefix_path, '.ssh/authorized_keys']
         )
-
-    @classmethod
-    def get_migration_log_file(self):
-        return os.sep.join(
-            [self.get_system_root_path(), 'var/log/zypper_migrate.log']
-        )
