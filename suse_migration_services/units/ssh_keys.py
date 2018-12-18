@@ -32,7 +32,7 @@ def main():
     ssh_keys_glob_paths = Defaults.get_ssh_keys_paths()
     migration_ssh_file = Defaults.get_migration_ssh_file()
     try:
-        log.info('Running ssh keys service now')
+        log.info('Running ssh keys service')
         ssh_keys_paths = []
         for glob_path in ssh_keys_glob_paths:
             ssh_keys_paths.extend(glob.glob(glob_path))

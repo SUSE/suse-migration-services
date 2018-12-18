@@ -56,7 +56,7 @@ def main():
         [root_path, 'etc', 'sysconfig', 'network']
     )
     try:
-        log.info('Running setup host network service now')
+        log.info('Running setup host network service')
         system_mount = Fstab()
         system_mount.read(
             Defaults.get_system_mount_info_file()

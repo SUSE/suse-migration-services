@@ -83,7 +83,7 @@ def main():
         system_mount.add_entry(
             '/sys', sys_mount_point
         )
-        log.info('Creating new grub menu with target entries')
+        log.info('Creating new grub menu with target')
         Command.run(
             [
                 'chroot', root_path, 'grub2-mkconfig', '-o',

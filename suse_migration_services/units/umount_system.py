@@ -35,7 +35,7 @@ def main():
     reboot of the migration host with a potential active mount
     is something we take into account intentionally
     """
-    log.info('Running umount system service now')
+    log.info('Running umount system service')
     system_mount = Fstab()
     system_mount.read(
         Defaults.get_system_mount_info_file()

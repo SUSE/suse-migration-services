@@ -25,7 +25,7 @@ def main():
     DistMigration reboot with new kernel
     """
     try:
-        log.info('Running reboot service now')
+        log.info('Running reboot service')
         Command.run(
             ['kexec', '--exec']
         )

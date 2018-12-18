@@ -74,7 +74,7 @@ def main():
     lsblk_call = Command.run(
         ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
     )
-    log.info('Mount system service: mounting all entries now')
+    log.info('Mount system service: mounting all entries')
     for entry in lsblk_call.output.split(os.linesep):
         block_record = entry.split()
         if block_record and block_record[1] == 'part':
@@ -97,7 +97,7 @@ def main():
 
     if not fstab:
         log.error(
-            'Could not find system with fstab on {0}'.format(
+            'Could not find system in fstab on {0}'.format(
                 lsblk_call.output
             )
         )

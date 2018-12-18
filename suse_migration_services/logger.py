@@ -48,7 +48,7 @@ class InfoFilter(logging.Filter):
 
     def filter(self, record):
         """
-        Only messages with record level INFO and WARNING can pass.
+        Only messages with record level INFO can pass.
 
         For messages with another level an extra handler is used
         :param tuple record: logging message record
@@ -80,7 +80,7 @@ class ErrorFilter(logging.Filter):
 
     def filter(self, record):
         """
-        Only messages with record level DEBUG can pass.
+        Only messages with record level ERROR can pass.
 
         For messages with another level an extra handler is used
         :param tuple record: logging message record

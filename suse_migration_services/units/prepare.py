@@ -55,7 +55,7 @@ def main():
         [root_path, 'etc', 'zypp']
     )
     try:
-        log.info('Running prepare service now')
+        log.info('Running prepare service')
         system_mount = Fstab()
         system_mount.read(
             Defaults.get_system_mount_info_file()
