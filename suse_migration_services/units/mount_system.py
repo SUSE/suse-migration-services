@@ -22,6 +22,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.path import Path
+from suse_migration_services.logger import log
 
 from suse_migration_services.exceptions import (
     DistMigrationSystemNotFoundException,
@@ -41,6 +42,8 @@ def main():
     """
     root_path = Defaults.get_system_root_path()
     Path.create(root_path)
+    log.set_logfile(Defaults.get_migration_log_file())
+    log.info('Running mount system service')
 
     if is_mounted(root_path):
         # root_path is already a mount point, better not continue
@@ -51,6 +54,7 @@ def main():
         # what is there.
         return
 
+    log.info('Mount system service: {0} is mounted'.format(root_path))
     # Check if booted via loopback grub
     isoscan_loop_mount = '/run/initramfs/isoscan'
     if is_mounted(isoscan_loop_mount):
@@ -58,6 +62,10 @@ def main():
         # loopback menuentry. This means the disk is blocked by
         # that readonly loopback mount and needs to be
         # remounted for read write access first
+        log.info(
+            'Mount system service: {0} is mounted'
+            .format(isoscan_loop_mount)
+        )
         Command.run(
             ['mount', '-o', 'remount,rw', isoscan_loop_mount]
         )
@@ -66,6 +74,7 @@ def main():
     lsblk_call = Command.run(
         ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
     )
+    log.info('Mount system service: mounting all entries now')
     for entry in lsblk_call.output.split(os.linesep):
         block_record = entry.split()
         if block_record and block_record[1] == 'part':
@@ -80,12 +89,18 @@ def main():
                     fstab.read(fstab_file)
                     break
             finally:
+                log.info('Umount {0}'.format(root_path))
                 Command.run(
                     ['umount', root_path],
                     raise_on_error=False
                 )
 
     if not fstab:
+        log.error(
+            'Could not find system with fstab on {0}'.format(
+                lsblk_call.output
+            )
+        )
         raise DistMigrationSystemNotFoundException(
             'Could not find system with fstab on {0}'.format(
                 lsblk_call.output
@@ -96,6 +111,7 @@ def main():
 
 
 def mount_system(root_path, fstab):
+    log.info('Mount system in {0}'.format(root_path))
     mount_list = []
     system_mount = Fstab()
     for fstab_entry in fstab.get_devices():
@@ -103,6 +119,7 @@ def mount_system(root_path, fstab):
             mountpoint = ''.join(
                 [root_path, fstab_entry.mountpoint]
             )
+            log.info('Mounting {0}'.format(mountpoint))
             Command.run(
                 [
                     'mount', '-o', fstab_entry.options,
@@ -114,6 +131,9 @@ def mount_system(root_path, fstab):
             )
             mount_list.append(mountpoint)
         except Exception as issue:
+            log.error(
+                'Mounting system for upgrade failed with {0}'.format(issue)
+            )
             for mountpoint in reversed(mount_list):
                 Command.run(['umount', mountpoint])
             raise DistMigrationSystemMountException(
@@ -125,6 +145,7 @@ def mount_system(root_path, fstab):
 
 
 def is_mounted(mount_point):
+    log.info('Checking {0} is mounted'.format(mount_point))
     if os.path.exists(mount_point):
         mountpoint_call = Command.run(
             ['mountpoint', '-q', mount_point], raise_on_error=False

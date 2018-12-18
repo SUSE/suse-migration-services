@@ -11,10 +11,13 @@ from suse_migration_services.exceptions import (
 
 
 class TestGrubSetup(object):
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.grub_setup.Fstab')
     def test_main_raises_on_grub_update(
-        self, mock_Fstab, mock_Command_run
+        self, mock_Fstab, mock_Command_run,
+        mock_info, mock_error
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -29,11 +32,14 @@ class TestGrubSetup(object):
                 call(['umount', '/system-root/proc'], raise_on_error=False),
                 call(['umount', '/system-root/sys'], raise_on_error=False)
             ]
+            assert mock_info.called
+            assert mock_error.called
 
+    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.grub_setup.Fstab')
     def test_main(
-        self, mock_Fstab, mock_Command_run
+        self, mock_Fstab, mock_Command_run, mock_info
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
@@ -84,3 +90,4 @@ class TestGrubSetup(object):
         fstab.export.assert_called_once_with(
             '/etc/system-root.fstab'
         )
+        assert mock_info.called

@@ -6,9 +6,15 @@ from suse_migration_services.units.reboot import main
 
 
 class TestKernelReboot(object):
+    @patch('suse_migration_services.logger.log.warning')
+    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
-    def test_main(self, mock_Command_run):
+    def test_main(
+        self, mock_Command_run,
+        mock_info, mock_warning
+    ):
         main()
+        assert mock_info.called
         mock_Command_run.assert_called_once_with(
             ['kexec', '--exec']
         )
@@ -22,3 +28,4 @@ class TestKernelReboot(object):
             call(['kexec', '--exec']),
             call(['reboot', '-f'])
         ]
+        mock_warning.assert_called_once_with('Forcing reboot')

@@ -17,6 +17,7 @@
 #
 # project
 from suse_migration_services.command import Command
+from suse_migration_services.logger import log
 
 
 def main():
@@ -24,6 +25,7 @@ def main():
     DistMigration reboot with new kernel
     """
     try:
+        log.info('Running reboot service now')
         Command.run(
             ['kexec', '--exec']
         )
@@ -31,6 +33,7 @@ def main():
         # Uhh, we don't want to be here, but we also don't
         # want to be stuck in the migration live system.
         # Keep fingers crossed:
+        log.warning('Forcing reboot')
         Command.run(
             ['reboot', '-f']
         )

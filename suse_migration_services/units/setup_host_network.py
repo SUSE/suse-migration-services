@@ -22,6 +22,7 @@ import shutil
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.logger import log
 
 from suse_migration_services.exceptions import (
     DistMigrationNameResolverException,
@@ -55,6 +56,7 @@ def main():
         [root_path, 'etc', 'sysconfig', 'network']
     )
     try:
+        log.info('Running setup host network service now')
         system_mount = Fstab()
         system_mount.read(
             Defaults.get_system_mount_info_file()
@@ -75,6 +77,11 @@ def main():
             Defaults.get_system_mount_info_file()
         )
     except Exception as issue:
+        log.error(
+            'Preparation of migration host network failed with {0}'.format(
+                issue
+            )
+        )
         raise DistMigrationHostNetworkException(
             'Preparation of migration host network failed with {0}'.format(
                 issue

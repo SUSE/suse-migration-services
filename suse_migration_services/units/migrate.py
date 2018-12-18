@@ -20,6 +20,7 @@ import yaml
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.logger import log
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperException
@@ -35,6 +36,7 @@ def main():
     root_path = Defaults.get_system_root_path()
 
     try:
+        log.info('Running migrate service')
         Command.run(
             [
                 'zypper', 'migration',
@@ -47,6 +49,7 @@ def main():
             ]
         )
     except Exception as issue:
+        log.error('migrate service failed with {0}'.format(issue))
         raise DistMigrationZypperException(
             'Migration failed with {0}'.format(
                 issue
