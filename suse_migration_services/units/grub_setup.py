@@ -21,6 +21,7 @@ import os
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.logger import log
 
 from suse_migration_services.exceptions import (
     DistMigrationGrubConfigException
@@ -46,12 +47,14 @@ def main():
         [root_path, 'sys']
     )
     try:
+        log.info('Running grub setup service')
         system_mount = Fstab()
         system_mount.read(
             Defaults.get_system_mount_info_file()
         )
         # uninstall suse-migration-activation so new grub
         # menu does not have the migration entry
+        log.info('Uninstalling suse-migration-activation')
         Command.run(
             [
                 'chroot', root_path,
@@ -59,24 +62,28 @@ def main():
                 'remove', '-u', 'suse-migration-activation'
             ], raise_on_error=False
         )
+        log.info('Bind mounting {0}'.format(dev_mount_point))
         Command.run(
             ['mount', '--bind', '/dev', dev_mount_point]
         )
         system_mount.add_entry(
             '/dev', dev_mount_point
         )
+        log.info('Bind mounting {0}'.format(proc_mount_point))
         Command.run(
             ['mount', '--bind', '/proc', proc_mount_point]
         )
         system_mount.add_entry(
             '/proc', proc_mount_point
         )
+        log.info('Bind mounting {0}'.format(sys_mount_point))
         Command.run(
             ['mount', '--bind', '/sys', sys_mount_point]
         )
         system_mount.add_entry(
             '/sys', sys_mount_point
         )
+        log.info('Creating new grub menu with target')
         Command.run(
             [
                 'chroot', root_path, 'grub2-mkconfig', '-o',
@@ -87,12 +94,10 @@ def main():
             Defaults.get_system_mount_info_file()
         )
     except Exception as issue:
+        message = 'Update grub failed with {0}'.format(issue)
+        log.error(message)
         for entry in reversed(system_mount.get_devices()):
             Command.run(
                 ['umount', entry.mountpoint], raise_on_error=False
             )
-        raise DistMigrationGrubConfigException(
-            'Update grub failed with {0}'.format(
-                issue
-            )
-        )
+        raise DistMigrationGrubConfigException(message)

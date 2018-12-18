@@ -10,8 +10,10 @@ class TestUMountSystem(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.umount_system.Fstab')
     @patch('os.path.exists')
+    @patch('suse_migration_services.logger.log.info')
     def test_main(
-        self, mock_os_path_exists, mock_Fstab, mock_Command_run
+        self, mock_info, mock_os_path_exists,
+        mock_Fstab, mock_Command_run
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -28,3 +30,4 @@ class TestUMountSystem(object):
             call(['umount', '/system-root/boot/efi'], raise_on_error=False),
             call(['umount', '/system-root/'], raise_on_error=False)
         ]
+        assert mock_info.called

@@ -19,6 +19,7 @@
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.fstab import Fstab
+from suse_migration_services.logger import log
 
 
 def main():
@@ -34,11 +35,13 @@ def main():
     reboot of the migration host with a potential active mount
     is something we take into account intentionally
     """
+    log.info('Running umount system service')
     system_mount = Fstab()
     system_mount.read(
         Defaults.get_system_mount_info_file()
     )
     for mount in reversed(system_mount.get_devices()):
+        log.info('Umounting {0}'.format(mount.mountpoint))
         Command.run(
             ['umount', mount.mountpoint], raise_on_error=False
         )

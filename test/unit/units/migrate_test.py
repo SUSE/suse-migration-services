@@ -9,15 +9,25 @@ from suse_migration_services.exceptions import (
 
 
 class TestMigration(object):
+    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.command.Command.run')
-    def test_main_raises_on_zypper_migration(self, mock_Command_run):
+    def test_main_raises_on_zypper_migration(
+        self, mock_Command_run, mock_error, mock_info
+    ):
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationZypperException):
             main()
+            assert mock_info.called
+            assert mock_error.called
 
+    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch.object(Defaults, 'get_migration_config_file')
-    def test_main(self, mock_get_migration_config_file, mock_Command_run):
+    def test_main(
+        self, mock_get_migration_config_file,
+        mock_Command_run, mock_info
+    ):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
         main()
@@ -34,3 +44,4 @@ class TestMigration(object):
                 '&> /system-root/var/log/zypper_migrate.log'
             ]
         )
+        assert mock_info.called

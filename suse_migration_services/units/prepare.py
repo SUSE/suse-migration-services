@@ -22,6 +22,7 @@ import shutil
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.logger import log
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperMetaDataException,
@@ -42,7 +43,6 @@ def main():
     information available inside the live system that performs the migration.
     """
     root_path = Defaults.get_system_root_path()
-
     suse_connect_setup = os.sep.join(
         [root_path, 'etc', 'SUSEConnect']
     )
@@ -55,10 +55,12 @@ def main():
         [root_path, 'etc', 'zypp']
     )
     try:
+        log.info('Running prepare service')
         system_mount = Fstab()
         system_mount.read(
             Defaults.get_system_mount_info_file()
         )
+        log.info('Bind mounting /etc/zypp')
         Command.run(
             ['mount', '--bind', zypp_metadata, '/etc/zypp']
         )
@@ -69,6 +71,11 @@ def main():
             Defaults.get_system_mount_info_file()
         )
     except Exception as issue:
+        log.error(
+            'Preparation of zypper metadata failed with {0}'.format(
+                issue
+            )
+        )
         raise DistMigrationZypperMetaDataException(
             'Preparation of zypper metadata failed with {0}'.format(
                 issue

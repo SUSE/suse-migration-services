@@ -8,19 +8,23 @@ from suse_migration_services.defaults import Defaults
 
 
 class TestSshAccess(object):
+    @patch('suse_migration_services.logger.log.error')
     @patch('glob.glob')
     def test_migration_continues_on_error(
-        self, mock_glob_glob
+        self, mock_glob_glob, mock_error
     ):
         mock_glob_glob.return_value = []
+        mock_error.levelno = 40
         main()  # expect pass and comment
+        assert mock_error.called
 
     @patch.object(Defaults, 'get_ssh_keys_paths')
     @patch('glob.glob')
     @patch.object(Defaults, 'get_migration_ssh_file')
+    @patch('suse_migration_services.logger.log.info')
     def test_main(
-            self, mock_get_migration_ssh_file,
-            mock_glob_glob, mock_glob_ssh
+        self, mock_info, mock_get_migration_ssh_file,
+        mock_glob_glob, mock_glob_ssh
     ):
         mock_glob_ssh.return_value = ['/path/']
         mock_get_migration_ssh_file.return_value = '../data/authorized_keys'

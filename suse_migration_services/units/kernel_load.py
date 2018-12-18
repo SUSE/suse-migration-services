@@ -21,6 +21,7 @@ import os
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.logger import log
 
 from suse_migration_services.exceptions import (
     DistMigrationKernelRebootException
@@ -38,6 +39,8 @@ def main():
     target_kernel = Defaults.get_target_kernel()
     target_initrd = Defaults.get_target_initrd()
     try:
+        log.info('Running kernel load service')
+        log.info('Loading the target kernel')
         Command.run(
             [
                 'kexec',
@@ -47,6 +50,7 @@ def main():
             ]
         )
     except Exception as issue:
+        log.error('Kernel load service raised exception: {0}', format(issue))
         raise DistMigrationKernelRebootException(
             'Failed to load kernel/initrd into memory: {0}'.format(
                 issue
@@ -55,10 +59,15 @@ def main():
 
 
 def _get_cmdline(kernel_name):
+    log.info('Getting cmdline for {0}'.format(kernel_name))
     grub_config_file_path = os.sep.join(
         [Defaults.get_system_root_path(), Defaults.get_grub_config_file()]
     )
     if not os.path.exists(grub_config_file_path):
+        log.error(
+            'kernel load service was not able to find'
+            '{0}'.format(grub_config_file_path)
+        )
         raise DistMigrationKernelRebootException(
             'Could not find {0} to load the kernel options'.format(
                 grub_config_file_path
