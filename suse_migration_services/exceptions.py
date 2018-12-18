@@ -98,3 +98,9 @@ class DistMigrationKernelRebootException(DistMigrationException):
     """
     Exception raised if the kernel reboot call has failed
     """
+
+
+class DistMigrationLoggingException(DistMigrationException):
+    """
+    Exception raised if setting log file call has failed
+    """

@@ -60,4 +60,12 @@ class Defaults(object):
         return '/home/migration/.ssh/authorized_keys'
 
     def _get_ssh_keys_path(self, prefix_path):
-        return os.sep.join([self.get_system_root_path(), prefix_path, '.ssh/authorized_keys'])
+        return os.sep.join(
+            [self.get_system_root_path(), prefix_path, '.ssh/authorized_keys']
+        )
+
+    @classmethod
+    def get_migration_log_file(self):
+        return os.sep.join(
+            [self.get_system_root_path(), 'var/log/zypper_migrate.log']
+        )
