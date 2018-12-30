@@ -53,10 +53,11 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.units.prepare.log.set_logfile')
     @patch('os.path.exists')
     @patch('shutil.copy')
     def test_main(
-        self, mock_shutil_copy, mock_os_path_exists,
+        self, mock_shutil_copy, mock_os_path_exists, mock_set_logfile,
         mock_Fstab, mock_Command_run,
         mock_info
     ):
@@ -88,5 +89,8 @@ class TestSetupPrepare(object):
             )
             mock_open.assert_called_once_with(
                 '/system-root/var/log/zypper_migrate.log', 'w'
+            )
+            mock_set_logfile.assert_called_once_with(
+                '/system-root/var/log/zypper_migrate.log'
             )
             assert mock_info.called

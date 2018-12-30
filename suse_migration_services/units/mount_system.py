@@ -42,7 +42,6 @@ def main():
     """
     root_path = Defaults.get_system_root_path()
     Path.create(root_path)
-    log.set_logfile(Defaults.get_migration_log_file())
     log.info('Running mount system service')
 
     if is_mounted(root_path):

@@ -85,6 +85,7 @@ def main():
     try:
         with open(Defaults.get_migration_log_file(), 'w'):
             pass
+        log.set_logfile(Defaults.get_migration_log_file())
     except Exception as issue:
         raise DistMigrationLoggingException(
             'Migration log file init failed with {0}'.format(
