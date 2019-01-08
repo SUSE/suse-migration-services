@@ -6,6 +6,7 @@ from unittest.mock import (
 from pytest import raises
 
 from suse_migration_services.units.prepare import main
+from suse_migration_services.fstab import Fstab
 from suse_migration_services.exceptions import (
     DistMigrationZypperMetaDataException,
     DistMigrationLoggingException
@@ -50,6 +51,32 @@ class TestSetupPrepare(object):
                 assert mock_log_info.called
                 assert mock_log_error.called
 
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('os.path.exists')
+    @patch('shutil.copy')
+    def test_main_raises_and_umount_file_system(
+        self, mock_shutil_copy, mock_os_path_exists,
+        mock_Fstab, mock_Command_run,
+        mock_info, mock_error
+    ):
+        fstab = Fstab()
+        fstab_mock = Mock()
+        fstab_mock.read.return_value = fstab.read('../data/bind-mounted.fstab')
+        fstab_mock.get_devices.return_value = fstab.get_devices()
+        fstab_mock.export.side_effect = Exception
+        mock_Fstab.return_value = fstab_mock
+        mock_os_path_exists.return_value = True
+        with raises(DistMigrationZypperMetaDataException):
+            main()
+            assert mock_Command_run.call_args_list == [
+                call(['umount', '/system-root/sys'], raise_on_error=False),
+                call(['umount', '/system-root/proc'], raise_on_error=False),
+                call(['umount', '/system-root/dev'], raise_on_error=False)
+            ]
+
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
@@ -76,14 +103,43 @@ class TestSetupPrepare(object):
                         'mount', '--bind', '/system-root/etc/zypp',
                         '/etc/zypp'
                     ]
+                ),
+                call(
+                    [
+                        'mount', '-t', 'devtmpfs', 'devtmpfs',
+                        '/system-root/dev'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-t', 'proc', 'proc',
+                        '/system-root/proc'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-t', 'sysfs', 'sysfs',
+                        '/system-root/sys'
+                    ]
                 )
             ]
             fstab.read.assert_called_once_with(
                 '/etc/system-root.fstab'
             )
-            fstab.add_entry.assert_called_once_with(
-                '/system-root/etc/zypp', '/etc/zypp'
-            )
+            assert fstab.add_entry.call_args_list == [
+                call(
+                    '/system-root/etc/zypp', '/etc/zypp'
+                ),
+                call(
+                    'devtmpfs', '/system-root/dev'
+                ),
+                call(
+                    '/proc', '/system-root/proc'
+                ),
+                call(
+                    'sysfs', '/system-root/sys'
+                )
+            ]
             fstab.export.assert_called_once_with(
                 '/etc/system-root.fstab'
             )

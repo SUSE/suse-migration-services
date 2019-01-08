@@ -19,7 +19,6 @@ import os
 
 # project
 from suse_migration_services.command import Command
-from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
 
@@ -37,21 +36,8 @@ def main():
     root_path = Defaults.get_system_root_path()
     grub_config_file = Defaults.get_grub_config_file()
 
-    dev_mount_point = os.sep.join(
-        [root_path, 'dev']
-    )
-    proc_mount_point = os.sep.join(
-        [root_path, 'proc']
-    )
-    sys_mount_point = os.sep.join(
-        [root_path, 'sys']
-    )
     try:
         log.info('Running grub setup service')
-        system_mount = Fstab()
-        system_mount.read(
-            Defaults.get_system_mount_info_file()
-        )
         # uninstall suse-migration-activation so new grub
         # menu does not have the migration entry
         log.info('Uninstalling suse-migration-activation')
@@ -62,27 +48,6 @@ def main():
                 'remove', '-u', 'suse-migration-activation'
             ], raise_on_error=False
         )
-        log.info('Bind mounting {0}'.format(dev_mount_point))
-        Command.run(
-            ['mount', '--bind', '/dev', dev_mount_point]
-        )
-        system_mount.add_entry(
-            '/dev', dev_mount_point
-        )
-        log.info('Bind mounting {0}'.format(proc_mount_point))
-        Command.run(
-            ['mount', '--bind', '/proc', proc_mount_point]
-        )
-        system_mount.add_entry(
-            '/proc', proc_mount_point
-        )
-        log.info('Bind mounting {0}'.format(sys_mount_point))
-        Command.run(
-            ['mount', '--bind', '/sys', sys_mount_point]
-        )
-        system_mount.add_entry(
-            '/sys', sys_mount_point
-        )
         log.info('Creating new grub menu with target')
         Command.run(
             [
@@ -90,14 +55,7 @@ def main():
                 '{0}{1}'.format(os.sep, grub_config_file)
             ]
         )
-        system_mount.export(
-            Defaults.get_system_mount_info_file()
-        )
     except Exception as issue:
         message = 'Update grub failed with {0}'.format(issue)
         log.error(message)
-        for entry in reversed(system_mount.get_devices()):
-            Command.run(
-                ['umount', entry.mountpoint], raise_on_error=False
-            )
         raise DistMigrationGrubConfigException(message)

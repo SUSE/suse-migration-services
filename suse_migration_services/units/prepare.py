@@ -54,6 +54,15 @@ def main():
     zypp_metadata = os.sep.join(
         [root_path, 'etc', 'zypp']
     )
+    dev_mount_point = os.sep.join(
+        [root_path, 'dev']
+    )
+    proc_mount_point = os.sep.join(
+        [root_path, 'proc']
+    )
+    sys_mount_point = os.sep.join(
+        [root_path, 'sys']
+    )
     try:
         log.info('Running prepare service')
         system_mount = Fstab()
@@ -67,6 +76,25 @@ def main():
         system_mount.add_entry(
             zypp_metadata, '/etc/zypp'
         )
+        log.info('Mounting kernel file systems inside {0}'.format(root_path))
+        Command.run(
+            ['mount', '-t', 'devtmpfs', 'devtmpfs', dev_mount_point]
+        )
+        system_mount.add_entry(
+            'devtmpfs', dev_mount_point
+        )
+        Command.run(
+            ['mount', '-t', 'proc', 'proc', proc_mount_point]
+        )
+        system_mount.add_entry(
+            '/proc', proc_mount_point
+        )
+        Command.run(
+            ['mount', '-t', 'sysfs', 'sysfs', sys_mount_point]
+        )
+        system_mount.add_entry(
+            'sysfs', sys_mount_point
+        )
         system_mount.export(
             Defaults.get_system_mount_info_file()
         )
@@ -76,6 +104,11 @@ def main():
                 issue
             )
         )
+        log.info('Unmounting kernel file systems, if any')
+        for entry in reversed(system_mount.get_devices()):
+            Command.run(
+                ['umount', entry.mountpoint], raise_on_error=False
+            )
         raise DistMigrationZypperMetaDataException(
             'Preparation of zypper metadata failed with {0}'.format(
                 issue
