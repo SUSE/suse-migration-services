@@ -49,6 +49,9 @@ def main():
     hosts_setup = os.sep.join(
         [root_path, 'etc', 'hosts']
     )
+    trust_anchors = os.sep.join(
+        [root_path, 'usr', 'share', 'pki', 'trust', 'anchors']
+    )
     if os.path.exists(suse_connect_setup):
         shutil.copy(
             suse_connect_setup, '/etc/SUSEConnect'
@@ -57,6 +60,18 @@ def main():
         shutil.copy(
             hosts_setup, '/etc/hosts'
         )
+    if os.path.exists(trust_anchors):
+        certificates = os.listdir(trust_anchors)
+        if certificates:
+            for cert in certificates:
+                log.info(
+                    'Importing certificate: {0}'.format(cert)
+                )
+                shutil.copy(cert, '/usr/share/pki/trust/anchors/')
+            log.info('Update certificate pool')
+            Command.run(
+                ['update-ca-certificates']
+            )
 
     zypp_metadata = os.sep.join(
         [root_path, 'etc', 'zypp']
