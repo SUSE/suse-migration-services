@@ -8,7 +8,9 @@ Conflicts=emergency.service emergency.target
 
 [Service]
 ExecStart=/usr/bin/dialog --tailbox /system-root/var/log/zypper_migrate.log 60 75
-Type=oneshot
+Type=simple
+Restart=always
+RestartSec=2
 StandardInput=tty-force
 StandardOutput=inherit
 StandardError=inherit
