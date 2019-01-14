@@ -41,7 +41,7 @@ class TestMigration(object):
                 '--auto-agree-with-licenses '
                 '--product foo '
                 '--root /system-root '
-                '&> /system-root/var/log/zypper_migrate.log'
+                '&>> /system-root/var/log/zypper_migrate.log'
             ]
         )
         assert mock_info.called

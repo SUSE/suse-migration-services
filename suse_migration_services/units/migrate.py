@@ -47,7 +47,7 @@ def main():
                 '--auto-agree-with-licenses',
                 '--product', get_migration_product(),
                 '--root', root_path,
-                '&>', Defaults.get_migration_log_file()
+                '&>>', Defaults.get_migration_log_file()
             ]
         )
         Command.run(
