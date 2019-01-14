@@ -46,9 +46,16 @@ def main():
     suse_connect_setup = os.sep.join(
         [root_path, 'etc', 'SUSEConnect']
     )
+    hosts_setup = os.sep.join(
+        [root_path, 'etc', 'hosts']
+    )
     if os.path.exists(suse_connect_setup):
         shutil.copy(
             suse_connect_setup, '/etc/SUSEConnect'
+        )
+    if os.path.exists(hosts_setup):
+        shutil.copy(
+            hosts_setup, '/etc/hosts'
         )
 
     zypp_metadata = os.sep.join(
