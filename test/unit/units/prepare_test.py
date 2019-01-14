@@ -94,9 +94,10 @@ class TestSetupPrepare(object):
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             main()
-            mock_shutil_copy.assert_called_once_with(
-                '/system-root/etc/SUSEConnect', '/etc/SUSEConnect'
-            )
+            assert mock_shutil_copy.call_args_list == [
+                call('/system-root/etc/SUSEConnect', '/etc/SUSEConnect'),
+                call('/system-root/etc/hosts', '/etc/hosts')
+            ]
             assert mock_Command_run.call_args_list == [
                 call(
                     [
