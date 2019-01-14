@@ -17,3 +17,6 @@ StandardError=inherit
 KillMode=process
 IgnoreSIGPIPE=no
 KillSignal=SIGHUP
+
+[Install]
+WantedBy=multi-user.target
