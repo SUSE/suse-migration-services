@@ -3,7 +3,6 @@ Description=Show Migration Progress
 ConditionPathExists=/system-root/var/log/zypper_migrate.log
 DefaultDependencies=no
 After=systemd-vconsole-setup.service suse-migration-prepare.service
-Requires=suse-migration-prepare.service
 Wants=systemd-vconsole-setup.service
 Conflicts=emergency.service emergency.target
 
