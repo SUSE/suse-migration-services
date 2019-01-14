@@ -8,7 +8,7 @@ Wants=systemd-vconsole-setup.service
 Conflicts=emergency.service emergency.target
 
 [Service]
-ExecStart=dialog --tailbox /system-root/var/log/zypper_migrate.log 60 75
+ExecStart=/usr/bin/dialog --tailbox /system-root/var/log/zypper_migrate.log 60 75
 Type=oneshot
 StandardInput=tty-force
 StandardOutput=inherit
