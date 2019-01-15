@@ -76,6 +76,9 @@ def main():
                 ['update-ca-certificates']
             )
 
+    products_metadata = os.sep.join(
+        [root_path, 'etc', 'products.d']
+    )
     zypp_metadata = os.sep.join(
         [root_path, 'etc', 'zypp']
     )
@@ -93,6 +96,13 @@ def main():
         system_mount = Fstab()
         system_mount.read(
             Defaults.get_system_mount_info_file()
+        )
+        log.info('Bind mounting migration system /etc/products.d')
+        Command.run(
+            ['mount', '--bind', '/etc/products.d', products_metadata]
+        )
+        system_mount.add_entry(
+            '/etc/products.d', products_metadata
         )
         log.info('Bind mounting /etc/zypp')
         Command.run(

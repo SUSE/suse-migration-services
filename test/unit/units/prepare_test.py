@@ -119,6 +119,12 @@ class TestSetupPrepare(object):
                 ),
                 call(
                     [
+                        'mount', '--bind', '/etc/products.d',
+                        '/system-root/etc/products.d'
+                    ]
+                ),
+                call(
+                    [
                         'mount', '--bind', '/system-root/etc/zypp',
                         '/etc/zypp'
                     ]
@@ -146,6 +152,9 @@ class TestSetupPrepare(object):
                 '/etc/system-root.fstab'
             )
             assert fstab.add_entry.call_args_list == [
+                call(
+                    '/etc/products.d', '/system-root/etc/products.d'
+                ),
                 call(
                     '/system-root/etc/zypp', '/etc/zypp'
                 ),
