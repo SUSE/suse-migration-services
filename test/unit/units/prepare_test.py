@@ -20,11 +20,13 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('os.path.exists')
     @patch('shutil.copy')
+    @patch('os.listdir')
     def test_main_raises_on_zypp_bind(
-        self, mock_shutil_copy, mock_os_path_exists,
+        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
         mock_Fstab, mock_Command_run,
         mock_info, mock_error
     ):
+        mock_os_listdir.return_value = None
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationZypperMetaDataException):
@@ -38,8 +40,9 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('os.path.exists')
     @patch('shutil.copy')
+    @patch('os.listdir')
     def test_main_raises_on_log_init(
-        self, mock_shutil_copy, mock_os_path_exists,
+        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
         mock_Fstab, mock_Command_run, mock_log_info,
         mock_log_error
     ):
@@ -57,8 +60,9 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('os.path.exists')
     @patch('shutil.copy')
+    @patch('os.listdir')
     def test_main_raises_and_umount_file_system(
-        self, mock_shutil_copy, mock_os_path_exists,
+        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
         mock_Fstab, mock_Command_run,
         mock_info, mock_error
     ):
@@ -83,22 +87,30 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.units.prepare.log.set_logfile')
     @patch('os.path.exists')
     @patch('shutil.copy')
+    @patch('os.listdir')
     def test_main(
-        self, mock_shutil_copy, mock_os_path_exists, mock_set_logfile,
-        mock_Fstab, mock_Command_run,
-        mock_info
+        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
+        mock_set_logfile, mock_Fstab, mock_Command_run, mock_info
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
+        mock_os_listdir.return_value = ['foo', 'bar']
         mock_os_path_exists.return_value = True
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             main()
             assert mock_shutil_copy.call_args_list == [
                 call('/system-root/etc/SUSEConnect', '/etc/SUSEConnect'),
-                call('/system-root/etc/hosts', '/etc/hosts')
+                call('/system-root/etc/hosts', '/etc/hosts'),
+                call('foo', '/usr/share/pki/trust/anchors/'),
+                call('bar', '/usr/share/pki/trust/anchors/')
             ]
             assert mock_Command_run.call_args_list == [
+                call(
+                    [
+                        'update-ca-certificates'
+                    ]
+                ),
                 call(
                     [
                         'mount', '--bind', '/system-root/etc/zypp',
