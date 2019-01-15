@@ -67,7 +67,10 @@ def main():
                 log.info(
                     'Importing certificate: {0}'.format(cert)
                 )
-                shutil.copy(cert, '/usr/share/pki/trust/anchors/')
+                shutil.copy(
+                    os.sep.join([trust_anchors, cert]),
+                    '/usr/share/pki/trust/anchors/'
+                )
             log.info('Update certificate pool')
             Command.run(
                 ['update-ca-certificates']

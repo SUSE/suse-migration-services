@@ -102,8 +102,14 @@ class TestSetupPrepare(object):
             assert mock_shutil_copy.call_args_list == [
                 call('/system-root/etc/SUSEConnect', '/etc/SUSEConnect'),
                 call('/system-root/etc/hosts', '/etc/hosts'),
-                call('foo', '/usr/share/pki/trust/anchors/'),
-                call('bar', '/usr/share/pki/trust/anchors/')
+                call(
+                    '/system-root/usr/share/pki/trust/anchors/foo',
+                    '/usr/share/pki/trust/anchors/'
+                ),
+                call(
+                    '/system-root/usr/share/pki/trust/anchors/bar',
+                    '/usr/share/pki/trust/anchors/'
+                )
             ]
             assert mock_Command_run.call_args_list == [
                 call(
