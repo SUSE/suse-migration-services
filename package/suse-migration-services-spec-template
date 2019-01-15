@@ -34,6 +34,7 @@ Requires:         util-linux
 Requires:         kexec-tools
 Requires:         ca-certificates
 Requires:         dialog
+Requires:         rsync
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
@@ -77,6 +78,9 @@ install -D -m 644 systemd/suse-migration-umount-system.service \
 
 install -D -m 644 systemd/suse-migration-grub-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
+
+install -D -m 644 systemd/suse-migration-product-setup.service \
+    %{buildroot}%{_unitdir}/suse-migration-product-setup.service
 
 install -D -m 644 systemd/suse-migration-kernel-load.service \
     %{buildroot}%{_unitdir}/suse-migration-kernel-load.service
@@ -125,6 +129,9 @@ install -D -m 755 grub.d/99_migration \
 
 %{_bindir}/suse-migration-grub-setup
 %{_unitdir}/suse-migration-grub-setup.service
+
+%{_bindir}/suse-migration-product-setup
+%{_unitdir}/suse-migration-product-setup.service
 
 %{_bindir}/suse-migration-kernel-load
 %{_unitdir}/suse-migration-kernel-load.service

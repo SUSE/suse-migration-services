@@ -105,3 +105,11 @@ class DistMigrationLoggingException(DistMigrationException):
     Exception raised if the initial creation of the log file to
     store the zypper migration plugin output has failed
     """
+
+
+class DistMigrationProductSetupException(DistMigrationException):
+    """
+    Exception raised if the syncing of the product information
+    from the bind mounted etc/products.d location into the
+    migrated system has failed
+    """
