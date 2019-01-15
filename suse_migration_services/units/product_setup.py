@@ -1,4 +1,4 @@
-# Copyright (c) 2018 SUSE Linux LLC.  All rights reserved.
+# Copyright (c) 2019 SUSE Linux LLC.  All rights reserved.
 #
 # This file is part of suse-migration-services.
 #
@@ -31,11 +31,27 @@ def main():
     """
     DistMigration setup product
 
-    Synchronize bind mounted etc/products.d data into the migrated system
+    Synchronize bind mounted /etc/products.d data into the migrated system
     """
     root_path = Defaults.get_system_root_path()
 
     try:
+        # Note:
+        # At the time this code was written fate#320882 was not
+        # implemented which means only one registration server
+        # (smt/rmt/scc) is used to answer the request for the
+        # upgrade path from Distribution [A] to [B]. The approach
+        # to overlay the systems' /etc/products.d directory with the
+        # one from the migration live system will therefore not
+        # hide product registrations from other registration
+        # servers and is a functional fix to the distro_target
+        # problem explained in units/prepare.py
+        #
+        # However once fate#320882 is resolved this will have an
+        # impact on the zypper migration plugin code and depending
+        # on that implementation it will no longer be allowed
+        # to potentially hide product definitions as they are
+        # defined on the system to migrate.
         products_metadata = os.sep.join(
             [root_path, 'etc', 'products.d']
         )

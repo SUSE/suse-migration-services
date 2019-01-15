@@ -98,6 +98,21 @@ def main():
             Defaults.get_system_mount_info_file()
         )
         log.info('Bind mounting migration system /etc/products.d')
+        # Note:
+        # This bind mount overlays the live migration product
+        # definition with the one present on the system to migrate.
+        # The reason for this is because of zyppers' handling of
+        # the distro_target attribute from the upgrade repositories
+        # metadata. In SMT repositories contains this flag and if
+        # it is present, zypper compares the value with the
+        # baseproduct setup in /etc/products.d. If they mismatch
+        # zypper refuses to create the repo. In the process of
+        # a migration from distribution [A] to [B] this mismatch
+        # always applies by design and prevents the zypper migration
+        # plugin to work. In SCC or RMT the repositories doesn't
+        # contain the distro_target attribute which is the reason
+        # why we don't see this problem there. SMT is still a valid
+        # registration target and cannot be ignored.
         Command.run(
             ['mount', '--bind', '/etc/products.d', products_metadata]
         )
