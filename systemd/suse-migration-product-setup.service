@@ -1,0 +1,11 @@
+[Unit]
+Description=Synchronize product information to migrated system
+After=suse-migration.service
+Requires=suse-migration.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-product-setup
+
+[Install]
+WantedBy=multi-user.target
