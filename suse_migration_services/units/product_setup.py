@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
+from xml.etree.ElementTree import ElementTree
 
 # project
 from suse_migration_services.command import Command
@@ -29,44 +30,57 @@ from suse_migration_services.exceptions import (
 
 def main():
     """
-    DistMigration setup product
+    DistMigration setup baseproduct for migration
 
-    Synchronize bind mounted /etc/products.d data into the migrated system
+    Creates a backup of the system products data and prepares
+    the baseproduct to be suitable for the distribution migration.
+    In case of an error the backup information is used by the
+    zypper migration plugin to restore the original product
+    data such that the plugin's rollback mechanism is not
+    negatively influenced.
     """
     root_path = Defaults.get_system_root_path()
 
     try:
         # Note:
-        # At the time this code was written fate#320882 was not
-        # implemented which means only one registration server
-        # (smt/rmt/scc) is used to answer the request for the
-        # upgrade path from Distribution [A] to [B]. The approach
-        # to overlay the systems' /etc/products.d directory with the
-        # one from the migration live system will therefore not
-        # hide product registrations from other registration
-        # servers and is a functional fix to the distro_target
-        # problem explained in units/prepare.py
-        #
-        # However once fate#320882 is resolved this will have an
-        # impact on the zypper migration plugin code and depending
-        # on that implementation it will no longer be allowed
-        # to potentially hide product definitions as they are
-        # defined on the system to migrate.
+        # zypper implements a handling for the distro_target attribute.
+        # If present in the repository metadata, zypper compares the
+        # value with the baseproduct <target> setup in /etc/products.d.
+        # If they mismatch zypper refuses to create the repo. In the
+        # process of a migration from distribution [A] to [B] this mismatch
+        # always applies by design and prevents the zypper migration
+        # plugin to work. In SCC or RMT the repositories doesn't
+        # contain the distro_target attribute which is the reason
+        # why we don't see this problem there. SMT however creates repos
+        # including distro_target. The current workaround solution is
+        # to delete the target specification in the baseproduct
+        # registration if present.
         products_metadata = os.sep.join(
             [root_path, 'etc', 'products.d']
         )
-        log.info('Umounting {0}'.format(products_metadata))
-        Command.run(
-            ['umount', products_metadata]
+        baseproduct = os.sep.join(
+            [products_metadata, 'baseproduct']
         )
-        log.info('Syncing product data to migrated system')
-        Command.run(
-            [
-                'rsync', '-zav', '--delete', '/etc/products.d/',
-                products_metadata + os.sep
-            ]
-        )
+        if os.path.exists(baseproduct):
+            log.info('Creating backup of Product data')
+            Command.run(
+                [
+                    'rsync', '-zav', '--delete', products_metadata + os.sep,
+                    '/tmp/products.d.backup/'
+                ]
+            )
+            log.info('Updating Base Product to be suitable for migration')
+            xml = ElementTree()
+            xml.parse(baseproduct)
+            register_sections = xml.findall('register')
+            for register in register_sections:
+                target_sections = register.findall('target')
+                for target in target_sections:
+                    register.remove(target)
+            xml.write(
+                baseproduct, encoding="UTF-8", xml_declaration=True
+            )
     except Exception as issue:
-        message = 'Product setup failed with {0}'.format(issue)
+        message = 'Base Product update failed with {0}'.format(issue)
         log.error(message)
         raise DistMigrationProductSetupException(message)

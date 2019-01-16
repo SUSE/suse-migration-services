@@ -1,5 +1,6 @@
+from xml.etree.ElementTree import ElementTree
 from unittest.mock import (
-    patch, call
+    patch, MagicMock
 )
 from pytest import raises
 
@@ -12,32 +13,40 @@ from suse_migration_services.exceptions import (
 class TestProductSetup(object):
     @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.logger.log.info')
-    @patch('suse_migration_services.command.Command.run')
+    @patch('os.path.exists')
     def test_main_raises_on_product_setup(
-        self, mock_Command_run, mock_info, mock_error
+        self, mock_os_path_exists, mock_info, mock_error
     ):
-        mock_Command_run.side_effect = Exception
+        mock_os_path_exists.side_effect = Exception
         with raises(DistMigrationProductSetupException):
             main()
             assert mock_info.called
             assert mock_error.called
 
+    @patch('suse_migration_services.units.product_setup.ElementTree')
+    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
+    @patch('os.path.exists')
     def test_main(
-        self, mock_Command_run, mock_info
+        self, mock_os_path_exists, mock_Command_run,
+        mock_info, mock_get_system_root_path, mock_ElementTree
     ):
+        xml = ElementTree()
+        xml.write = MagicMock()
+        mock_get_system_root_path.return_value = '../data'
+        mock_ElementTree.return_value = xml
+        mock_os_path_exists.return_value = True
         main()
-        assert mock_Command_run.call_args_list == [
-            call(
-                ['umount', '/system-root/etc/products.d']
-            ),
-            call(
-                [
-                    'rsync', '-zav', '--delete',
-                    '/etc/products.d/',
-                    '/system-root/etc/products.d/'
-                ]
-            )
-        ]
+        mock_Command_run.assert_called_once_with(
+            [
+                'rsync', '-zav', '--delete', '../data/etc/products.d/',
+                '/tmp/products.d.backup/'
+            ]
+        )
+        assert xml.findall('register/target') == []
+        xml.write.assert_called_once_with(
+            '../data/etc/products.d/baseproduct',
+            encoding='UTF-8', xml_declaration=True
+        )
         assert mock_info.called
