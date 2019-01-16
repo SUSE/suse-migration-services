@@ -1,7 +1,7 @@
 [Unit]
-Description=Synchronize product information to migrated system
-After=suse-migration.service
-Requires=suse-migration.service
+Description=Prepare Product Setup for Migration
+After=suse-migration-prepare.service
+Requires=suse-migration-prepare.service
 
 [Service]
 Type=oneshot
