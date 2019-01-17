@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<product schemeversion="0">
+  <vendor>SUSE</vendor>
+  <name>sle-module-containers</name>
+  <version>12</version>
+  <baseversion>12</baseversion>
+  <patchlevel>0</patchlevel>
+  <release>0</release>
+  <endoflife>2017-06-31</endoflife>
+  <arch>%{_target_cpu}</arch>
+  <cpeid>cpe:/o:suse:sle-module-containers:12</cpeid>
+  <productline>sle-module-containers</productline>
+  <register>
+    <target>sle-12-x86_64</target>
+    <flavor>module</flavor>
+    <updates>
+      <repository repoid="obsrepository://build.suse.de/SUSE:Updates:SLE-Module-Containers:12:x86_64/update" />
+      <repository repoid="obsrepository://build.suse.de/SUSE:Updates:SLE-Module-Containers:12:x86_64/update_debug" />
+    </updates>
+  </register>
+  <upgrades />
+  <summary>Containers module</summary>
+  <shortsummary>containers-module</shortsummary>
+  <description>&lt;p&gt;This Module contains several packages revolving around containers 
+        and related tools. &lt;/p&gt;</description>
+  <urls>
+    <url name="bugtracker">https://bugzilla.suse.com/</url>
+  </urls>
+  <buildconfig>
+    <producttheme>SLES</producttheme>
+  </buildconfig>
+  <installconfig>
+    <defaultlang>en_US</defaultlang>
+    <datadir>suse</datadir>
+    <descriptiondir>suse/setup/descr</descriptiondir>
+    <releasepackage name="%{name}" flag="EQ" version="%{version}" release="%{release}" />
+    <distribution>SUSE_SLE</distribution>
+  </installconfig>
+  <runtimeconfig />
+  <productdependency relationship="requires" name="SLES" baseversion="12" patchlevel="0" flag="GE" />
+</product>
