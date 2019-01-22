@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
+import glob
 from xml.etree.ElementTree import ElementTree
 
 # project
@@ -58,10 +59,7 @@ def main():
         products_metadata = os.sep.join(
             [root_path, 'etc', 'products.d']
         )
-        baseproduct = os.sep.join(
-            [products_metadata, 'baseproduct']
-        )
-        if os.path.exists(baseproduct):
+        if os.path.exists(products_metadata):
             log.info('Creating backup of Product data')
             Command.run(
                 [
@@ -69,18 +67,62 @@ def main():
                     '/tmp/products.d.backup/'
                 ]
             )
-            log.info('Updating Base Product to be suitable for migration')
-            xml = ElementTree()
-            xml.parse(baseproduct)
-            register_sections = xml.findall('register')
-            for register in register_sections:
-                target_sections = register.findall('target')
-                for target in target_sections:
-                    register.remove(target)
-            xml.write(
-                baseproduct, encoding="UTF-8", xml_declaration=True
-            )
+        baseproducts = get_baseproduct(products_metadata)
+        if len(baseproducts) != 1:
+            if not baseproducts:
+                message = 'There is no baseproduct'
+            else:
+                message = ('Found multiple product definitions '
+                           'without element <flavor>: \n{0}'
+                           .format('\n'.join(baseproducts)))
+            log.error(message)
+            raise DistMigrationProductSetupException(message)
+
+        log.info('Updating Base Product to be suitable for migration')
+        delete_target_registration(baseproducts[0])
     except Exception as issue:
-        message = 'Base Product update failed with {0}'.format(issue)
+        message = 'Base Product update failed with: {0}'.format(issue)
         log.error(message)
         raise DistMigrationProductSetupException(message)
+
+
+def get_baseproduct(products_metadata):
+    prod_filenames = glob.glob(
+        os.path.join(products_metadata, '*.prod')
+    )
+    base_product_files = []
+    xml = ElementTree()
+    for prod_filename in prod_filenames:
+        try:
+            xml.parse(prod_filename)
+            register_sections = xml.findall('register')
+            for register in register_sections:
+                flavor = register.findall('flavor')
+                if not flavor:
+                    base_product_files.append(prod_filename)
+
+        except Exception as issue:
+            log.warning(
+                'Parsing XML file {0} failed with: {1}'
+                .format(prod_filename, issue)
+            )
+
+    return base_product_files
+
+
+def delete_target_registration(baseproduct_prod_filename):
+    try:
+        xml = ElementTree()
+        xml.parse(baseproduct_prod_filename)
+        register_sections = xml.findall('register')
+        for register in register_sections:
+            target_sections = register.findall('target')
+            for target in target_sections:
+                register.remove(target)
+        xml.write(
+            baseproduct_prod_filename, encoding="UTF-8", xml_declaration=True
+        )
+    except Exception as issue:
+        log.error(
+            'Could not delete target registration with {0}'.format(issue)
+        )
