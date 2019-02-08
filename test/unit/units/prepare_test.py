@@ -163,9 +163,9 @@ class TestSetupPrepare(object):
                 '/etc/system-root.fstab'
             )
             mock_open.assert_called_once_with(
-                '/system-root/var/log/zypper_migrate.log', 'w'
+                '/system-root/var/log/distro_migration.log', 'w'
             )
             mock_set_logfile.assert_called_once_with(
-                '/system-root/var/log/zypper_migrate.log'
+                '/system-root/var/log/distro_migration.log'
             )
             assert mock_info.called
