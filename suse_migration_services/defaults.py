@@ -35,7 +35,7 @@ class Defaults(object):
     @classmethod
     def get_migration_log_file(self):
         return os.sep.join(
-            [self.get_system_root_path(), 'var/log/zypper_migrate.log']
+            [self.get_system_root_path(), 'var/log/distro_migration.log']
         )
 
     @classmethod
