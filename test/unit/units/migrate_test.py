@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch
 from pytest import raises
 
@@ -9,17 +10,27 @@ from suse_migration_services.exceptions import (
 
 
 class TestMigration(object):
+    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.command.Command.run')
     def test_main_raises_on_zypper_migration(
-        self, mock_Command_run, mock_error, mock_info
+        self, mock_Command_run, mock_error, mock_info,
+        mock_get_system_root_path
     ):
         mock_Command_run.side_effect = Exception
+        mock_get_system_root_path.return_value = '../data'
         with raises(DistMigrationZypperException):
             main()
-            assert mock_info.called
-            assert mock_error.called
+        issue_path = '../data/etc/issue'
+        with open(issue_path) as issue_file:
+            message = (
+                '\nMigration has failed, for further details see {0}'
+                .format(Defaults.get_migration_log_file())
+            )
+            assert message in issue_file.read()
+        os.remove(issue_path)
+        assert mock_error.called
 
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
