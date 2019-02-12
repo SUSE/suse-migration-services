@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
+import os
 
 # project
 from suse_migration_services.command import Command
@@ -54,6 +55,15 @@ def main():
             ['bash', '-c', bash_command]
         )
     except Exception as issue:
+        root_path = Defaults.get_system_root_path()
+        etc_issue_path = os.sep.join(
+            [root_path, 'etc/issue']
+        )
+        with open(etc_issue_path, 'w') as issue_file:
+            issue_file.write(
+                '\nMigration has failed, for further details see {0}'
+                .format(Defaults.get_migration_log_file())
+            )
         log.error('migrate service failed with {0}'.format(issue))
         raise DistMigrationZypperException(
             'Migration failed with {0}'.format(
