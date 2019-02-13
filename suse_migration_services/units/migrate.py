@@ -55,7 +55,6 @@ def main():
             ['bash', '-c', bash_command]
         )
     except Exception as issue:
-        root_path = Defaults.get_system_root_path()
         etc_issue_path = os.sep.join(
             [root_path, 'etc/issue']
         )
