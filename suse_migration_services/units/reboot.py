@@ -15,20 +15,41 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import os
+
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.logger import log
+from suse_migration_services.defaults import Defaults
 
 
 def main():
     """
     DistMigration reboot with new kernel
     """
+    debug_file = Defaults.get_system_migration_debug_file()
+
     try:
-        log.info('Running reboot service')
-        Command.run(
-            ['kexec', '--exec']
-        )
+        # Note:
+        # After the migration process is finished, the system reboots.
+        # The system will boot either in a migrated system or in a
+        # roll-backed system one in case the migration failed.
+        # In order to avoid rebooting, the migration must have failed
+        # and /etc/sle-migration-service file must exist.
+        is_debug_mode = os.path.exists(debug_file)
+        if _migration_has_failed() and is_debug_mode:
+            log.info(
+                'Migration process failed, reboot skipped due to'
+                'debug flag set'
+            )
+        else:
+            if is_debug_mode:
+                os.remove(debug_file)
+
+            log.info('Running reboot service')
+            Command.run(
+                ['kexec', '--exec']
+            )
     except Exception:
         # Uhh, we don't want to be here, but we also don't
         # want to be stuck in the migration live system.
@@ -37,3 +58,10 @@ def main():
         Command.run(
             ['reboot', '-f']
         )
+
+
+def _migration_has_failed():
+    system_ctl = Command.run(
+        ['systemctl', 'is-failed', 'suse-migration']
+    )
+    return True if 'failed' in system_ctl.output else False
