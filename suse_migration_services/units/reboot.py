@@ -27,7 +27,7 @@ def main():
     """
     DistMigration reboot with new kernel
     """
-    debug_file = Defaults.get_system_migration_debug_file()
+    debug_file = os.sep + Defaults.get_system_migration_debug_file()
 
     try:
         # Note:

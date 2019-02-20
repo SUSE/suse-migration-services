@@ -72,6 +72,4 @@ class Defaults(object):
 
     @classmethod
     def get_system_migration_debug_file(self):
-        return os.sep.join(
-            [self.get_system_root_path(), '/etc/sle-migration-service']
-        )
+        return 'etc/sle-migration-service'
