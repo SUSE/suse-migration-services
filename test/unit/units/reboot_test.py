@@ -9,7 +9,6 @@ from suse_migration_services.units.reboot import (
 
 
 class TestKernelReboot(object):
-
     @patch('suse_migration_services.command.Command.run')
     def test_migration_has_failed(
         self, mock_Command_run
@@ -54,6 +53,9 @@ class TestKernelReboot(object):
         mock_migration_failed.return_value = True
         mock_path_exists.return_value = False
         main()
+        mock_path_exists.assert_called_once_with(
+            '/etc/sle-migration-service'
+        )
         assert mock_info.called
         mock_Command_run.assert_called_once_with(
             ['kexec', '--exec']
@@ -86,12 +88,11 @@ class TestKernelReboot(object):
         mock_get_system_migration_debug_file, mock_os_remove, mock_path_exists
     ):
         mock_migration_failed.return_value = False
-        debug_file = 'debug_file'
         mock_path_exists.return_value = True
-        mock_get_system_migration_debug_file.return_value = debug_file
+        mock_get_system_migration_debug_file.return_value = 'foo'
         main()
         assert mock_info.called
-        mock_os_remove.assert_called_once_with(debug_file)
+        mock_os_remove.assert_called_once_with('/foo')
         mock_Command_run.assert_called_once_with(
             ['kexec', '--exec']
         )

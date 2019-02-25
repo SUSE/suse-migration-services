@@ -17,6 +17,7 @@
 #
 import yaml
 import os
+import shutil
 
 # project
 from suse_migration_services.command import Command
@@ -63,6 +64,16 @@ def main():
                 '\nMigration has failed, for further details see {0}'
                 .format(Defaults.get_migration_log_file())
             )
+        debug_file = Defaults.get_system_migration_debug_file()
+        migration_debug_path = os.sep.join(
+            [root_path, debug_file]
+        )
+        if os.path.exists(migration_debug_path):
+            shutil.copy(
+                migration_debug_path,
+                os.sep + debug_file
+            )
+
         log.error('migrate service failed with {0}'.format(issue))
         raise DistMigrationZypperException(
             'Migration failed with {0}'.format(
