@@ -59,10 +59,13 @@ def main():
         etc_issue_path = os.sep.join(
             [root_path, 'etc/issue']
         )
+        log_path_migrated_system = os.sep + os.path.relpath(
+            Defaults.get_migration_log_file(), root_path
+        )
         with open(etc_issue_path, 'w') as issue_file:
             issue_file.write(
-                '\nMigration has failed, for further details see {0}'
-                .format(Defaults.get_migration_log_file())
+                'Migration has failed, for further details see {0}'
+                .format(log_path_migrated_system)
             )
         debug_file = Defaults.get_system_migration_debug_file()
         migration_debug_path = os.sep.join(

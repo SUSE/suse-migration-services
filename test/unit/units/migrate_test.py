@@ -28,8 +28,8 @@ class TestMigration(object):
         issue_path = '../data/etc/issue'
         with open(issue_path) as issue_file:
             message = (
-                '\nMigration has failed, for further details see {0}'
-                .format(Defaults.get_migration_log_file())
+                'Migration has failed, for further details see {0}'
+                .format('/var/log/distro_migration.log')
             )
             assert message in issue_file.read()
         os.remove(issue_path)
