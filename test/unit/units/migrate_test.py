@@ -57,6 +57,7 @@ class TestMigration(object):
                 '--gpg-auto-import-keys '
                 '--no-selfupdate '
                 '--auto-agree-with-licenses '
+                '--strict-errors-dist-migration '
                 '--product foo '
                 '--root /system-root '
                 '&>> /system-root/var/log/distro_migration.log'
