@@ -58,6 +58,7 @@ class TestMigration(object):
                 '--no-selfupdate '
                 '--auto-agree-with-licenses '
                 '--strict-errors-dist-migration '
+                '--replacefiles '
                 '--product foo '
                 '--root /system-root '
                 '&>> /system-root/var/log/distro_migration.log'
