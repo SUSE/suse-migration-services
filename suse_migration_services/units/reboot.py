@@ -18,6 +18,7 @@
 import os
 
 # project
+from suse_migration_services.path import Path
 from suse_migration_services.command import Command
 from suse_migration_services.logger import log
 from suse_migration_services.defaults import Defaults
@@ -31,22 +32,13 @@ def main():
 
     try:
         # Note:
-        # After the migration process is finished, the system reboots.
-        # The system will boot either in a migrated system or in a
-        # roll-backed system one in case the migration failed.
-        # In order to avoid rebooting, the migration must have failed
-        # and /etc/sle-migration-service file must exist.
-        is_debug_mode = os.path.exists(debug_file)
-        if _migration_has_failed() and is_debug_mode:
-            log.info(
-                'Migration process failed, reboot skipped due to'
-                'debug flag set'
-            )
+        # After the migration process is finished, the system reboots
+        # unless the debug file /etc/sle-migration-service is set.
+        if os.path.exists(debug_file):
+            log.info('Reboot skipped due to debug flag set')
         else:
-            if is_debug_mode:
-                os.remove(debug_file)
-
-            log.info('Running reboot service')
+            log.info('Reboot system: [kexec]')
+            Path.wipe(debug_file)
             Command.run(
                 ['kexec', '--exec']
             )
@@ -54,14 +46,7 @@ def main():
         # Uhh, we don't want to be here, but we also don't
         # want to be stuck in the migration live system.
         # Keep fingers crossed:
-        log.warning('Forcing reboot')
+        log.warning('Reboot system: [Force Reboot]')
         Command.run(
             ['reboot', '-f']
         )
-
-
-def _migration_has_failed():
-    system_ctl = Command.run(
-        ['systemctl', 'is-failed', 'suse-migration']
-    )
-    return True if 'failed' in system_ctl.output else False
