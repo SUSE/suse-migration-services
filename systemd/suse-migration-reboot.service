@@ -1,6 +1,6 @@
 [Unit]
 Description=Reboot System
-After=suse-migration-umount-system.service
+After=suse-migration-mount-system.service suse-migration-umount-system.service
 
 [Service]
 Type=oneshot
