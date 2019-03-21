@@ -1,4 +1,6 @@
-from unittest.mock import patch
+from unittest.mock import (
+    patch, Mock
+)
 from pytest import raises
 from collections import namedtuple
 from suse_migration_services.defaults import Defaults
@@ -10,6 +12,7 @@ from suse_migration_services.logger import (
     DebugFilter,
     ErrorFilter,
     WarningFilter,
+    log_init,
     log
 )
 from suse_migration_services.exceptions import (
@@ -105,4 +108,15 @@ class TestLogger(object):
         log.set_logfile('../data/logfile')
         mock_file_handler.assert_called_once_with(
             filename='../data/logfile', encoding='utf-8'
+        )
+
+    @patch('os.path.exists')
+    @patch('logging.getLogger')
+    def test_log_init(self, mock_get_logger, mock_os_path_exists):
+        log = Mock()
+        mock_os_path_exists.return_value = True
+        mock_get_logger.return_value = log
+        log_init()
+        log.set_logfile.assert_called_once_with(
+            '/system-root/var/log/distro_migration.log'
         )

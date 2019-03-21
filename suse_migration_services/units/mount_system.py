@@ -113,7 +113,8 @@ def main():
 
 
 def initialize_logging():
-    with open(Defaults.get_migration_log_file(), 'w'):
+    log_file = Defaults.get_migration_log_file()
+    with open(log_file, 'w'):
         log.set_logfile(Defaults.get_migration_log_file())
 
 

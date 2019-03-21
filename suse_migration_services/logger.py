@@ -17,8 +17,10 @@
 #
 import logging
 import sys
+import os
 
 # project
+from suse_migration_services.defaults import Defaults
 from suse_migration_services.exceptions import (
     DistMigrationLoggingException
 )
@@ -179,6 +181,15 @@ class Logger(logging.Logger):
                 '{1}'.format(filename, issue))
 
 
-logging.setLoggerClass(Logger)
-log = logging.getLogger("suse-migration")
-log.setLevel(logging.DEBUG)
+def log_init():
+    logging.setLoggerClass(Logger)
+    log = logging.getLogger("suse-migration")
+    log.setLevel(logging.DEBUG)
+
+    log_file = Defaults.get_migration_log_file()
+    if os.path.exists(log_file):
+        log.set_logfile(log_file)
+    return log
+
+
+log = log_init()
