@@ -18,7 +18,6 @@
 import os
 
 # project
-from suse_migration_services.path import Path
 from suse_migration_services.command import Command
 from suse_migration_services.logger import log
 from suse_migration_services.defaults import Defaults
@@ -28,7 +27,9 @@ def main():
     """
     DistMigration reboot with new kernel
     """
-    debug_file = os.sep + Defaults.get_system_migration_debug_file()
+    debug_file = os.sep.join(
+        ['/etc', os.path.basename(Defaults.get_system_migration_debug_file())]
+    )
 
     try:
         # Note:
@@ -38,7 +39,6 @@ def main():
             log.info('Reboot skipped due to debug flag set')
         else:
             log.info('Reboot system: [kexec]')
-            Path.wipe(debug_file)
             Command.run(
                 ['kexec', '--exec']
             )

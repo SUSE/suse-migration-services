@@ -108,6 +108,27 @@ def main():
 
     mount_system(root_path, fstab)
 
+    initialize_logging()
+    initialize_debugging()
+
+
+def initialize_logging():
+    with open(Defaults.get_migration_log_file(), 'w'):
+        log.set_logfile(Defaults.get_migration_log_file())
+
+
+def initialize_debugging():
+    debug_file = Defaults.get_system_migration_debug_file()
+    # delete potentially existing debug flag file from migration live system
+    Path.wipe(
+        os.sep.join(['/etc', os.path.basename(debug_file)])
+    )
+    # copy debug flag file if set on target system to migration live system
+    if os.path.exists(debug_file):
+        Command.run(
+            ['cp', debug_file, '/etc']
+        )
+
 
 def mount_system(root_path, fstab):
     log.info('Mount system in {0}'.format(root_path))

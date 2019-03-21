@@ -91,14 +91,17 @@ class TestMountSystem(object):
 
     @patch.object(Defaults, 'get_migration_log_file')
     @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.log.set_logfile')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
+    @patch('suse_migration_services.units.mount_system.Path.wipe')
     @patch('suse_migration_services.units.mount_system.Fstab')
     @patch('suse_migration_services.units.mount_system.is_mounted')
     @patch('os.path.exists')
     def test_main(
         self, mock_path_exists, mock_is_mounted, mock_Fstab,
-            mock_path_create, mock_Command_run, mock_info, mock_log_file
+        mock_path_wipe, mock_path_create, mock_Command_run, mock_set_logfile,
+        mock_info, mock_log_file
     ):
         def _is_mounted(path):
             if path == '/run/initramfs/isoscan':
@@ -117,55 +120,81 @@ class TestMountSystem(object):
         command.returncode = 1
         command.output = '/dev/sda1 part'
         mock_Command_run.return_value = command
-        main()
-        assert mock_Command_run.call_args_list == [
-            call(['mount', '-o', 'remount,rw', '/run/initramfs/isoscan']),
-            call(['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']),
-            call(['mount', '/dev/sda1', '/system-root'], raise_on_error=False),
-            call(['umount', '/system-root'], raise_on_error=False),
-            call([
-                'mount', '-o', 'acl,user_xattr',
-                '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                '/system-root/'
-            ]),
-            call([
-                'mount', '-o', 'defaults',
-                '/dev/disk/by-uuid/FCF7-B051',
-                '/system-root/boot/efi'
-            ]),
-            call([
-                'mount', '-o', 'defaults',
-                '/dev/disk/by-label/foo',
-                '/system-root/home'
-            ]),
-            call([
-                'mount', '-o', 'defaults',
-                '/dev/mynode',
-                '/system-root/foo'
-            ])]
-        assert fstab_mock.add_entry.call_args_list == [
-            call(
-                '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                '/system-root/',
-                'ext4'
-            ),
-            call(
-                '/dev/disk/by-uuid/FCF7-B051',
-                '/system-root/boot/efi',
-                'vfat',
-            ),
-            call(
-                '/dev/disk/by-label/foo',
-                '/system-root/home',
-                'ext4'
-            ),
-            call(
-                '/dev/mynode',
-                '/system-root/foo',
-                'ext4'
+        with patch('builtins.open', create=True) as mock_open:
+            main()
+            mock_path_wipe.assert_called_once_with(
+                '/etc/sle-migration-service'
             )
-        ]
-        fstab_mock.export.assert_called_once_with(
-            '/etc/system-root.fstab'
-        )
-        assert mock_info.called
+            assert mock_Command_run.call_args_list == [
+                call(
+                    ['mount', '-o', 'remount,rw', '/run/initramfs/isoscan']
+                ),
+                call(
+                    ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
+                ),
+                call(
+                    ['mount', '/dev/sda1', '/system-root'], raise_on_error=False
+                ),
+                call(
+                    ['umount', '/system-root'], raise_on_error=False),
+                call(
+                    [
+                        'mount', '-o', 'acl,user_xattr',
+                        '/dev/disk/by-uuid/'
+                        'bd604632-663b-4d4c-b5b0-8d8686267ea2',
+                        '/system-root/'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
+                        '/dev/disk/by-uuid/FCF7-B051',
+                        '/system-root/boot/efi'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
+                        '/dev/disk/by-label/foo',
+                        '/system-root/home'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
+                        '/dev/mynode',
+                        '/system-root/foo'
+                    ]
+                ),
+                call(
+                    ['cp', '/system-root/etc/sle-migration-service', '/etc']
+                )
+            ]
+            assert fstab_mock.add_entry.call_args_list == [
+                call(
+                    '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
+                    '/system-root/',
+                    'ext4'
+                ),
+                call(
+                    '/dev/disk/by-uuid/FCF7-B051',
+                    '/system-root/boot/efi',
+                    'vfat',
+                ),
+                call(
+                    '/dev/disk/by-label/foo',
+                    '/system-root/home',
+                    'ext4'
+                ),
+                call(
+                    '/dev/mynode',
+                    '/system-root/foo',
+                    'ext4'
+                )
+            ]
+            fstab_mock.export.assert_called_once_with(
+                '/etc/system-root.fstab'
+            )
+            mock_open.assert_called_once_with('../data/logfile', 'w')
+            mock_set_logfile.assert_called_once_with('../data/logfile')
+            assert mock_info.called
