@@ -48,6 +48,7 @@ def main():
                 '--no-selfupdate',
                 '--auto-agree-with-licenses',
                 '--strict-errors-dist-migration',
+                '--replacefiles',
                 '--product', get_migration_product(),
                 '--root', root_path,
                 '&>>', Defaults.get_migration_log_file()
