@@ -1,5 +1,5 @@
 from unittest.mock import (
-    patch, call
+    patch, call, MagicMock
 )
 from suse_migration_services.units.reboot import main
 
@@ -28,9 +28,10 @@ class TestKernelReboot(object):
             '/etc/sle-migration-service'
         )
         assert mock_info.called
-        mock_Command_run.assert_called_once_with(
-            ['kexec', '--exec']
-        )
+        assert mock_Command_run.call_args_list == [
+            call(['systemctl', 'status', '-l', '--all'], raise_on_error=False),
+            call(['kexec', '--exec'])
+        ]
 
     @patch('suse_migration_services.logger.log.warning')
     @patch('suse_migration_services.logger.log.info')
@@ -39,11 +40,12 @@ class TestKernelReboot(object):
         self, mock_Command_run, mock_info, mock_warning
     ):
         mock_Command_run.side_effect = [
-            Exception, None
+            MagicMock(), Exception, None
         ]
         main()
         assert mock_info.called
         assert mock_Command_run.call_args_list == [
+            call(['systemctl', 'status', '-l', '--all'], raise_on_error=False),
             call(['kexec', '--exec']),
             call(['reboot', '-f'])
         ]

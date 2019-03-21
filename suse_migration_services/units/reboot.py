@@ -35,6 +35,13 @@ def main():
         # Note:
         # After the migration process is finished, the system reboots
         # unless the debug file /etc/sle-migration-service is set.
+        log.info(
+            'Systemctl Status Information: {0}{1}'.format(
+                os.linesep, Command.run(
+                    ['systemctl', 'status', '-l', '--all'], raise_on_error=False
+                ).output
+            )
+        )
         if os.path.exists(debug_file):
             log.info('Reboot skipped due to debug flag set')
         else:

@@ -163,7 +163,6 @@ class Logger(logging.Logger):
         :param string filename: logfile file path
         """
         try:
-            print(filename)
             logfile = logging.FileHandler(
                 filename=filename, encoding='utf-8'
             )
