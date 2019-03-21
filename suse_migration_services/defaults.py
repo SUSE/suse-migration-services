@@ -39,6 +39,12 @@ class Defaults(object):
         )
 
     @classmethod
+    def get_system_migration_debug_file(self):
+        return os.sep.join(
+            [self.get_system_root_path(), 'etc/sle-migration-service']
+        )
+
+    @classmethod
     def get_system_mount_info_file(self):
         return '/etc/system-root.fstab'
 
@@ -69,7 +75,3 @@ class Defaults(object):
         return os.sep.join(
             [self.get_system_root_path(), prefix_path, '.ssh/authorized_keys']
         )
-
-    @classmethod
-    def get_system_migration_debug_file(self):
-        return 'etc/sle-migration-service'

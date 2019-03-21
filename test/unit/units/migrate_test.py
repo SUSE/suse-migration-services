@@ -10,7 +10,6 @@ from suse_migration_services.exceptions import (
 
 
 class TestMigration(object):
-    @patch('shutil.copy')
     @patch('os.path.exists')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.logger.log.info')
@@ -18,7 +17,7 @@ class TestMigration(object):
     @patch('suse_migration_services.command.Command.run')
     def test_main_raises_on_zypper_migration(
         self, mock_Command_run, mock_error, mock_info,
-        mock_get_system_root_path, mock_path_exists, mock_shutil_copy
+        mock_get_system_root_path, mock_path_exists
     ):
         mock_Command_run.side_effect = Exception
         mock_get_system_root_path.return_value = '../data'
@@ -33,10 +32,6 @@ class TestMigration(object):
             )
             assert message in issue_file.read()
         os.remove(issue_path)
-        mock_shutil_copy.assert_called_once_with(
-            '../data/etc/sle-migration-service',
-            '/etc/sle-migration-service'
-        )
         assert mock_error.called
 
     @patch('suse_migration_services.logger.log.info')
