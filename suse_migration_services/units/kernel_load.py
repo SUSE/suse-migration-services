@@ -17,11 +17,13 @@
 #
 import re
 import os
+import shutil
 
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
+from suse_migration_services.path import Path
 
 from suse_migration_services.exceptions import (
     DistMigrationKernelRebootException
@@ -36,16 +38,28 @@ def main():
     """
     root_path = Defaults.get_system_root_path()
 
-    target_kernel = Defaults.get_target_kernel()
-    target_initrd = Defaults.get_target_initrd()
+    target_kernel = os.sep.join([root_path, Defaults.get_target_kernel()])
+    target_initrd = os.sep.join([root_path, Defaults.get_target_initrd()])
+    kexec_boot_data = '/var/tmp/kexec'
+    Path.create(kexec_boot_data)
+    shutil.copy(
+        target_kernel, kexec_boot_data
+    )
+    shutil.copy(
+        target_initrd, kexec_boot_data
+    )
     try:
         log.info('Running kernel load service')
         log.info('Loading the target kernel')
         Command.run(
             [
                 'kexec',
-                '--load', os.sep.join([root_path, target_kernel]),
-                '--initrd', os.sep.join([root_path, target_initrd]),
+                '--load', os.sep.join(
+                    [kexec_boot_data, os.path.basename(target_kernel)]
+                ),
+                '--initrd', os.sep.join(
+                    [kexec_boot_data, os.path.basename(target_initrd)]
+                ),
                 '--command-line', _get_cmdline(target_kernel)
             ]
         )

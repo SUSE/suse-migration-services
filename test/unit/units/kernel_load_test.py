@@ -45,27 +45,34 @@ class TestKernelLoad(object):
             assert result == grub_cmd_content
             assert mock_info.called
 
+    @patch('shutil.copy')
     @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main_raises_on_kernel_load(
-        self, mock_get_cmdline, mock_Command_run,
-        mock_info, mock_error
+        self, mock_get_cmdline, mock_Command_run, mock_info,
+        mock_error, mock_shutil_copy
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
             'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
         mock_get_cmdline.return_value = cmd_line
-        mock_Command_run.side_effect = Exception
+        mock_Command_run.side_effect = [
+            None,
+            Exception
+        ]
         with raises(DistMigrationKernelRebootException):
             main()
         assert mock_Command_run.call_args_list == [
             call(
+                ['mkdir', '-p', '/var/tmp/kexec']
+            ),
+            call(
                 [
                     'kexec',
-                    '--load', '/system-root/boot/vmlinuz',
-                    '--initrd', '/system-root/boot/initrd',
+                    '--load', '/var/tmp/kexec/vmlinuz',
+                    '--initrd', '/var/tmp/kexec/initrd',
                     '--command-line', cmd_line
                 ]
             )
@@ -73,11 +80,13 @@ class TestKernelLoad(object):
         assert mock_info.called
         assert mock_error.called
 
+    @patch('shutil.copy')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main(
-        self, mock_get_cmdline, mock_Command_run, mock_info
+        self, mock_get_cmdline, mock_Command_run, mock_info,
+        mock_shutil_copy
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
@@ -86,10 +95,13 @@ class TestKernelLoad(object):
         main()
         assert mock_Command_run.call_args_list == [
             call(
+                ['mkdir', '-p', '/var/tmp/kexec']
+            ),
+            call(
                 [
                     'kexec',
-                    '--load', '/system-root/boot/vmlinuz',
-                    '--initrd', '/system-root/boot/initrd',
+                    '--load', '/var/tmp/kexec/vmlinuz',
+                    '--initrd', '/var/tmp/kexec/initrd',
                     '--command-line', cmd_line
                 ]
             )
