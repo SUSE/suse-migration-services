@@ -1,4 +1,5 @@
 import io
+import os
 from unittest.mock import (
     patch, call, MagicMock
 )
@@ -38,7 +39,33 @@ class TestKernelLoad(object):
             grub_cmd_content = \
                 'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
                 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = _get_cmdline(Defaults.get_target_kernel())
+            result = _get_cmdline(
+                os.path.basename(Defaults.get_target_kernel())
+            )
+            mock_open.assert_called_once_with(
+                '/system-root/boot/grub2/grub.cfg'
+            )
+            assert result == grub_cmd_content
+            assert mock_info.called
+
+    @patch('suse_migration_services.logger.log.info')
+    @patch('os.path.exists')
+    def test_get_cmd_line_extra_boot_partition(
+        self, mock_path_exists, mock_info
+    ):
+        mock_path_exists.return_value = True
+        with open('../data/fake_grub_with_bootpart.cfg') as fake_grub:
+            fake_grub_data = fake_grub.read()
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            file_handle.read.return_value = fake_grub_data
+            grub_cmd_content = \
+                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
+                'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
+            result = _get_cmdline(
+                os.path.basename(Defaults.get_target_kernel())
+            )
             mock_open.assert_called_once_with(
                 '/system-root/boot/grub2/grub.cfg'
             )
@@ -71,7 +98,7 @@ class TestKernelLoad(object):
             call(
                 [
                     'kexec',
-                    '--load', '/var/tmp/kexec/vmlinuz',
+                    '--load', '/system-root/boot/vmlinuz',
                     '--initrd', '/var/tmp/kexec/initrd',
                     '--command-line', cmd_line
                 ]
@@ -100,7 +127,7 @@ class TestKernelLoad(object):
             call(
                 [
                     'kexec',
-                    '--load', '/var/tmp/kexec/vmlinuz',
+                    '--load', '/system-root/boot/vmlinuz',
                     '--initrd', '/var/tmp/kexec/initrd',
                     '--command-line', cmd_line
                 ]
