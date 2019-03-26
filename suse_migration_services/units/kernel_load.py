@@ -43,9 +43,6 @@ def main():
     kexec_boot_data = '/var/tmp/kexec'
     Path.create(kexec_boot_data)
     shutil.copy(
-        target_kernel, kexec_boot_data
-    )
-    shutil.copy(
         target_initrd, kexec_boot_data
     )
     try:
@@ -54,13 +51,11 @@ def main():
         Command.run(
             [
                 'kexec',
-                '--load', os.sep.join(
-                    [kexec_boot_data, os.path.basename(target_kernel)]
-                ),
+                '--load', target_kernel,
                 '--initrd', os.sep.join(
                     [kexec_boot_data, os.path.basename(target_initrd)]
                 ),
-                '--command-line', _get_cmdline(target_kernel)
+                '--command-line', _get_cmdline(os.path.basename(target_kernel))
             ]
         )
     except Exception as issue:
@@ -87,9 +82,9 @@ def _get_cmdline(kernel_name):
                 grub_config_file_path
             )
         )
-    pattern = r'(?<=linux)[ \t]+{0}{1}.*'.format(os.sep, kernel_name)
     with open(grub_config_file_path) as grub_config_file:
         grub_content = grub_config_file.read()
+    pattern = r'(?<=linux)[ \t]+{0}([{1}|boot/{1}].*)'.format(os.sep, kernel_name)
     cmd_line = re.findall(pattern, grub_content)[0]
     cmd_line = cmd_line.split()
     cmd_line_options = []
