@@ -76,6 +76,10 @@ class TestSetupPrepare(object):
         main()
         assert mock_shutil_copy.call_args_list == [
             call('/system-root/etc/SUSEConnect', '/etc/SUSEConnect'),
+            call(
+                '/system-root/etc/regionserverclnt.cfg',
+                '/etc/regionserverclnt.cfg'
+            ),
             call('/system-root/etc/hosts', '/etc/hosts'),
             call(
                 '/system-root/usr/share/pki/trust/anchors/foo',
@@ -96,6 +100,12 @@ class TestSetupPrepare(object):
                 [
                     'mount', '--bind', '/system-root/etc/zypp',
                     '/etc/zypp'
+                ]
+            ),
+            call(
+                [
+                    'mount', '--bind', '/system-root/usr/lib/zypp/plugins',
+                    '/usr/lib/zypp/plugins'
                 ]
             ),
             call(
@@ -123,6 +133,9 @@ class TestSetupPrepare(object):
         assert fstab.add_entry.call_args_list == [
             call(
                 '/system-root/etc/zypp', '/etc/zypp'
+            ),
+            call(
+                '/system-root/usr/lib/zypp/plugins', '/usr/lib/zypp/plugins'
             ),
             call(
                 'devtmpfs', '/system-root/dev'

@@ -45,6 +45,9 @@ def main():
     suse_connect_setup = os.sep.join(
         [root_path, 'etc', 'SUSEConnect']
     )
+    suse_cloud_regionsrv_setup = os.sep.join(
+        [root_path, 'etc', 'regionserverclnt.cfg']
+    )
     hosts_setup = os.sep.join(
         [root_path, 'etc', 'hosts']
     )
@@ -54,6 +57,10 @@ def main():
     if os.path.exists(suse_connect_setup):
         shutil.copy(
             suse_connect_setup, '/etc/SUSEConnect'
+        )
+    if os.path.exists(suse_cloud_regionsrv_setup):
+        shutil.copy(
+            suse_cloud_regionsrv_setup, '/etc/regionserverclnt.cfg'
         )
     if os.path.exists(hosts_setup):
         shutil.copy(
@@ -78,6 +85,9 @@ def main():
     zypp_metadata = os.sep.join(
         [root_path, 'etc', 'zypp']
     )
+    zypp_plugins = os.sep.join(
+        [root_path, 'usr', 'lib', 'zypp', 'plugins']
+    )
     dev_mount_point = os.sep.join(
         [root_path, 'dev']
     )
@@ -99,6 +109,13 @@ def main():
         )
         system_mount.add_entry(
             zypp_metadata, '/etc/zypp'
+        )
+        log.info('Bind mounting /usr/lib/zypp/plugins')
+        Command.run(
+            ['mount', '--bind', zypp_plugins, '/usr/lib/zypp/plugins']
+        )
+        system_mount.add_entry(
+            zypp_plugins, '/usr/lib/zypp/plugins'
         )
         log.info('Mounting kernel file systems inside {0}'.format(root_path))
         Command.run(
