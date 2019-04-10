@@ -19,6 +19,7 @@ import os
 import shutil
 
 # project
+from suse_migration_services.path import Path
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
@@ -88,6 +89,9 @@ def main():
     zypp_plugins = os.sep.join(
         [root_path, 'usr', 'lib', 'zypp', 'plugins']
     )
+    cloud_register_metadata = os.sep.join(
+        [root_path, 'var', 'lib', 'cloudregister']
+    )
     dev_mount_point = os.sep.join(
         [root_path, 'dev']
     )
@@ -117,6 +121,15 @@ def main():
         system_mount.add_entry(
             zypp_plugins, '/usr/lib/zypp/plugins'
         )
+        if os.path.exists(cloud_register_metadata):
+            log.info('Bind mounting /var/lib/cloudregister')
+            Path.create('/var/lib/cloudregister')
+            Command.run(
+                [
+                    'mount', '--bind', cloud_register_metadata,
+                    '/var/lib/cloudregister'
+                ]
+            )
         log.info('Mounting kernel file systems inside {0}'.format(root_path))
         Command.run(
             ['mount', '-t', 'devtmpfs', 'devtmpfs', dev_mount_point]

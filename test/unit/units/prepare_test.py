@@ -62,12 +62,13 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.units.prepare.Path')
     @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run, mock_info
+        mock_Path, mock_Fstab, mock_Command_run, mock_info
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
@@ -90,6 +91,9 @@ class TestSetupPrepare(object):
                 '/usr/share/pki/trust/anchors/'
             )
         ]
+        mock_Path.create.assert_called_once_with(
+            '/var/lib/cloudregister'
+        )
         assert mock_Command_run.call_args_list == [
             call(
                 [
@@ -106,6 +110,12 @@ class TestSetupPrepare(object):
                 [
                     'mount', '--bind', '/system-root/usr/lib/zypp/plugins',
                     '/usr/lib/zypp/plugins'
+                ]
+            ),
+            call(
+                [
+                    'mount', '--bind', '/system-root/var/lib/cloudregister',
+                    '/var/lib/cloudregister'
                 ]
             ),
             call(
