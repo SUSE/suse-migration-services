@@ -2,7 +2,7 @@
 Description=Setup Migration Host Network
 After=suse-migration-mount-system.service
 Requires=suse-migration-mount-system.service
-Before=network.target
+Before=network-pre.target
 
 [Service]
 Type=oneshot
