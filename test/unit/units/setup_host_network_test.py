@@ -1,5 +1,5 @@
 from unittest.mock import (
-    patch, call, Mock
+    patch, Mock
 )
 from pytest import raises
 
@@ -54,20 +54,12 @@ class TestSetupHostNetwork(object):
         mock_shutil_copy.assert_called_once_with(
             '/system-root/etc/resolv.conf', '/etc/resolv.conf'
         )
-        assert mock_Command_run.call_args_list == [
-            call(
-                [
-                    'mount', '--bind', '/system-root/etc/sysconfig/network',
-                    '/etc/sysconfig/network'
-                ]
-            ),
-            call(
-                ['systemctl', 'daemon-reload']
-            ),
-            call(
-                ['systemctl', 'restart', 'network']
-            )
-        ]
+        mock_Command_run.assert_called_once_with(
+            [
+                'mount', '--bind', '/system-root/etc/sysconfig/network',
+                '/etc/sysconfig/network'
+            ]
+        )
         fstab.read.assert_called_once_with(
             '/etc/system-root.fstab'
         )
