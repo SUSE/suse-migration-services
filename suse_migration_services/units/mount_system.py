@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
+import yaml
 
 # project
 from suse_migration_services.command import Command
@@ -109,7 +110,7 @@ def main():
     mount_system(root_path, fstab)
 
     initialize_logging()
-    initialize_debugging()
+    initialize_system_config()
 
 
 def initialize_logging():
@@ -118,17 +119,30 @@ def initialize_logging():
         log.set_logfile(Defaults.get_migration_log_file())
 
 
-def initialize_debugging():
-    debug_file = Defaults.get_system_migration_debug_file()
-    # delete potentially existing debug flag file from migration live system
+def initialize_system_config():
+    migration_config_file = Defaults.get_system_migration_config_file()
+    # delete potentially existing migration config file from migration live system
     Path.wipe(
-        os.sep.join(['/etc', os.path.basename(debug_file)])
+        os.sep.join(['/etc', os.path.basename(migration_config_file)])
     )
-    # copy debug flag file if set on target system to migration live system
-    if os.path.exists(debug_file):
+    # copy migration config file if set on target system to migration
+    # live system
+    if os.path.exists(migration_config_file):
         Command.run(
-            ['cp', debug_file, '/etc']
+            ['cp', migration_config_file, '/etc']
         )
+    else:
+        target_config_file_path = os.sep.join(
+            ['/etc', os.path.basename(migration_config_file)]
+        )
+        create_migration_file(target_config_file_path)
+
+
+def create_migration_file(target_config_file_path):
+    data = Defaults.get_system_migration_config_values()
+
+    with open(target_config_file_path, 'w') as config:
+        yaml.dump(data, config, default_flow_style=False)
 
 
 def mount_system(root_path, fstab):

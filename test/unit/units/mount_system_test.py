@@ -123,7 +123,7 @@ class TestMountSystem(object):
         with patch('builtins.open', create=True) as mock_open:
             main()
             mock_path_wipe.assert_called_once_with(
-                '/etc/sle-migration-service'
+                '/etc/sle-migration-service.yml'
             )
             assert mock_Command_run.call_args_list == [
                 call(
@@ -167,7 +167,7 @@ class TestMountSystem(object):
                     ]
                 ),
                 call(
-                    ['cp', '/system-root/etc/sle-migration-service', '/etc']
+                    ['cp', '/system-root/etc/sle-migration-service.yml', '/etc']
                 )
             ]
             assert fstab_mock.add_entry.call_args_list == [
@@ -197,4 +197,38 @@ class TestMountSystem(object):
             )
             mock_open.assert_called_once_with('../data/logfile', 'w')
             mock_set_logfile.assert_called_once_with('../data/logfile')
+            assert mock_info.called
+
+    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.mount_system.Fstab')
+    @patch('suse_migration_services.units.mount_system.is_mounted')
+    @patch('os.path.exists')
+    def test_main_create_migration_config(
+        self, mock_path_exists, mock_is_mounted, mock_Fstab,
+        mock_Command_run, mock_info  # , mock_log_file
+    ):
+        def _is_mounted(path):
+            if path == '/run/initramfs/isoscan':
+                return True
+            return False
+
+        def _exist(path):
+            if path == Defaults.get_system_migration_config_file():
+                return False
+            return True
+
+        fstab = Fstab()
+        fstab_mock = Mock()
+        fstab_mock.read.return_value = fstab.read('../data/fstab')
+        fstab_mock.get_devices.return_value = fstab.get_devices()
+        mock_is_mounted.side_effect = _is_mounted
+        mock_path_exists.side_effect = _exist
+        mock_Fstab.return_value = fstab_mock
+        command = Mock()
+        command.returncode = 1
+        command.output = '/dev/sda1 part'
+        mock_Command_run.return_value = command
+        with patch('builtins.open', create=True):
+            main()
             assert mock_info.called

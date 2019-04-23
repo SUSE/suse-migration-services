@@ -39,9 +39,16 @@ class Defaults(object):
         )
 
     @classmethod
-    def get_system_migration_debug_file(self):
+    def get_system_migration_config_file(self):
         return os.sep.join(
-            [self.get_system_root_path(), 'etc/sle-migration-service']
+            [self.get_system_root_path(), 'etc/sle-migration-service.yml']
+        )
+
+    @classmethod
+    def get_system_migration_config_values(self):
+        return dict(
+            debug='false',
+            migration='migration'
         )
 
     @classmethod

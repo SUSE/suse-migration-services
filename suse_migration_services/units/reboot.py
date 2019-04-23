@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
+import yaml
 
 # project
 from suse_migration_services.command import Command
@@ -27,10 +28,6 @@ def main():
     """
     DistMigration reboot with new kernel
     """
-    debug_file = os.sep.join(
-        ['/etc', os.path.basename(Defaults.get_system_migration_debug_file())]
-    )
-
     try:
         # Note:
         # After the migration process is finished, the system reboots
@@ -42,7 +39,7 @@ def main():
                 ).output
             )
         )
-        if os.path.exists(debug_file):
+        if is_debug_mode():
             log.info('Reboot skipped due to debug flag set')
         else:
             log.info('Reboot system: [kexec]')
@@ -57,3 +54,19 @@ def main():
         Command.run(
             ['reboot', '-f']
         )
+
+
+def is_debug_mode():
+    """
+    Returns True or False depending on debug mode
+    """
+    migration_config_file = os.sep.join(
+        ['/etc', os.path.basename(Defaults.get_system_migration_config_file())]
+    )
+    config = _read_system_migration_config(migration_config_file)
+    return config['debug']
+
+
+def _read_system_migration_config(config_file_path):
+    with open(config_file_path, 'r') as config:
+        return yaml.load(config)
