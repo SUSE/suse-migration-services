@@ -1,7 +1,7 @@
 [Unit]
 Description=Prepare For Migration
-After=suse-migration-setup-host-network.service network.target
-Requires=suse-migration-mount-system.service suse-migration-setup-host-network.service
+After=suse-migration-setup-host-network.service
+Requires=suse-migration-mount-system.service suse-migration-setup-host-network.service network-online.target
 
 [Service]
 Type=oneshot

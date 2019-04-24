@@ -67,6 +67,9 @@ def main():
         system_mount.add_entry(
             sysconfig_network, '/etc/sysconfig/network'
         )
+        Command.run(
+            ['systemctl', 'reload', 'network']
+        )
         system_mount.export(
             Defaults.get_system_mount_info_file()
         )
