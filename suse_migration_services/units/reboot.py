@@ -58,15 +58,12 @@ def main():
 
 def is_debug_mode():
     """
-    Returns True or False depending on debug mode
+    Returns True or False depending on debug property of system
+    migration config file
     """
     migration_config_file = os.sep.join(
         ['/etc', os.path.basename(Defaults.get_system_migration_config_file())]
     )
-    config = _read_system_migration_config(migration_config_file)
+    with open(migration_config_file, 'r') as config:
+        config = yaml.load(config)
     return config['debug']
-
-
-def _read_system_migration_config(config_file_path):
-    with open(config_file_path, 'r') as config:
-        return yaml.load(config)

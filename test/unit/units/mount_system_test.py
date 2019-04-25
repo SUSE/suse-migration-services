@@ -204,7 +204,7 @@ class TestMountSystem(object):
     @patch('suse_migration_services.units.mount_system.Fstab')
     @patch('suse_migration_services.units.mount_system.is_mounted')
     @patch('os.path.exists')
-    def test_main_create_migration_config(
+    def test_main_create_migration_config_file(
         self, mock_path_exists, mock_is_mounted, mock_Fstab,
         mock_Command_run, mock_info  # , mock_log_file
     ):

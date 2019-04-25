@@ -1,23 +1,23 @@
 from unittest.mock import (
     patch, call, MagicMock
 )
-from suse_migration_services.units.reboot import main, _read_system_migration_config
-import yaml
+from suse_migration_services.units.reboot import main, is_debug_mode
 
 
 class TestKernelReboot(object):
-    def test_read_system_migration_config(self):
-        result = _read_system_migration_config('../data/system_migration_service.yml')
-        assert result == {'debug': True, 'migration': 'migration'}
+    @patch('os.sep')
+    def test_is_debug_mode(self, mock_os_sep_join):
+        mock_os_sep_join.join.return_value = '../data/system_migration_service.yml'
+        result = is_debug_mode()
+        assert result
 
-    @patch('suse_migration_services.units.reboot._read_system_migration_config')
+    @patch('suse_migration_services.units.reboot.is_debug_mode')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     def test_main_skip_reboot_due_to_debug_file_set(
-        self, mock_Command_run, mock_info, mock_read_values
+        self, mock_Command_run, mock_info, mock_is_debug_mode
     ):
-        with open('../data/system_migration_service.yml') as fake_config:
-            fake_config = yaml.load(fake_config)
+        mock_is_debug_mode.return_value = True
         main()
         assert mock_info.called
 
@@ -26,10 +26,9 @@ class TestKernelReboot(object):
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     def test_main_kexec_reboot(
-        self, mock_Command_run, mock_info, mock_path_exists, mock_mode
+        self, mock_Command_run, mock_info, mock_path_exists, mock_debug
     ):
-        mock_path_exists.return_value = False
-        mock_mode.return_value = False
+        mock_debug.return_value = False
         main()
         assert mock_info.called
         assert mock_Command_run.call_args_list == [

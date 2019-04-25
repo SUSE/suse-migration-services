@@ -110,7 +110,7 @@ def main():
     mount_system(root_path, fstab)
 
     initialize_logging()
-    initialize_system_config()
+    initialize_migration_config()
 
 
 def initialize_logging():
@@ -119,7 +119,7 @@ def initialize_logging():
         log.set_logfile(Defaults.get_migration_log_file())
 
 
-def initialize_system_config():
+def initialize_migration_config():
     migration_config_file = Defaults.get_system_migration_config_file()
     # delete potentially existing migration config file from migration live system
     Path.wipe(
@@ -135,10 +135,10 @@ def initialize_system_config():
         target_config_file_path = os.sep.join(
             ['/etc', os.path.basename(migration_config_file)]
         )
-        create_migration_file(target_config_file_path)
+        create_migration_config_file(target_config_file_path)
 
 
-def create_migration_file(target_config_file_path):
+def create_migration_config_file(target_config_file_path):
     data = Defaults.get_system_migration_config_values()
 
     with open(target_config_file_path, 'w') as config:
