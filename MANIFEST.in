@@ -1,9 +1,10 @@
 # Manifest describing source package contents
 
+prune grub.d
+
 graft suse_migration_services/units
 graft package
 graft systemd
-graft grub.d
 
 include tox.ini
 include README.md

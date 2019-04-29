@@ -42,16 +42,6 @@ BuildArch:        noarch
 %description
 Systemd services to prepare and run a distribution migration process.
 
-%package -n suse-migration-activation
-Summary:        LoopBack Grub Activation
-License:        GPL-3.0+
-Group:          System/Management
-
-%description -n suse-migration-activation
-Script code to activate the migration image to be booted at next
-reboot of the machine. The script provided here is typically used
-as post script of the package provding the migration image
-
 %prep
 %setup -q -n suse_migration_services-%{version}
 
@@ -94,9 +84,6 @@ install -D -m 644 systemd/suse-migration-ssh-keys.service \
 install -D -m 644 systemd/suse-migration-console-log.service \
     %{buildroot}%{_unitdir}/suse-migration-console-log.service
 
-install -D -m 755 grub.d/99_migration \
-    %{buildroot}/etc/grub.d/99_migration
-
 # preun / postun
 # While the package provides services all services are one-shot.
 # Additionally this services runs as part of a live ISO migration
@@ -138,10 +125,5 @@ install -D -m 755 grub.d/99_migration \
 
 %{_bindir}/suse-migration-reboot
 %{_unitdir}/suse-migration-reboot.service
-
-%files -n suse-migration-activation
-%defattr(-,root,root,-)
-%dir /etc/grub.d
-/etc/grub.d/*
 
 %changelog
