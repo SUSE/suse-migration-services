@@ -21,20 +21,30 @@ import os
 from suse_migration_services.command import Command
 from suse_migration_services.logger import log
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.fstab import Fstab
 
 
 def main():
     """
     DistMigration reboot with new kernel
+
+    After the migration process is finished, the system reboots
+    unless the debug option is set.
+
+    Before reboot a reverse umount of the filesystems that got mounted
+    by the mount_system service is performed and thus releases the
+    upgraded system from the migration host. If for whatever reason
+    a filesystem is busy and can't be umounted, this condition is not
+    handled as an error. The reason is that the cleanup should not
+    prevent us from continuing with the reboot process. The risk on
+    reboot of the migration host with a potential active mount
+    is something we accept
     """
     debug_file = os.sep.join(
         ['/etc', os.path.basename(Defaults.get_system_migration_debug_file())]
     )
 
     try:
-        # Note:
-        # After the migration process is finished, the system reboots
-        # unless the debug file /etc/sle-migration-service is set.
         log.info(
             'Systemctl Status Information: {0}{1}'.format(
                 os.linesep, Command.run(
@@ -45,9 +55,26 @@ def main():
         if os.path.exists(debug_file):
             log.info('Reboot skipped due to debug flag set')
         else:
-            log.info('Reboot system: [kexec]')
-            Command.run(
-                ['kexec', '--exec']
+            log.info('Umounting system')
+            system_mount = Fstab()
+            system_mount.read(
+                Defaults.get_system_mount_info_file()
+            )
+            for mount in reversed(system_mount.get_devices()):
+                log.info(
+                    'Umounting {0}: {1}'.format(
+                        mount.mountpoint, Command.run(
+                            ['umount', '--lazy', mount.mountpoint],
+                            raise_on_error=False
+                        )
+                    )
+                )
+            log.info(
+                'Reboot system: [kexec]: {0}{1}'.format(
+                    os.linesep, Command.run(
+                        ['kexec', '--exec']
+                    )
+                )
             )
     except Exception:
         # Uhh, we don't want to be here, but we also don't

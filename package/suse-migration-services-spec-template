@@ -63,9 +63,6 @@ install -D -m 644 systemd/suse-migration-prepare.service \
 install -D -m 644 systemd/suse-migration.service \
     %{buildroot}%{_unitdir}/suse-migration.service
 
-install -D -m 644 systemd/suse-migration-umount-system.service \
-    %{buildroot}%{_unitdir}/suse-migration-umount-system.service
-
 install -D -m 644 systemd/suse-migration-grub-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
 
@@ -110,9 +107,6 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 %{_bindir}/suse-migration
 %{_unitdir}/suse-migration.service
 %{_unitdir}/suse-migration-console-log.service
-
-%{_bindir}/suse-migration-umount-system
-%{_unitdir}/suse-migration-umount-system.service
 
 %{_bindir}/suse-migration-grub-setup
 %{_unitdir}/suse-migration-grub-setup.service
