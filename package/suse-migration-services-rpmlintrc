@@ -10,7 +10,3 @@ addFilter("systemd-service-without-service_del_preun .*")
 
 # Migration services runs once and never manually
 addFilter("suse-missing-rclink .*")
-
-# etc/grub.d plugins are called in the scope of grub2-mkconfig
-# None of them has a shebang because never called standalone
-addFilter("script-without-shebang .*")
