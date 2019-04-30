@@ -45,7 +45,7 @@ def main():
             [
                 'chroot', root_path,
                 'zypper', '--non-interactive', '--no-gpg-checks',
-                'remove', '-u', 'suse-migration-activation'
+                'remove', '-u', 'suse-migration-*-activation'
             ], raise_on_error=False
         )
         log.info('Creating new grub menu with target')
