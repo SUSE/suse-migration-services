@@ -120,29 +120,28 @@ def initialize_logging():
 
 
 def initialize_migration_config():
-    migration_config_file = Defaults.get_system_migration_config_file()
-    # delete potentially existing migration config file from migration live system
-    Path.wipe(
-        os.sep.join(['/etc', os.path.basename(migration_config_file)])
-    )
-    # copy migration config file if set on target system to migration
+    # merge migration config if set on target system to migration
     # live system
-    if os.path.exists(migration_config_file):
-        Command.run(
-            ['cp', migration_config_file, '/etc']
+    if os.path.exists(Defaults.get_system_migration_config_file()):
+        new_migration_config_values = _read_yml_file(
+            Defaults.get_system_migration_config_file()
         )
-    else:
-        target_config_file_path = os.sep.join(
-            ['/etc', os.path.basename(migration_config_file)]
-        )
-        create_migration_config_file(target_config_file_path)
+        default_values = _read_yml_file(Defaults.get_migration_config_file())
+        default_values.update(new_migration_config_values)
+        _write_yml_file(Defaults.get_migration_config_file(), default_values)
 
 
-def create_migration_config_file(target_config_file_path):
-    data = Defaults.get_system_migration_config_values()
+def _read_yml_file(filename):
+    with open(filename, 'r') as file_handle:
+        try:
+            return yaml.safe_load(file_handle)
+        except Exception as issue:
+            log.error('Could not load {0} with: {1}'.format(filename, issue))
 
-    with open(target_config_file_path, 'w') as config:
-        yaml.dump(data, config, default_flow_style=False)
+
+def _write_yml_file(filename, data):
+    with open(filename, 'w') as file_handle:
+        yaml.dump(data, file_handle)
 
 
 def mount_system(root_path, fstab):

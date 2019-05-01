@@ -84,9 +84,15 @@ def get_migration_product():
     zypper migration call
     """
     config = _read_migration_config()
-    return config['migration']['target']['product']
+    migration_product = config['migration']['target']['product']
+    target_products = dict(ses='SLES/15.1/x86_64', sles='SLES/15/x86_64')
+    if migration_product in target_products:
+        migration_product = target_products[migration_product]
+
+    log.info('The migration product is {0}'.format(migration_product))
+    return migration_product
 
 
 def _read_migration_config():
     with open(Defaults.get_migration_config_file(), 'r') as config:
-        return yaml.load(config)
+        return yaml.full_load(config)

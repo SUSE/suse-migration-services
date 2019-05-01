@@ -2,12 +2,23 @@ from unittest.mock import (
     patch, call, MagicMock
 )
 from suse_migration_services.units.reboot import main, is_debug_mode
+from suse_migration_services.defaults import Defaults
 
 
 class TestKernelReboot(object):
-    @patch('os.sep')
-    def test_is_debug_mode(self, mock_os_sep_join):
-        mock_os_sep_join.join.return_value = '../data/system_migration_service.yml'
+    @patch.object(Defaults, 'get_migration_config_file')
+    def test_is_not_debug_mode(self, mock_get_migration_config_file):
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+
+        result = is_debug_mode()
+        assert not result
+
+    @patch.object(Defaults, 'get_migration_config_file')
+    def test_is_debug_mode(self, mock_get_migration_config_file):
+        mock_get_migration_config_file.return_value = \
+            '../data/system_migration_service.yml'
+
         result = is_debug_mode()
         assert result
 

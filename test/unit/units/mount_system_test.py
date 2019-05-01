@@ -2,10 +2,13 @@ from unittest.mock import (
     patch, call, Mock
 )
 from pytest import raises
+import yaml
+import os
 
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.units.mount_system import (
-    main, mount_system
+    main, mount_system, initialize_migration_config,
+    _read_yml_file
 )
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.exceptions import (
@@ -108,13 +111,18 @@ class TestMountSystem(object):
                 return True
             return False
 
+        def _exist(path):
+            if path == Defaults.get_system_migration_config_file():
+                return False
+            return True
+
         mock_log_file.return_value = '../data/logfile'
         fstab = Fstab()
         fstab_mock = Mock()
         fstab_mock.read.return_value = fstab.read('../data/fstab')
         fstab_mock.get_devices.return_value = fstab.get_devices()
         mock_is_mounted.side_effect = _is_mounted
-        mock_path_exists.return_value = True
+        mock_path_exists.side_effect = _exist
         mock_Fstab.return_value = fstab_mock
         command = Mock()
         command.returncode = 1
@@ -122,9 +130,6 @@ class TestMountSystem(object):
         mock_Command_run.return_value = command
         with patch('builtins.open', create=True) as mock_open:
             main()
-            mock_path_wipe.assert_called_once_with(
-                '/etc/sle-migration-service.yml'
-            )
             assert mock_Command_run.call_args_list == [
                 call(
                     ['mount', '-o', 'remount,rw', '/run/initramfs/isoscan']
@@ -165,9 +170,6 @@ class TestMountSystem(object):
                         '/dev/mynode',
                         '/system-root/foo'
                     ]
-                ),
-                call(
-                    ['cp', '/system-root/etc/sle-migration-service.yml', '/etc']
                 )
             ]
             assert fstab_mock.add_entry.call_args_list == [
@@ -199,36 +201,51 @@ class TestMountSystem(object):
             mock_set_logfile.assert_called_once_with('../data/logfile')
             assert mock_info.called
 
+    @patch('yaml.dump')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_config_file')
     @patch('suse_migration_services.logger.log.info')
-    @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.mount_system.Fstab')
-    @patch('suse_migration_services.units.mount_system.is_mounted')
     @patch('os.path.exists')
-    def test_main_create_migration_config_file(
-        self, mock_path_exists, mock_is_mounted, mock_Fstab,
-        mock_Command_run, mock_info  # , mock_log_file
+    def test_initialize_migration_config_merge_contents(
+        self, mock_path_exists, mock_info,
+        mock_get_system_migration_config_file,
+        mock_get_migration_config_file, mock_yaml
     ):
-        def _is_mounted(path):
-            if path == '/run/initramfs/isoscan':
-                return True
-            return False
+        migration_config_path = '../data/migration-config.yml'
+        new_migration_config_path = '../data/system_migration_service.yml'
+        merged_config_path = '../data/config_files_merged.yml'
+        mock_get_migration_config_file.side_effect = [
+            migration_config_path,
+            merged_config_path
+        ]
+        mock_get_system_migration_config_file.return_value = \
+            new_migration_config_path
 
-        def _exist(path):
-            if path == Defaults.get_system_migration_config_file():
-                return False
-            return True
+        mock_path_exists.return_value = True
+        initialize_migration_config()
+        with open(merged_config_path) as merged_file:
+            merged_values = yaml.safe_load(merged_file)
+        with open(migration_config_path) as migration_config_file:
+            migration_config_values = yaml.safe_load(migration_config_file)
 
-        fstab = Fstab()
-        fstab_mock = Mock()
-        fstab_mock.read.return_value = fstab.read('../data/fstab')
-        fstab_mock.get_devices.return_value = fstab.get_devices()
-        mock_is_mounted.side_effect = _is_mounted
-        mock_path_exists.side_effect = _exist
-        mock_Fstab.return_value = fstab_mock
-        command = Mock()
-        command.returncode = 1
-        command.output = '/dev/sda1 part'
-        mock_Command_run.return_value = command
-        with patch('builtins.open', create=True):
-            main()
-            assert mock_info.called
+        with open(new_migration_config_path) as new_config_file:
+            new_config_values = yaml.safe_load(new_config_file)
+
+        assert merged_values == migration_config_values.update(new_config_values)
+        os.remove(merged_config_path)
+
+    @patch('yaml.safe_load')
+    @patch.object(Defaults, 'get_system_migration_config_file')
+    @patch('suse_migration_services.logger.log.error')
+    @patch('os.path.exists')
+    def test_read_bad_yaml_config_file(
+        self, mock_path_exists, mock_error,
+        mock_get_system_migration_config_file, mock_yaml_safe_load
+    ):
+        mock_get_system_migration_config_file.return_value = \
+            '../data/system_migration_service.yml'
+        mock_yaml_safe_load.side_effect = Exception
+        mock_path_exists.return_value = True
+
+        _read_yml_file(mock_get_system_migration_config_file)
+        assert mock_error.called

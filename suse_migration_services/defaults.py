@@ -45,13 +45,6 @@ class Defaults(object):
         )
 
     @classmethod
-    def get_system_migration_config_values(self):
-        return dict(
-            debug='false',
-            migration='migration'
-        )
-
-    @classmethod
     def get_system_mount_info_file(self):
         return '/etc/system-root.fstab'
 

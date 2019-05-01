@@ -60,3 +60,30 @@ class TestMigration(object):
             ]
         )
         assert mock_info.called
+
+    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.command.Command.run')
+    @patch.object(Defaults, 'get_migration_config_file')
+    def test_main_specified_product(
+        self, mock_get_migration_config_file,
+        mock_Command_run, mock_info
+    ):
+        mock_get_migration_config_file.return_value = \
+            '../data/system_migration_service.yml'
+        main()
+        mock_Command_run.assert_called_once_with(
+            [
+                'bash', '-c',
+                'zypper migration '
+                '--non-interactive '
+                '--gpg-auto-import-keys '
+                '--no-selfupdate '
+                '--auto-agree-with-licenses '
+                '--strict-errors-dist-migration '
+                '--replacefiles '
+                '--product SLES/15/x86_64 '
+                '--root /system-root '
+                '&>> /system-root/var/log/distro_migration.log'
+            ]
+        )
+        assert mock_info.called

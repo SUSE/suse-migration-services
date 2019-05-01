@@ -1,2 +1,5 @@
 debug: true
-migration: 'migration'
+migration:
+  type: 'migration'
+  target:
+    product: 'sles'
