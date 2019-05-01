@@ -32,28 +32,39 @@ def main():
     DistMigration update grub to migrated version
 
     Setup and update grub with content from the migrated system
+    Uninstall activation and live migration packages such that
+    a subsequent call of grub2-mkconfig will delete the migration
+    menu entry
     """
     root_path = Defaults.get_system_root_path()
     grub_config_file = Defaults.get_grub_config_file()
 
     try:
         log.info('Running grub setup service')
-        # uninstall suse-migration-activation so new grub
-        # menu does not have the migration entry
-        log.info('Uninstalling suse-migration-activation')
-        Command.run(
-            [
-                'chroot', root_path,
-                'zypper', '--non-interactive', '--no-gpg-checks',
-                'remove', '-u', 'suse-migration-*-activation'
-            ], raise_on_error=False
+        migration_packages = [
+            'SLE*-Migration',
+            'suse-migration-*-activation',
+        ]
+        log.info(
+            'Uninstalling migration: {0}{1}'.format(
+                os.linesep, Command.run(
+                    [
+                        'chroot', root_path, 'zypper',
+                        '--non-interactive', '--no-gpg-checks',
+                        'remove'
+                    ] + migration_packages, raise_on_error=False
+                ).output
+            )
         )
-        log.info('Creating new grub menu with target')
-        Command.run(
-            [
-                'chroot', root_path, 'grub2-mkconfig', '-o',
-                '{0}{1}'.format(os.sep, grub_config_file)
-            ]
+        log.info(
+            'Creating new grub menu: {0}{1}'.format(
+                os.linesep, Command.run(
+                    [
+                        'chroot', root_path, 'grub2-mkconfig', '-o',
+                        '{0}{1}'.format(os.sep, grub_config_file)
+                    ]
+                ).error
+            )
         )
     except Exception as issue:
         message = 'Update grub failed with {0}'.format(issue)

@@ -37,7 +37,8 @@ class TestGrubSetup(object):
                 [
                     'chroot', '/system-root',
                     'zypper', '--non-interactive', '--no-gpg-checks',
-                    'remove', '-u', 'suse-migration-*-activation'
+                    'remove', 'SLE*-Migration',
+                    'suse-migration-*-activation'
                 ], raise_on_error=False
             ),
             call(
