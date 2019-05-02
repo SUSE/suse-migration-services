@@ -1,4 +1,4 @@
-# SUSE Migration activation menu entry
+# SUSE Migration activation menu entry based on isofile
 
 . /usr/share/grub2/grub-mkconfig_lib
 
