@@ -54,7 +54,7 @@ class TestMigration(object):
                 '--auto-agree-with-licenses '
                 '--strict-errors-dist-migration '
                 '--replacefiles '
-                '--product foo '
+                '--product SLES/15/x86_64 '
                 '--root /system-root '
                 '&>> /system-root/var/log/distro_migration.log'
             ]

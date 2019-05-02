@@ -19,6 +19,10 @@ import yaml
 
 # project
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.logger import log
+from suse_migration_services.exceptions import (
+    DistMigrationProductNotFoundException
+)
 
 
 class MigrationConfig(object):
@@ -42,11 +46,13 @@ class MigrationConfig(object):
 
         The value returned is passed to the --product option in the
         zypper migration call
-
-        migration:
-          target:
-            product: product_name
         """
-        migration = self.config_data.get('migration')
-        if migration and migration.get('target'):
-            return migration.get('target').get('product')
+        migration_product = self.config_data.get('migration_product')
+        if not migration_product:
+            message = (
+                'Migration product not found, aborting migration attempt.'
+            )
+            log.error(message)
+            raise DistMigrationProductNotFoundException(message)
+
+        return migration_product
