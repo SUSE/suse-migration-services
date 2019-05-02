@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-import yaml
 import os
 
 # project
+from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
@@ -48,7 +48,7 @@ def main():
                 '--auto-agree-with-licenses',
                 '--strict-errors-dist-migration',
                 '--replacefiles',
-                '--product', get_migration_product(),
+                '--product', MigrationConfig().get_migration_product(),
                 '--root', root_path,
                 '&>>', Defaults.get_migration_log_file()
             ]
@@ -74,19 +74,3 @@ def main():
                 issue
             )
         )
-
-
-def get_migration_product():
-    """
-    Returns the full qualified product
-
-    The value returned is passed to the --product option in the
-    zypper migration call
-    """
-    config = _read_migration_config()
-    return config['migration']['target']['product']
-
-
-def _read_migration_config():
-    with open(Defaults.get_migration_config_file(), 'r') as config:
-        return yaml.load(config)
