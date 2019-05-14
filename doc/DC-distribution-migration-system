@@ -1,0 +1,15 @@
+## ----------------------------
+## Doc Config File for DAPS
+## DAPS User Guide
+## ----------------------------
+##
+## Basics
+
+MAIN=user_guide.adoc
+ADOC_POST=yes
+ADOC_TYPE=article
+#ADOC_IMG_DIR=adoc/images
+
+STYLEROOT="/usr/share/xml/docbook/stylesheet/suse2013"
+
+

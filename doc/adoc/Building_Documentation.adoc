@@ -1,0 +1,50 @@
+= Building the Documentation
+Frank Sundermeyer <fs@suse.com>
+
+:toc:
+:icons: font
+:numbered:
+
+== Prerequisites
+
+The following packages from the repository
+https://download.opensuse.org/repositories/Documentation:/Tools/ are needed:
+
+* daps
+* suse-xsl-stylesheets
+
+You also need
+
+* optipng
+* perl-checkbot
+* rubygem-asciidoctor
+* w3m
+
+Install the packages without recommended pckages:
+
+[source]
+----
+zypper in --no-recommends daps suse-xsl-stylesheets optipng \
+perl-checkbot rubygem-asciidoctor w3m
+----
+
+== Building the Document
+
+To build the document, run one of the following commands:
+
+[source]
+----
+daps -d DC-distribution-migration-system html
+daps -d DC-distribution-migration-system html --single
+daps -d DC-distribution-migration-system pdf
+daps -d DC-distribution-migration-system epub
+daps -d DC-distribution-migration-system text
+----
+
+== For More Information
+
+DAPS USER Guide::
+https://opensuse.github.io/daps/doc/book.daps.user.html
+
+DAPS and ASCIIDoc::
+https://opensuse.github.io/daps/doc/daps-asciidoc.html
