@@ -1,29 +1,32 @@
 # SUSE Distribution Migration System
+===========
+:Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
+:Publication_Date: TBD
+:Latest_Version: 0.5.15
+:Contributors: 
+:Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
-Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
-Contributors:
-Publication Date: TBD, Latest Version: 0.5.15
-Code available: [suse-migration-services](https://github.com/SUSE/suse-migration-services)
+[%hardbreaks]
+Authors: {Authors}
+Contributors: {Contributors}
+Publication Date: {Publication_Date}
+Latest Version: {Latest_Version}
+Code available: {Repo}
 
-Concept
-=====
-
+=== Concept
 Upgrading from one release to a newer one having to skip a range of multiple
 releases introduces an upgrade problem.
 
 The Distribution Migration System provides an upgrade path from A to B,
 where A and B are to major distributions versions (for example, from SLES 12 SP4 to SLES 15 GA).
 
-Requirements
-===
+=== Requirements
 The system to be migrated must be registered.
 
-```bash
+[listing]
 $ SUSEConnect --regcod [SLES_REGCODE]
-```
 
-How does distribution migration system do it ?
-===
+=== How does distribution migration system do it ?
 To achieve the migration between this two releases, the entire migration process
 is called from within a Live Migration Image.
 
@@ -40,49 +43,43 @@ controlled services start to run. The following chain of services will be execut
 - unmount what it mounted
 - reboot
 
-
-Installation
-===
+=== Installation
 
 Inside the system to be migrated the following tasks have to be performed:
 
-1. fetch the Distribution Migration System package which contains a
+. fetch the Distribution Migration System package which contains a
 KIWI built image based on the target distribution of the migration:
-
-```
++
+[listing]
 $ zypper ar official_repo_url live_migration
-```
 
-2. install it:
+. fetch the suse-migration-activation package which contains an
+activation package:
++
+[listing]
+$ zypper ar official_repo_url suse_migration_activation
 
-```
-$ zypper in SLE15-Migration
-```
+. install it:
++
+[listing]
+$ zypper in SLE15-Migration suse_migration_activation
 
-Once installed, the bootloader setup will receive a new menu entry which
-automatically starts the live migration image on next reboot of the machine.
-
-
-Run migration
-==
+=== Run migration
 
 When the package has been installed, run:
 
-```
+[listing]
 $ reboot
-```
 
 When the migration has started, the only way to access the system during the
-migration process is through ssh with a user called 'migration', for example:
+migration process is through ssh with a user called *migration*, for example:
 
-```
+[listing]
 $ ssh migration@IP_OF_INSTANCE
-```
 
+NOTE: There is no need to provide any other information or key.
 
-Debugging the migration
-===
-
+=== Debugging the migration
 Once the migration has finished and the system has rebooted, the file
 '/etc/issue' points to the log of migration, in case it has failed.
 
@@ -91,19 +88,18 @@ must exists before the migration process starts. This file will prevent the
 system to reboot in case of a failed migration, allowing to debug the system.
 For example, as soon as the system started rebooting, user must create the file:
 
-```
+[source,bash]
+----
 $ ssh migration@IP_OF_INSTANCE
 
 $ touch /etc/sle-migration-service
-```
+----
 
 If the migration succeeded and that file is present,
 it will be ignored and removed, the system will reboot normally
 into the newer version.
 
-
-After the migration
-===
+=== After the migration
 Whether the migration succeeded or not, a log file is available in
-'/var/log/distro_migration.log' and it will contain information
+`/var/log/distro_migration.log` and it will contain information
 about the migration process.
