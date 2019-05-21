@@ -49,7 +49,6 @@ For data center customers it is recommended to continue to use the documented of
 
 To install the distribution migration system execute as root
 
-+
 [listing]
 $ zypper in SLE15-Migration suse_migration_activation
 
@@ -97,7 +96,7 @@ about the migration process.
 * Files marked as configuration files in RPM packages and modified will have a corresponding '.rpmnew' version in the same location.
 ** Public Cloud instances from SUSE images have a custom '/etc/motd' file that makes reference the distribution version this needs to be modified manually
 * Repositories not registered via SUSEConnect and added to the system manually will remain untouched.
-* For Public Cloud instances the metdata will not change, as far as the cloud framework is concerned you will still be running a SLES 12 SP4 instance even if you migrated the instance to SLES 15. This cannot be changed.
+* For Public Cloud instances the metadata will not change, as far as the cloud framework is concerned you will still be running a SLES 12 SP4 instance even if you migrated the instance to SLES 15. This cannot be changed.
 * Migration is only possible for systems that have direct access to the root file system by the boot loader.
 * Migration is only possible for systems that use unencrypted root file systems, at the OS level. Encrypting the root device using a cloud framework encryption mechanism happens at a different level.
 * Migration has been tested for SLES 12 SP4 to SLES 15
