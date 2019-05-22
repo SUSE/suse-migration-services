@@ -1,10 +1,24 @@
-# SUSE Distribution Migration System
-===========
+= SUSE Distribution Migration System
+Marcus Schäfer; Jesús Velázquez
+
+:toc:
+:icons: font
+:numbered:
+
 :Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
 :Publication_Date: TBD
 :Latest_Version: 0.5.15
 :Contributors: 
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
+
+ifdef::env-github[]
+//Admonitions
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 [%hardbreaks]
 Authors: {Authors}
@@ -13,7 +27,7 @@ Publication Date: {Publication_Date}
 Latest Version: {Latest_Version}
 Code available: {Repo}
 
-=== Concept
+== Concept
 The Distribution Migration System provides an upgrade path for an installed SUSE Linux Enterprise system from on major distribution to another, for example, from SUSE Linux Enterprise Server 12 SP4 to SUSE Linux Enterprise Server 15. For system updates from one Service Pack (SP) to another within a given major distribution release series the existing
 
 [listing]
@@ -36,12 +50,12 @@ The distribution migration system provides the live image and a component that m
 
 Should an error occur prior to the start of the actual migration the system will be returned to it's original state.
 
-=== Requirements
+== Requirements
 The system to be migrated must be registered. Pay as you go instances in the Public Cloud are automatically registered to the SUSE operated update infrastructure. All other systems must be connected to the SUSE Customer Center (SCC), a Subscription Management Tool (SMT), or a Repository Management tool (RMT) server. For system managed via SUSE Manager use the migration path provided by SUSE Manager. 
 
 
 
-=== Installation
+== Installation
 
 The distribution migration system is made available in the Public Cloud module. Therefore this module has to be enable on the system to be migrated. For running on-demand instances this module is already enabled in the instance.
 
@@ -52,7 +66,7 @@ To install the distribution migration system execute as root
 [listing]
 $ zypper in SLE15-Migration suse_migration_activation
 
-=== Run migration
+== Run migration
 
 The suse_migration_activation package configure the boot loader to boot into the live image and that will execute the migration automatically. After the installation of the packages is complete execute
 
@@ -69,7 +83,7 @@ $ ssh migration@IP_OF_INSTANCE
 
 NOTE: There is no need to provide any other information or key. The known ssh keys on the system to be migrated have been imported into the migration system. Password based login is not possible.
 
-=== Debugging the migration
+== Debugging the migration
 Once the migration has finished and the system has rebooted, the file
 '/etc/issue' points to the log of migration, if a failure has been detected.
 
@@ -87,12 +101,12 @@ If the migration succeeded and that file is present,
 it will be ignored and removed, the system will reboot normally
 into the newer version.
 
-=== After the migration
+== After the migration
 Whether the migration succeeded or not, a log file is available in
 `/var/log/distro_migration.log` and it will contain information
 about the migration process.
 
-=== Caveats and unsupported conditions
+== Caveats and unsupported conditions
 * Files marked as configuration files in RPM packages and modified will have a corresponding '.rpmnew' version in the same location.
 ** Public Cloud instances from SUSE images have a custom '/etc/motd' file that makes reference the distribution version this needs to be modified manually
 * Repositories not registered via SUSEConnect and added to the system manually will remain untouched.
