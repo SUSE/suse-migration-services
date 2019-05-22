@@ -53,7 +53,8 @@ Should an error occur prior to the start of the actual migration the system will
 == Requirements
 The system to be migrated must be registered. Pay as you go instances in the Public Cloud are automatically registered to the SUSE operated update infrastructure. All other systems must be connected to the SUSE Customer Center (SCC), a Subscription Management Tool (SMT), or a Repository Management tool (RMT) server. For system managed via SUSE Manager use the migration path provided by SUSE Manager. 
 
-
+=== Recommendation
+During the migration it is not possible to log into the system in any other way then ssh key based login. If your system does not have such a configuration it is recommended that at least one of the users on the system has a '~/.ssh/authorized_keys' file with a private key accessible by the person executing the system migration.
 
 == Installation
 
@@ -104,7 +105,7 @@ into the newer version.
 == After the migration
 Whether the migration succeeded or not, a log file is available in
 `/var/log/distro_migration.log` and it will contain information
-about the migration process.
+about the migration process. Should the migration have failed and the issues are understood and addressed the file '/etc/issue' should be cleared.
 
 == Caveats and unsupported conditions
 * Files marked as configuration files in RPM packages and modified will have a corresponding '.rpmnew' version in the same location.
