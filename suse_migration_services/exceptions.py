@@ -113,3 +113,9 @@ class DistMigrationProductSetupException(DistMigrationException):
     from the bind mounted etc/products.d location into the
     migrated system has failed
     """
+
+
+class DistMigrationProductNotFoundException(DistMigrationException):
+    """
+    Exception raised if the target product to migrate is not found
+    """
