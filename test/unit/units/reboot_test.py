@@ -3,37 +3,39 @@ from unittest.mock import (
 )
 from suse_migration_services.units.reboot import main
 from suse_migration_services.fstab import Fstab
+from suse_migration_services.defaults import Defaults
 
 
 class TestKernelReboot(object):
-    @patch('os.path.exists')
+    @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.log.warning')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     def test_main_skip_reboot_due_to_debug_file_set(
-        self, mock_Command_run, mock_info, mock_warning, mock_path_exists
+        self, mock_Command_run, mock_info,
+        mock_warning, mock_get_migration_config_file
     ):
-        mock_path_exists.return_value = True
+        mock_get_migration_config_file.return_value = \
+            '../data/optional-migration-config.yml'
         main()
         assert mock_info.called
 
-    @patch('os.path.exists')
+    @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_kexec_reboot(
-        self, mock_Fstab, mock_Command_run, mock_info, mock_path_exists
+        self, mock_Fstab, mock_Command_run,
+        mock_info, mock_get_migration_config_file
     ):
         fstab = Fstab()
         fstab_mock = Mock()
         fstab_mock.read.return_value = fstab.read('../data/system-root.fstab')
         fstab_mock.get_devices.return_value = fstab.get_devices()
         mock_Fstab.return_value = fstab_mock
-        mock_path_exists.return_value = False
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
         main()
-        mock_path_exists.assert_called_once_with(
-            '/etc/sle-migration-service'
-        )
         assert mock_info.called
         assert mock_Command_run.call_args_list == [
             call(
@@ -67,12 +69,14 @@ class TestKernelReboot(object):
             call(['kexec', '--exec'])
         ]
 
+    @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.log.warning')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_force_reboot(
-        self, mock_Fstab, mock_Command_run, mock_info, mock_warning
+        self, mock_Fstab, mock_Command_run, mock_info,
+        mock_warning, mock_get_migration_config_file
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -90,6 +94,8 @@ class TestKernelReboot(object):
             Exception,
             None
         ]
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
         main()
         assert mock_info.called
         assert mock_Command_run.call_args_list == [

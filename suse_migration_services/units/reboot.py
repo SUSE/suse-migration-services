@@ -22,6 +22,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.logger import log
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.fstab import Fstab
+from suse_migration_services.migration_config import MigrationConfig
 
 
 def main():
@@ -40,10 +41,6 @@ def main():
     reboot of the migration host with a potential active mount
     is something we accept
     """
-    debug_file = os.sep.join(
-        ['/etc', os.path.basename(Defaults.get_system_migration_debug_file())]
-    )
-
     try:
         log.info(
             'Systemctl Status Information: {0}{1}'.format(
@@ -52,7 +49,7 @@ def main():
                 ).output
             )
         )
-        if os.path.exists(debug_file):
+        if MigrationConfig().is_debug_requested():
             log.info('Reboot skipped due to debug flag set')
         else:
             log.info('Umounting system')

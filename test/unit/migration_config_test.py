@@ -25,3 +25,6 @@ class TestMigrationConfig(object):
         with raises(DistMigrationProductNotFoundException):
             self.config.get_migration_product()
             assert mock_error.called
+
+    def test_is_debug_requested(self):
+        assert not self.config.is_debug_requested()
