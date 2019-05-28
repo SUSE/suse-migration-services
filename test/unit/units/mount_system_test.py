@@ -7,6 +7,7 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.units.mount_system import (
     main, mount_system
 )
+from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.exceptions import (
     DistMigrationSystemNotFoundException,
@@ -89,6 +90,11 @@ class TestMountSystem(object):
         assert mock_info.called
         assert mock_error.called
 
+    @patch('yaml.safe_load')
+    @patch('yaml.dump')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(MigrationConfig, 'update_migration_config_file')
     @patch.object(Defaults, 'get_migration_log_file')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.logger.log.set_logfile')
@@ -100,8 +106,11 @@ class TestMountSystem(object):
     @patch('os.path.exists')
     def test_main(
         self, mock_path_exists, mock_is_mounted, mock_Fstab,
-        mock_path_wipe, mock_path_create, mock_Command_run, mock_set_logfile,
-        mock_info, mock_log_file
+        mock_path_wipe, mock_path_create, mock_Command_run,
+        mock_set_logfile, mock_info, mock_log_file,
+        mock_update_migration_config_file, mock_get_migration_config_file,
+        mock_get_system_migration_custom_config_file, mock_yaml_dump,
+        mock_yaml_safe_load
     ):
         def _is_mounted(path):
             if path == '/run/initramfs/isoscan':
@@ -114,17 +123,20 @@ class TestMountSystem(object):
         fstab_mock.read.return_value = fstab.read('../data/fstab')
         fstab_mock.get_devices.return_value = fstab.get_devices()
         mock_is_mounted.side_effect = _is_mounted
-        mock_path_exists.return_value = True
+        mock_path_exists.side_effect = [True, False]
         mock_Fstab.return_value = fstab_mock
         command = Mock()
         command.returncode = 1
         command.output = '/dev/sda1 part'
         mock_Command_run.return_value = command
+        mock_get_system_migration_custom_config_file.return_value = \
+            '../data/optional-migration-config.yml'
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_yaml_safe_load.return_value = {'migration_product': 'SLES/15/x86_64'}
         with patch('builtins.open', create=True) as mock_open:
             main()
-            mock_path_wipe.assert_called_once_with(
-                '/etc/sle-migration-service'
-            )
+            assert mock_update_migration_config_file.called
             assert mock_Command_run.call_args_list == [
                 call(
                     ['mount', '-o', 'remount,rw', '/run/initramfs/isoscan']
@@ -165,9 +177,6 @@ class TestMountSystem(object):
                         '/dev/mynode',
                         '/system-root/foo'
                     ]
-                ),
-                call(
-                    ['cp', '/system-root/etc/sle-migration-service', '/etc']
                 )
             ]
             assert fstab_mock.add_entry.call_args_list == [
@@ -195,6 +204,9 @@ class TestMountSystem(object):
             fstab_mock.export.assert_called_once_with(
                 '/etc/system-root.fstab'
             )
-            mock_open.assert_called_once_with('../data/logfile', 'w')
-            mock_set_logfile.assert_called_once_with('../data/logfile')
+            assert mock_open.call_args_list == [
+                call('../data/logfile', 'w'),
+                call('../data/migration-config.yml', 'r')
+            ]
+            mock_set_logfile.assert_called_once_with('../data/logfile'),
             assert mock_info.called
