@@ -45,8 +45,11 @@ class TestMigrationConfig(object):
         assert self.config.is_debug_requested() is True
         assert mock_info.called
 
+    def test_is_zypper_migration_plugin_requested(self):
+        assert self.config.is_zypper_migration_plugin_requested() is True
+
     def test_is_debug_requested(self):
-        assert not self.config.is_debug_requested()
+        assert self.config.is_debug_requested() is False
 
     @patch('yaml.dump')
     def test_write_config_file(self, mock_yaml_dump):
