@@ -56,3 +56,6 @@ class MigrationConfig(object):
             raise DistMigrationProductNotFoundException(message)
 
         return migration_product
+
+    def is_debug_requested(self):
+        return self.config_data.get('debug', False)
