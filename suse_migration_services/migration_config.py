@@ -16,6 +16,8 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
+import os
+from textwrap import dedent
 
 # project
 from suse_migration_services.defaults import Defaults
@@ -36,8 +38,12 @@ class MigrationConfig(object):
     version as part of the live migration image build.
     """
     def __init__(self):
-        self.config_data = None
-        with open(Defaults.get_migration_config_file(), 'r') as config:
+        self.config_data = {}
+        self.migration_config_file = \
+            Defaults.get_migration_config_file()
+        self.migration_custom_file = \
+            Defaults.get_system_migration_custom_config_file()
+        with open(self.migration_config_file, 'r') as config:
             self.config_data = yaml.safe_load(config)
 
     def get_migration_product(self):
@@ -57,5 +63,29 @@ class MigrationConfig(object):
 
         return migration_product
 
+    def update_migration_config_file(self):
+        """
+        Update the default migration configuration with custom values
+        """
+        if os.path.exists(self.migration_custom_file):
+            with open(self.migration_custom_file, 'r') as custom_config:
+                new_config = yaml.safe_load(custom_config)
+                self.config_data.update(new_config)
+
+            self._write_config_file()
+
+            message = dedent('''
+                The migration file '{0}' has been updated with '{1}' info
+            ''')
+            log.info(
+                message.format(
+                    self.migration_config_file, self.migration_custom_file
+                ).lstrip()
+            )
+
     def is_debug_requested(self):
         return self.config_data.get('debug', False)
+
+    def _write_config_file(self):
+        with open(self.migration_config_file, 'w') as config:
+            yaml.dump(self.config_data, config, default_flow_style=False)

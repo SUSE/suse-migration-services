@@ -7,18 +7,21 @@ from suse_migration_services.defaults import Defaults
 
 
 class TestKernelReboot(object):
-    @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.log.warning')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.reboot.MigrationConfig')
     def test_main_skip_reboot_due_to_debug_file_set(
-        self, mock_Command_run, mock_info,
-        mock_warning, mock_get_migration_config_file
+        self, mock_MigrationConfig, mock_Command_run, mock_info,
+        mock_warning
     ):
-        mock_get_migration_config_file.return_value = \
-            '../data/optional-migration-config.yml'
+        config = Mock()
+        config.is_debug_requested.return_value = True
+        mock_MigrationConfig.return_value = config
         main()
-        assert mock_info.called
+        assert mock_info.call_args_list[1] == call(
+            'Reboot skipped due to debug flag set'
+        )
 
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.log.info')
