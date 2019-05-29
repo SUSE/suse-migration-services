@@ -1,0 +1,102 @@
+= SUSE Distribution Migration System
+Marcus Schäfer; Jesús Velázquez
+
+:toc:
+:icons: font
+:numbered:
+
+:Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
+:Publication_Date: TBD
+:Latest_Version: 0.5.15
+:Contributors: 
+:Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
+
+ifdef::env-github[]
+//Admonitions
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+[%hardbreaks]
+Authors: {Authors}
+Contributors: {Contributors}
+Publication Date: {Publication_Date}
+Latest Version: {Latest_Version}
+Code available: {Repo}
+
+== Concept
+The Distribution Migration System provides an upgrade path for an installed SUSE Linux Enterprise system from one major version to another, for example, from SUSE Linux Enterprise Server 12 SP4 to SUSE Linux Enterprise Server 15. For a service pack upgrade from one Service Pack (SP) to another within a given major version release series the existing Zypper migration tool is the supported upgrade path. The distribution migration system provides the ability to upgrade across major distributions without the need to use the next major version installation media to perform the system upgrade.
+
+The upgrade to a new major versions requires the system to be offline during the upgrade to avoid system inconsistencies that may leave the system in a state that does not allow recovery. This behavior is implemented using a Live Migration Image.
+
+The distribution migration system provides the live image and a component that modifies the bootloader configuration such that on the next boot the system will boot into the upgrade image. Once booted into the upgrade live image the following chain of services will be executed:
+
+1. detect the system to be upgraded
+2. mount the necessary file systems
+3. setup the network to match the network configuration of the system to be upgraded
+4. prepare the package manager for the upgrade task
+5. upgrade the system
+6. update the boot loader configuration
+7. unmount all mounted file systems
+8. reboot
+
+In case an error occurs prior to the start of the upgrade the system will be reverted to its original state.
+
+== Requirements
+Systems that are to be upgraded need to be registered. "Pay as you go"-instances in the Public Cloud are automatically registered to the SUSE operated update infrastructure. All other systems must be connected to the SUSE Customer Center (SCC), a Subscription Management Tool (SMT), or a Repository Management tool (RMT) server. For systems managed via SUSE Manager use the upgrade path provided by SUSE Manager. 
+
+== Recommendation
+During the upgrade it is only possible to log in via SSH key-based login. If your system is not configured for it, it is recommended that at least one of the users on the system has a `~/.ssh/authorized_keys` file with a private key accessible by the person executing the system upgrade.
+
+== Installation
+
+The distribution migration system is available from the Public Cloud module. Therefore this module has to be enabled on the system prior to upgrade. For running on-demand instances this module is already enabled.
+
+For data center customers it is recommended to continue to use the documented offline distribution upgrade using the next distribution version installation media.
+
+To install the distribution migration system run:
+
+[listing]
+tux > sudo zypper in SLE15-Migration suse-migration-sle15-activation
+
+== Run the Migration
+
+The `suse_migration_activation package` configures the boot loader to boot into the live image which will start the upgrade automatically. After the installation of the packages is complete, reboot the system to start the upgrade process.
+
+After the upgrade has started, the only way to access the system during the
+upgrade process is via ssh with a user called `migration`:
+
+[listing]
+tux > sudo ssh migration@IP_OF_INSTANCE
+
+[NOTE]
+There is no need to provide any other information or key. The known SSH keys on the system to be upgraded have been imported into the upgrade system. Password-based login is not possible.
+
+== Debugging the Migration
+In case of a upgrade failure, consult the migration log. The file `/etc/issue` will contain a pointer to the respective log file.
+
+In order to debug a failed upgrade, the file `/etc/sle-migration-service`
+must exist prior to the start of the upgrade process. This file will prevent the upgrade system from rewinding the setup steps and rebooting due to a failed upgrade, allowing the issue to be debugged.
+
+[listing]
+tux > ssh INSTANCE_USER@IP_OF_INSTANCE 'touch /etc/sle-migration-service'
+
+If the upgrade succeeded and that file is present, it will be removed and
+the system will reboot into the upgraded version.
+
+== After the Migration
+Whether the upgrade succeeded or not, a log file is available in
+`/var/log/distro_migration.log` and it will contain information
+about the upgrade process. If the upgrade failed and the issues have been successfully debugged, the file `/etc/issue` should be cleared.
+
+== Caveats and Unsupported Conditions
+* Configuration files that have been modified in the original system will not be overwritten by the upgrade process. The new version of the respective configuration file will be copied into the same directory with the file name extension `.rpmnew`. It is recommended to compare the existing and the new configuration files and make manual adjustments when needed.
+* Public Cloud instances from SUSE images have a custom `/etc/motd` file that makes a reference the distribution version. This needs to be updated manually after the upgrade.
+* Repositories not registered via SUSEConnect and added to the system manually will remain untouched.
+* For Public Cloud instances the metadata will not change. As far as the cloud framework is concerned, you will still be running a "SLES 12 SP4" instance even if you upgraded to SLES 15. This cannot be changed.
+* Upgrade is only possible for systems that have direct access to the root file system from the boot loader.
+* Upgrade is only possible for systems that use unencrypted root file systems, at the OS level. Encrypting the root device using a cloud framework encryption mechanism happens at a different level.
+* Upgrade has been tested for SLES 12 SP4 to SLES 15
