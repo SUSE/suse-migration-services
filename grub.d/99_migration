@@ -14,7 +14,7 @@ else
 fi
 
 migration_iso=$(echo /usr/share/migration-image/*-Migration.*.iso)
-root_device=$(lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | cut -f1 -d" ")
+root_device=$(lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" ")
 root_uuid=$(blkid -s UUID -o value "${root_device}")
 root_type=$(blkid -s TYPE -o value "${root_device}")
 
