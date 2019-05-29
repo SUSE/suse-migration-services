@@ -1,5 +1,7 @@
-import os
-from unittest.mock import patch
+import io
+from unittest.mock import (
+    patch, Mock, MagicMock
+)
 from pytest import raises
 
 from suse_migration_services.units.migrate import main
@@ -10,36 +12,83 @@ from suse_migration_services.exceptions import (
 
 
 class TestMigration(object):
-    @patch('os.path.exists')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
-    @patch('suse_migration_services.logger.log.info')
-    @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.command.Command.run')
-    def test_main_raises_on_zypper_migration(
-        self, mock_Command_run, mock_error, mock_info,
-        mock_get_system_root_path, mock_path_exists
+    @patch('suse_migration_services.units.migrate.MigrationConfig')
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
+    def test_main_zypper_migration_plugin_raises(
+        self, mock_info, mock_error, mock_MigrationConfig, mock_Command_run,
+        mock_get_system_root_path
     ):
+        migration_config = Mock()
+        migration_config.get_migration_product.return_value = 'product'
+        migration_config.is_zypper_migration_plugin_requested.return_value = \
+            True
+        mock_MigrationConfig.return_value = migration_config
         mock_Command_run.side_effect = Exception
         mock_get_system_root_path.return_value = '../data'
-        mock_path_exists.return_value = True
-        with raises(DistMigrationZypperException):
-            main()
-        issue_path = '../data/etc/issue'
-        with open(issue_path) as issue_file:
-            message = (
-                'Migration has failed, for further details see {0}'
-                .format('/var/log/distro_migration.log')
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            with raises(DistMigrationZypperException):
+                main()
+            mock_open.assert_called_once_with(
+                '../data/etc/issue', 'w'
             )
-            assert message in issue_file.read()
-        os.remove(issue_path)
-        assert mock_error.called
+            file_handle.write.assert_called_once_with(
+                'Migration has failed, for further details see {0}'.format(
+                    '/var/log/distro_migration.log'
+                )
+            )
 
+    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.migrate.MigrationConfig')
+    @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.logger.log.info')
+    def test_main_zypper_dup_raises(
+        self, mock_info, mock_error, mock_MigrationConfig, mock_Command_run,
+        mock_get_system_root_path
+    ):
+        migration_config = Mock()
+        migration_config.is_zypper_migration_plugin_requested.return_value = \
+            False
+        mock_MigrationConfig.return_value = migration_config
+        zypper_call = Mock()
+        zypper_call.returncode = 0
+        mock_Command_run.return_value = zypper_call
+        mock_get_system_root_path.return_value = '../data'
+        with patch('builtins.open', create=True):
+            # zypper exit code is 0, all ok
+            main()
+            # zypper exit code is 1, error
+            zypper_call.returncode = 1
+            with raises(DistMigrationZypperException):
+                main()
+            # zypper exit code is 104, error
+            zypper_call.returncode = 104
+            with raises(DistMigrationZypperException):
+                main()
+            # zypper exit code is 105, error
+            zypper_call.returncode = 105
+            with raises(DistMigrationZypperException):
+                main()
+            # zypper exit code is 106, error
+            zypper_call.returncode = 106
+            with raises(DistMigrationZypperException):
+                main()
+            # zypper exit code is 107, all ok
+            zypper_call.returncode = 107
+            main()
+
     @patch('suse_migration_services.command.Command.run')
     @patch.object(Defaults, 'get_migration_config_file')
-    def test_main(
-        self, mock_get_migration_config_file,
-        mock_Command_run, mock_info
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
+    def test_main_zypper_migration_plugin(
+        self, mock_info, mock_error, mock_get_migration_config_file,
+        mock_Command_run
     ):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
@@ -59,4 +108,30 @@ class TestMigration(object):
                 '&>> /system-root/var/log/distro_migration.log'
             ]
         )
-        assert mock_info.called
+
+    @patch('suse_migration_services.command.Command.run')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
+    def test_main_zypper_dup(
+        self, mock_info, mock_error, mock_get_migration_config_file,
+        mock_Command_run
+    ):
+        zypper_call = Mock()
+        zypper_call.returncode = 0
+        mock_Command_run.return_value = zypper_call
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config-zypper-dup.yml'
+        main()
+        mock_Command_run.assert_called_once_with(
+            [
+                'bash', '-c',
+                'zypper --non-interactive '
+                '--gpg-auto-import-keys '
+                '--root /system-root '
+                'dup '
+                '--auto-agree-with-licenses '
+                '--replacefiles '
+                '&>> /system-root/var/log/distro_migration.log'
+            ], raise_on_error=False
+        )
