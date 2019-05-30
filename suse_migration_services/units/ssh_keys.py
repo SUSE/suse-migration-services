@@ -16,10 +16,13 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import glob
+import shutil
+import os
 
 # project
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
+from suse_migration_services.command import Command
 
 
 def main():
@@ -31,6 +34,8 @@ def main():
     """
     ssh_keys_glob_paths = Defaults.get_ssh_keys_paths()
     migration_ssh_file = Defaults.get_migration_ssh_file()
+    system_ssh_host_keys_glob_path = Defaults.get_system_ssh_host_keys_glob_path()
+    sshd_config_path = Defaults.get_system_sshd_config_path()
     try:
         log.info('Running ssh keys service')
         ssh_keys_paths = []
@@ -47,6 +52,35 @@ def main():
         log.info('Save keys to {0}'.format(migration_ssh_file))
         with open(migration_ssh_file, 'w') as authorized_migration_file:
             authorized_migration_file.write(authorized_keys_content)
+
+        system_ssh_host_keys = glob.glob(system_ssh_host_keys_glob_path)
+        sshd_config_host_keys_entries = []
+        log.info('Copying host ssh keys')
+        for system_ssh_host_key in system_ssh_host_keys:
+            shutil.copy(system_ssh_host_key, '/etc/ssh/')
+
+            if not system_ssh_host_key.endswith('.pub'):
+                live_private_ssh_host_key_path = os.sep.join(
+                    [
+                        os.path.dirname(sshd_config_path),
+                        os.path.basename(system_ssh_host_key)
+                    ]
+                )
+                entry = 'HostKey {0}'.format(
+                    live_private_ssh_host_key_path
+                )
+                sshd_config_host_keys_entries.append(entry)
+
+        with open(sshd_config_path, 'a') as live_sshd_config_file:
+            # write one newline to be sure any subsequent HostKey entry starts correctly
+            live_sshd_config_file.write(os.linesep)
+            live_sshd_config_file.write(
+                os.linesep.join(sshd_config_host_keys_entries)
+            )
+        log.info('Restarting sshd')
+        Command.run(
+            ['systemctl', 'restart', 'sshd']
+        )
     except Exception:
         log.error('An error ocurred when copying ssh key files.'
                   'The migration will continue without ssh access')

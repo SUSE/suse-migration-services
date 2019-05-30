@@ -75,3 +75,13 @@ class Defaults(object):
         return os.sep.join(
             [self.get_system_root_path(), prefix_path, '.ssh/authorized_keys']
         )
+
+    @classmethod
+    def get_system_ssh_host_keys_glob_path(self):
+        return os.sep.join(
+            [self.get_system_root_path(), 'etc/ssh/ssh_host_*']
+        )
+
+    @classmethod
+    def get_system_sshd_config_path(self):
+        return '/etc/ssh/sshd_config'
