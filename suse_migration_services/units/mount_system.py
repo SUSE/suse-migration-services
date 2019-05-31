@@ -77,7 +77,7 @@ def main():
     log.info('Mount system service: mounting all entries')
     for entry in lsblk_call.output.split(os.linesep):
         block_record = entry.split()
-        if block_record and block_record[1] == 'part':
+        if block_record and (block_record[1] == 'part' or block_record[1].startswith('raid')):
             try:
                 Command.run(
                     ['mount', block_record[0], root_path],
