@@ -102,6 +102,35 @@ def main():
         [root_path, 'sys']
     )
     try:
+        # log network info as network-online.target is done at this point
+        log.info(
+            'All Network Interfaces {0}{1}'.format(
+                os.linesep, Command.run(
+                    ['ip', 'a'], raise_on_error=False
+                ).output
+            )
+        )
+        log.info(
+            'Routing Tables {0}{1}'.format(
+                os.linesep, Command.run(
+                    ['ip', 'r'], raise_on_error=False
+                ).output
+            )
+        )
+        log.info(
+            'DNS Resolver {0}{1}'.format(
+                os.linesep, Command.run(
+                    ['cat', '/etc/resolv.conf'], raise_on_error=False
+                ).output
+            )
+        )
+        log.info(
+            'Network Bonding {0}{1}'.format(
+                os.linesep, Command.run(
+                    ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
+                ).output
+            )
+        )
         log.info('Running prepare service')
         system_mount = Fstab()
         system_mount.read(
