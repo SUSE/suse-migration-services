@@ -124,13 +124,15 @@ def main():
                 ).output
             )
         )
-        log.info(
-            'Network Bonding {0}{1}'.format(
-                os.linesep, Command.run(
-                    ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
-                ).output
+        bonding_paths = Defaults.get_bonding_paths()
+        if os.path.exists(os.path.dirname(bonding_paths)):
+            log.info(
+                'Network Bonding {0}{1}'.format(
+                    os.linesep, Command.run(
+                        ['cat', bonding_paths], raise_on_error=False
+                    ).output
+                )
             )
-        )
         log.info('Running prepare service')
         system_mount = Fstab()
         system_mount.read(

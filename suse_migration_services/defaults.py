@@ -75,3 +75,7 @@ class Defaults(object):
         return os.sep.join(
             [self.get_system_root_path(), prefix_path, '.ssh/authorized_keys']
         )
+
+    @classmethod
+    def get_bonding_paths(self):
+        return '/proc/net/bonding/bond*'

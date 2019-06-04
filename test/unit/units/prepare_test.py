@@ -195,3 +195,6 @@ class TestSetupPrepare(object):
             '/etc/system-root.fstab'
         )
         assert mock_info.called
+        mock_Command_run.assert_any_call(
+            ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
+        )
