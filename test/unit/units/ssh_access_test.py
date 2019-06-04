@@ -1,5 +1,5 @@
 from unittest.mock import (
-    patch
+    patch, call
 )
 import os
 
@@ -18,23 +18,48 @@ class TestSshAccess(object):
         main()  # expect pass and comment
         assert mock_error.called
 
+    @patch('suse_migration_services.command.Command.run')
+    @patch('shutil.copy')
+    @patch.object(Defaults, 'get_system_sshd_config_path')
     @patch.object(Defaults, 'get_ssh_keys_paths')
     @patch('glob.glob')
     @patch.object(Defaults, 'get_migration_ssh_file')
     @patch('suse_migration_services.logger.log.info')
     def test_main(
-        self, mock_info, mock_get_migration_ssh_file,
-        mock_glob_glob, mock_glob_ssh
+        self, mock_info, mock_get_migration_ssh_file, mock_glob_glob,
+            mock_get_ssh_key_path, mock_get_system_sshd_config_path,
+            mock_shutil_copy, mock_Command_run
     ):
-        mock_glob_ssh.return_value = ['/path/']
+        mock_get_ssh_key_path.return_value = ['/path/']
         mock_get_migration_ssh_file.return_value = '../data/authorized_keys'
-        mock_glob_glob.return_value = [
-            '../data/authorized_azure_keys',
-            '../data/authorized_ec2_keys'
+        mock_glob_glob.side_effect = [
+            [
+                '../data/authorized_azure_keys',
+                '../data/authorized_ec2_keys'
+            ],
+            [
+                '/system-root/etc/ssh/ssh_host_ecdsa_key.pub',
+                '/system-root/etc/ssh/ssh_host_ecdsa_key'
+            ]
         ]
+        mock_get_system_sshd_config_path.return_value = '../data/sshd_config'
         main()
         output_file = mock_get_migration_ssh_file()
         expected_content = 'keys for azure\nkeys for aws ec2\n'
         with open(output_file) as ssh_output_file:
             assert expected_content == ssh_output_file.read()
         os.remove(output_file)
+
+        expected_host_keys = '{}HostKey ../data/ssh_host_ecdsa_key'.format(os.linesep)
+        with open(mock_get_system_sshd_config_path()) as sshd_config_file:
+            assert expected_host_keys == sshd_config_file.read()
+        os.remove(mock_get_system_sshd_config_path())
+
+        assert mock_shutil_copy.call_args_list == [
+            call('/system-root/etc/ssh/ssh_host_ecdsa_key.pub', '/etc/ssh/'),
+            call('/system-root/etc/ssh/ssh_host_ecdsa_key', '/etc/ssh/')
+        ]
+
+        mock_Command_run.assert_called_once_with(
+            ['systemctl', 'restart', 'sshd']
+        )
