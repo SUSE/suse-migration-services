@@ -7,7 +7,7 @@ from suse_migration_services.units.ssh_keys import main
 from suse_migration_services.defaults import Defaults
 
 
-class TestSshAccess(object):
+class TestSSHKeys(object):
     @patch('suse_migration_services.logger.log.error')
     @patch('glob.glob')
     def test_migration_continues_on_error(
@@ -39,7 +39,8 @@ class TestSshAccess(object):
             ],
             [
                 '/system-root/etc/ssh/ssh_host_ecdsa_key.pub',
-                '/system-root/etc/ssh/ssh_host_ecdsa_key'
+                '/system-root/etc/ssh/ssh_host_ecdsa_key',
+                '/system-root/etc/ssh/ssh_host_key'
             ]
         ]
         mock_get_system_sshd_config_path.return_value = '../data/sshd_config'
@@ -50,7 +51,9 @@ class TestSshAccess(object):
             assert expected_content == ssh_output_file.read()
         os.remove(output_file)
 
-        expected_host_keys = '{}HostKey ../data/ssh_host_ecdsa_key'.format(os.linesep)
+        expected_host_keys = '{}HostKey ../data/ssh_host_ecdsa_key'.format(
+            os.linesep
+        )
         with open(mock_get_system_sshd_config_path()) as sshd_config_file:
             assert expected_host_keys == sshd_config_file.read()
         os.remove(mock_get_system_sshd_config_path())
