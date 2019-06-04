@@ -122,8 +122,15 @@ def initialize_logging():
 def mount_system(root_path, fstab):
     log.info('Mount system in {0}'.format(root_path))
     mount_list = []
+    # Having parts of the system on NFS is currently not supported
+    supported_mount_types = ['LABEL', 'PARTUUID', 'UUID']
     system_mount = Fstab()
     for fstab_entry in fstab.get_devices():
+        if '=' in fstab_entry.device:
+            if fstab_entry.device.split('=')[0] not in supported_mount_types:
+                continue
+        elif not fstab_entry.device.startswith('/dev'):
+            continue
         try:
             mountpoint = ''.join(
                 [root_path, fstab_entry.mountpoint]
