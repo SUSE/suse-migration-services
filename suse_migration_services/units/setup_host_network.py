@@ -84,3 +84,42 @@ def main():
                 issue
             )
         )
+
+
+def log_network_details():
+    """
+    Provide detailed information about the current network setup
+
+    The method must be called in an active and online network state to provide
+    most useful information about the network interfaces and its setup.
+    """
+    log.info(
+        'All Network Interfaces {0}{1}'.format(
+            os.linesep, Command.run(
+                ['ip', 'a'], raise_on_error=False
+            ).output
+        )
+    )
+    log.info(
+        'Routing Tables {0}{1}'.format(
+            os.linesep, Command.run(
+                ['ip', 'r'], raise_on_error=False
+            ).output
+        )
+    )
+    log.info(
+        'DNS Resolver {0}{1}'.format(
+            os.linesep, Command.run(
+                ['cat', '/etc/resolv.conf'], raise_on_error=False
+            ).output
+        )
+    )
+    bonding_paths = '/proc/net/bonding/bond*'
+    if os.path.exists(os.path.dirname(bonding_paths)):
+        log.info(
+            'Network Bonding {0}{1}'.format(
+                os.linesep, Command.run(
+                    ['cat', bonding_paths], raise_on_error=False
+                ).output
+            )
+        )

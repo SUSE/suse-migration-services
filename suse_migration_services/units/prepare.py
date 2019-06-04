@@ -24,6 +24,9 @@ from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
+from suse_migration_services.units.setup_host_network import (
+    log_network_details
+)
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperMetaDataException
@@ -103,36 +106,7 @@ def main():
     )
     try:
         # log network info as network-online.target is done at this point
-        log.info(
-            'All Network Interfaces {0}{1}'.format(
-                os.linesep, Command.run(
-                    ['ip', 'a'], raise_on_error=False
-                ).output
-            )
-        )
-        log.info(
-            'Routing Tables {0}{1}'.format(
-                os.linesep, Command.run(
-                    ['ip', 'r'], raise_on_error=False
-                ).output
-            )
-        )
-        log.info(
-            'DNS Resolver {0}{1}'.format(
-                os.linesep, Command.run(
-                    ['cat', '/etc/resolv.conf'], raise_on_error=False
-                ).output
-            )
-        )
-        bonding_paths = Defaults.get_bonding_paths()
-        if os.path.exists(os.path.dirname(bonding_paths)):
-            log.info(
-                'Network Bonding {0}{1}'.format(
-                    os.linesep, Command.run(
-                        ['cat', bonding_paths], raise_on_error=False
-                    ).output
-                )
-            )
+        log_network_details()
         log.info('Running prepare service')
         system_mount = Fstab()
         system_mount.read(

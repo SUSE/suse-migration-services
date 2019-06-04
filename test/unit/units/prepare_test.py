@@ -106,39 +106,22 @@ class TestSetupPrepare(object):
         )
         assert mock_Command_run.call_args_list == [
             call(
-                [
-                    'update-ca-certificates'
-                ]
+                ['update-ca-certificates']
             ),
             call(
-                [
-                    'ip', 'a'
-                ],
-                raise_on_error=False
+                ['ip', 'a'], raise_on_error=False
             ),
             call(
-                [
-                    'ip', 'r'
-                ],
-                raise_on_error=False
+                ['ip', 'r'], raise_on_error=False
             ),
             call(
-                [
-                    'cat', '/etc/resolv.conf'
-                ],
-                raise_on_error=False
+                ['cat', '/etc/resolv.conf'], raise_on_error=False
             ),
             call(
-                [
-                    'cat', '/proc/net/bonding/bond*'
-                ],
-                raise_on_error=False
+                ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
             ),
             call(
-                [
-                    'mount', '--bind', '/system-root/etc/zypp',
-                    '/etc/zypp'
-                ]
+                ['mount', '--bind', '/system-root/etc/zypp', '/etc/zypp']
             ),
             call(
                 [
@@ -153,22 +136,13 @@ class TestSetupPrepare(object):
                 ]
             ),
             call(
-                [
-                    'mount', '-t', 'devtmpfs', 'devtmpfs',
-                    '/system-root/dev'
-                ]
+                ['mount', '-t', 'devtmpfs', 'devtmpfs', '/system-root/dev']
             ),
             call(
-                [
-                    'mount', '-t', 'proc', 'proc',
-                    '/system-root/proc'
-                ]
+                ['mount', '-t', 'proc', 'proc', '/system-root/proc']
             ),
             call(
-                [
-                    'mount', '-t', 'sysfs', 'sysfs',
-                    '/system-root/sys'
-                ]
+                ['mount', '-t', 'sysfs', 'sysfs', '/system-root/sys']
             )
         ]
         fstab.read.assert_called_once_with(
