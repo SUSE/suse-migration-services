@@ -128,15 +128,27 @@ def mount_system(root_path, fstab):
             mountpoint = ''.join(
                 [root_path, fstab_entry.mountpoint]
             )
+            device = fstab_entry.device
+            if not os.path.exists(device):
+                # device doesn't exist in the migration root, it might be
+                # a file on the host that we want to loopback mount...
+                device = ''.join([root_path, device])
+                if not os.path.exists(device):
+                    # ...but if that *also* doesn't exist, log a warning and
+                    # skip this entry.
+                    log.warning('Not mounting {0} ({1} does not exist)'.format(
+                        mountpoint, fstab_entry.device))
+                    continue
+
             log.info('Mounting {0}'.format(mountpoint))
             Command.run(
                 [
                     'mount', '-o', fstab_entry.options,
-                    fstab_entry.device, mountpoint
+                    device, mountpoint
                 ]
             )
             system_mount.add_entry(
-                fstab_entry.device, mountpoint, fstab_entry.fstype
+                device, mountpoint, fstab_entry.fstype
             )
             mount_list.append(mountpoint)
         except Exception as issue:
