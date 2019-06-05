@@ -96,8 +96,8 @@ and expects all required repositories to be setup correctly.
 
 Specify Migration Product::
 With the SLE15-Migration package a predefined product setup is
-already applied. The value for the target product can be overwritten
-with this setting. Following product names can be set:
+already applied. That setting can be overwritten with one of the
+following product names:
 
 * SLES/15/x86_64
 * SLES/15.1/x86_64
