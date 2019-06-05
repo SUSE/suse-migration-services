@@ -24,6 +24,9 @@ from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
+from suse_migration_services.units.setup_host_network import (
+    log_network_details
+)
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperMetaDataException
@@ -102,6 +105,8 @@ def main():
         [root_path, 'sys']
     )
     try:
+        # log network info as network-online.target is done at this point
+        log_network_details()
         log.info('Running prepare service')
         system_mount = Fstab()
         system_mount.read(

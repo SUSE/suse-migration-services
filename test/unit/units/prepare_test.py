@@ -1,5 +1,5 @@
 from unittest.mock import (
-    patch, call, Mock
+    patch, call, Mock, MagicMock
 )
 
 from pytest import raises
@@ -26,7 +26,13 @@ class TestSetupPrepare(object):
     ):
         mock_os_listdir.return_value = None
         mock_os_path_exists.return_value = True
-        mock_Command_run.side_effect = Exception
+        mock_Command_run.side_effect = [
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            Exception
+        ]
         with raises(DistMigrationZypperMetaDataException):
             main()
             assert mock_info.called
@@ -54,6 +60,10 @@ class TestSetupPrepare(object):
         with raises(DistMigrationZypperMetaDataException):
             main()
             assert mock_Command_run.call_args_list == [
+                call(['ip', 'a'], raise_on_error=False),
+                call(['ip', 'r'], raise_on_error=False),
+                call(['cat', '/etc/resolv.conf'], raise_on_error=False),
+                call(['cat', '/proc/net/bonding/bond*'], raise_on_error=False),
                 call(['umount', '/system-root/sys'], raise_on_error=False),
                 call(['umount', '/system-root/proc'], raise_on_error=False),
                 call(['umount', '/system-root/dev'], raise_on_error=False)
@@ -96,15 +106,22 @@ class TestSetupPrepare(object):
         )
         assert mock_Command_run.call_args_list == [
             call(
-                [
-                    'update-ca-certificates'
-                ]
+                ['update-ca-certificates']
             ),
             call(
-                [
-                    'mount', '--bind', '/system-root/etc/zypp',
-                    '/etc/zypp'
-                ]
+                ['ip', 'a'], raise_on_error=False
+            ),
+            call(
+                ['ip', 'r'], raise_on_error=False
+            ),
+            call(
+                ['cat', '/etc/resolv.conf'], raise_on_error=False
+            ),
+            call(
+                ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
+            ),
+            call(
+                ['mount', '--bind', '/system-root/etc/zypp', '/etc/zypp']
             ),
             call(
                 [
@@ -119,22 +136,13 @@ class TestSetupPrepare(object):
                 ]
             ),
             call(
-                [
-                    'mount', '-t', 'devtmpfs', 'devtmpfs',
-                    '/system-root/dev'
-                ]
+                ['mount', '-t', 'devtmpfs', 'devtmpfs', '/system-root/dev']
             ),
             call(
-                [
-                    'mount', '-t', 'proc', 'proc',
-                    '/system-root/proc'
-                ]
+                ['mount', '-t', 'proc', 'proc', '/system-root/proc']
             ),
             call(
-                [
-                    'mount', '-t', 'sysfs', 'sysfs',
-                    '/system-root/sys'
-                ]
+                ['mount', '-t', 'sysfs', 'sysfs', '/system-root/sys']
             )
         ]
         fstab.read.assert_called_once_with(
@@ -161,3 +169,6 @@ class TestSetupPrepare(object):
             '/etc/system-root.fstab'
         )
         assert mock_info.called
+        mock_Command_run.assert_any_call(
+            ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
+        )
