@@ -46,18 +46,6 @@ class TestKernelReboot(object):
                 raise_on_error=False
             ),
             call(
-                ['umount', '--lazy', '/etc/sysconfig/network'],
-                raise_on_error=False
-            ),
-            call(
-                ['umount', '--lazy', '/etc/zypp'],
-                raise_on_error=False
-            ),
-            call(
-                ['umount', '--lazy', '/system-root/foo'],
-                raise_on_error=False
-            ),
-            call(
                 ['umount', '--lazy', '/system-root/home'],
                 raise_on_error=False
             ),
@@ -91,9 +79,6 @@ class TestKernelReboot(object):
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            MagicMock(),
-            MagicMock(),
-            MagicMock(),
             Exception,
             None
         ]
@@ -103,18 +88,6 @@ class TestKernelReboot(object):
         assert mock_info.called
         assert mock_Command_run.call_args_list == [
             call(['systemctl', 'status', '-l', '--all'], raise_on_error=False),
-            call(
-                ['umount', '--lazy', '/etc/sysconfig/network'],
-                raise_on_error=False
-            ),
-            call(
-                ['umount', '--lazy', '/etc/zypp'],
-                raise_on_error=False
-            ),
-            call(
-                ['umount', '--lazy', '/system-root/foo'],
-                raise_on_error=False
-            ),
             call(
                 ['umount', '--lazy', '/system-root/home'],
                 raise_on_error=False
