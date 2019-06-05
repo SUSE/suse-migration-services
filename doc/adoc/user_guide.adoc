@@ -90,10 +90,9 @@ switch off the use of the migration plugin.
 use_zypper_migration_plugin: true|false
 
 [NOTE]
-If the migration plugin is not used, the upgrade process just calls
-`zypper dup` and expects all required repositories to be setup correctly.
-This means prior to the upgrade the setup of the repositories must
-be performed.
+If the migration plugin is not used, the setup of the repositories must
+be performed manually. Once done, the upgrade process just calls `zypper dup`
+and expects all required repositories to be setup correctly.
 
 Specify Migration Product::
 With the SLE15-Migration package a predefined product setup is
