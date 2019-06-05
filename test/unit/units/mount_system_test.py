@@ -177,6 +177,13 @@ class TestMountSystem(object):
                 call(
                     [
                         'mount', '-o', 'defaults',
+                        '/dev/disk/by-partuuid/3c8bd108-01',
+                        '/system-root/bar'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
                         '/dev/mynode',
                         '/system-root/foo'
                     ]
@@ -196,6 +203,11 @@ class TestMountSystem(object):
                 call(
                     '/dev/disk/by-label/foo',
                     '/system-root/home',
+                    'ext4'
+                ),
+                call(
+                    '/dev/disk/by-partuuid/3c8bd108-01',
+                    '/system-root/bar',
                     'ext4'
                 ),
                 call(

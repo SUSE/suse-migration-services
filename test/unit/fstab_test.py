@@ -41,6 +41,12 @@ class TestFstab(object):
                 mountpoint='/home',
                 device='/dev/disk/by-label/foo',
                 options='defaults'
+            ),
+            self.fstab.fstab_entry_type(
+                fstype='ext4',
+                mountpoint='/bar',
+                device='/dev/disk/by-partuuid/3c8bd108-01',
+                options='defaults'
             )
         ]
 
@@ -62,6 +68,12 @@ class TestFstab(object):
                 fstype='ext4',
                 mountpoint='/home',
                 device='/dev/disk/by-label/foo',
+                options='defaults'
+            ),
+            self.fstab.fstab_entry_type(
+                fstype='ext4',
+                mountpoint='/bar',
+                device='/dev/disk/by-partuuid/3c8bd108-01',
                 options='defaults'
             ),
             self.fstab.fstab_entry_type(

@@ -60,6 +60,10 @@ class Fstab(object):
                         device_path = ''.join(
                             ['/dev/disk/by-label/', device.split('=')[1]]
                         )
+                    elif device.startswith('PARTUUID'):
+                        device_path = ''.join(
+                            ['/dev/disk/by-partuuid/', device.split('=')[1]]
+                        )
                     else:
                         device_path = device
                         if not os.path.exists(device_path):
