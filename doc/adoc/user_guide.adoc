@@ -34,7 +34,7 @@ The upgrade is done via the network using the Zypper migration plugin which
 sends a request to the SUSE Customer Center (SCC), asking for an upgrade path.
 The request response contains the list of repositories required to upgrade the
 system. This requires the system to upgrade to be a SLES registered system.
-The upgrade system also supports an upgrade mode that works with non
+The upgrade system also supports an upgrade mode that works with non SLES
 registered systems. For details see <<Customize the Migration Process>>
 
 The upgrade to a new major versions requires the system to be offline during the upgrade to avoid system inconsistencies that may leave the system in a state that does not allow recovery. This behavior is implemented using a Live Migration Image.
@@ -44,7 +44,7 @@ The distribution migration system provides the live image and a component that m
 1. detect the system to be upgraded
 2. mount the necessary file systems
 3. setup the network to match the network configuration of the system to be upgraded
-4. prepare the package manager for the upgrade task 
+4. prepare the package manager for the upgrade task
 5. upgrade the system
 6. update the boot loader configuration
 7. unmount all mounted file systems
