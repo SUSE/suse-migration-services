@@ -16,8 +16,10 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
-
 from collections import namedtuple
+
+# project
+from suse_migration_services.logger import log
 
 
 class Fstab(object):
@@ -58,8 +60,19 @@ class Fstab(object):
                         device_path = ''.join(
                             ['/dev/disk/by-label/', device.split('=')[1]]
                         )
+                    elif device.startswith('PARTUUID'):
+                        device_path = ''.join(
+                            ['/dev/disk/by-partuuid/', device.split('=')[1]]
+                        )
                     else:
                         device_path = device
+                        if not os.path.exists(device_path):
+                            log.warning(
+                                'Device path {0} not found and skipped'.format(
+                                    device_path
+                                )
+                            )
+                            continue
                     self.fstab.append(
                         self.fstab_entry_type(
                             fstype=fstype,

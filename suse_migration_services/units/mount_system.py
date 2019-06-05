@@ -70,40 +70,16 @@ def main():
             ['mount', '-o', 'remount,rw', isoscan_loop_mount]
         )
 
-    fstab = None
-    lsblk_call = Command.run(
-        ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
-    )
-    log.info('Mount system service: mounting all entries')
-    for entry in lsblk_call.output.split(os.linesep):
-        block_record = entry.split()
-        if block_record and (block_record[1] == 'part' or block_record[1].startswith('raid')):
-            try:
-                Command.run(
-                    ['mount', block_record[0], root_path],
-                    raise_on_error=False
-                )
-                fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
-                if os.path.exists(fstab_file):
-                    fstab = Fstab()
-                    fstab.read(fstab_file)
-                    break
-            finally:
-                log.info('Umount {0}'.format(root_path))
-                Command.run(
-                    ['umount', root_path],
-                    raise_on_error=False
-                )
-
+    fstab, storage_info = read_system_fstab(root_path)
     if not fstab:
         log.error(
             'Could not find system in fstab on {0}'.format(
-                lsblk_call.output
+                storage_info
             )
         )
         raise DistMigrationSystemNotFoundException(
             'Could not find system with fstab on {0}'.format(
-                lsblk_call.output
+                storage_info
             )
         )
 
@@ -117,6 +93,35 @@ def initialize_logging():
     log_file = Defaults.get_migration_log_file()
     with open(log_file, 'w'):
         log.set_logfile(Defaults.get_migration_log_file())
+
+
+def read_system_fstab(root_path):
+    log.info('Reading fstab from associated disks')
+    lsblk_call = Command.run(
+        ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
+    )
+    for entry in lsblk_call.output.split(os.linesep):
+        block_record = entry.split()
+        if len(block_record) >= 2:
+            block_type = block_record[1]
+            if block_type == 'part' or block_type.startswith('raid'):
+                try:
+                    Command.run(
+                        ['mount', block_record[0], root_path],
+                        raise_on_error=False
+                    )
+                    fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
+                    if os.path.exists(fstab_file):
+                        fstab = Fstab()
+                        fstab.read(fstab_file)
+                        return(fstab, lsblk_call.output)
+                finally:
+                    log.info('Umount {0}'.format(root_path))
+                    Command.run(
+                        ['umount', root_path],
+                        raise_on_error=False
+                    )
+    return(None, lsblk_call.output)
 
 
 def mount_system(root_path, fstab):

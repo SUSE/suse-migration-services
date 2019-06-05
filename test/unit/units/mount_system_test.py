@@ -52,9 +52,10 @@ class TestMountSystem(object):
     @patch.object(Defaults, 'get_migration_log_file')
     @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.log.warning')
     @patch('suse_migration_services.command.Command.run')
     def test_mount_system_raises(
-            self, mock_Command_run, mock_info,
+            self, mock_Command_run, mock_warning, mock_info,
             mock_error, mock_log_file
     ):
         def command_calls(command):
@@ -133,7 +134,9 @@ class TestMountSystem(object):
             '../data/optional-migration-config.yml'
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
-        mock_yaml_safe_load.return_value = {'migration_product': 'SLES/15/x86_64'}
+        mock_yaml_safe_load.return_value = {
+            'migration_product': 'SLES/15/x86_64'
+        }
         with patch('builtins.open', create=True) as mock_open:
             main()
             assert mock_update_migration_config_file.called
@@ -174,6 +177,13 @@ class TestMountSystem(object):
                 call(
                     [
                         'mount', '-o', 'defaults',
+                        '/dev/disk/by-partuuid/3c8bd108-01',
+                        '/system-root/bar'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
                         '/dev/mynode',
                         '/system-root/foo'
                     ]
@@ -193,6 +203,11 @@ class TestMountSystem(object):
                 call(
                     '/dev/disk/by-label/foo',
                     '/system-root/home',
+                    'ext4'
+                ),
+                call(
+                    '/dev/disk/by-partuuid/3c8bd108-01',
+                    '/system-root/bar',
                     'ext4'
                 ),
                 call(
