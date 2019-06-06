@@ -35,9 +35,9 @@ sends a request to the repository server, asking for an upgrade path.
 SUSE supported repository servers are the SUSE Customer Center (SCC), the
 Repository Management Tool (RMT), and the Subscription Management Tool (SMT).
 The request response contains the list of repositories required to upgrade the
-system. This requires the system to upgrade to be a registered system.
-The upgrade system also supports an upgrade mode that works with systems not
-registered to a repository service. For details
+system. This requires the system to be upgraded to be registered.
+The migration implementation also supports an upgrade mode that works with
+systems not registered to a repository service. For details
 see <<Customize the Migration Process>>
 
 The upgrade to a new major versions requires the system to be offline during the upgrade to avoid system inconsistencies that may leave the system in a state that does not allow recovery. This behavior is implemented using a Live Migration Image.
@@ -93,9 +93,10 @@ switch off the use of the migration workflow.
 use_zypper_migration_plugin: true|false
 
 [NOTE]
-If the migration workflow is not used, the setup of the repositories must
-be performed manually. Once done, the upgrade process just calls `zypper dup`
-and expects all required repositories to be setup correctly.
+The use of the migration workflow is the default behavior. If the migration
+workflow is not used, the setup of the repositories must be performed
+manually. Once done, the upgrade process uses `zypper dup` and expects
+all required repositories to be setup correctly.
 
 Specify Migration Product::
 With the SLE15-Migration package a predefined product setup is
