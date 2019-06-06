@@ -28,14 +28,17 @@ Latest Version: {Latest_Version}
 Code available: {Repo}
 
 == Concept
-The Distribution Migration System provides an upgrade path for an installed SUSE Linux Enterprise system from one major version to another, for example, from SUSE Linux Enterprise Server 12 SP4 to SUSE Linux Enterprise Server 15. For a service pack upgrade from one Service Pack (SP) to another within a given major version release series the existing Zypper migration plugin provides the supported upgrade path. The distribution migration system provides the ability to upgrade across major distributions without the need to use the next major version installation media to perform the system upgrade.
+The Distribution Migration System provides an upgrade path for an installed SUSE Linux Enterprise system from one major version to another, for example, from SUSE Linux Enterprise Server 12 SP4 to SUSE Linux Enterprise Server 15. For a service pack upgrade from one Service Pack (SP) to another within a given major version release series the existing Zypper migration workflow provides the supported upgrade path. The distribution migration system provides the ability to upgrade across major distributions without the need to use the next major version installation media to perform the system upgrade.
 
-The upgrade is done via the network using the Zypper migration plugin which
-sends a request to the SUSE Customer Center (SCC), asking for an upgrade path.
+The upgrade is done via the network using the Zypper migration workflow which
+sends a request to the repository server, asking for an upgrade path.
+SUSE supported repository servers are the SUSE Customer Center (SCC), the
+Repository Management Tool (RMT), and the Subscription Management Tool (SMT).
 The request response contains the list of repositories required to upgrade the
-system. This requires the system to upgrade to be a SLES registered system.
-The upgrade system also supports an upgrade mode that works with non SLES
-registered systems. For details see <<Customize the Migration Process>>
+system. This requires the system to upgrade to be a registered system.
+The upgrade system also supports an upgrade mode that works with systems not
+registered to a repository service. For details
+see <<Customize the Migration Process>>
 
 The upgrade to a new major versions requires the system to be offline during the upgrade to avoid system inconsistencies that may leave the system in a state that does not allow recovery. This behavior is implemented using a Live Migration Image.
 
@@ -71,33 +74,33 @@ tux > sudo zypper in SLE15-Migration suse-migration-sle15-activation
 
 == Customize the Migration Process
 
-The migration system reads a custom config file from the system to upgrade.
-The contents of that file allows to influence the behavior of the upgrade
-process. Prior to the start of the upgrade process, create the following
-file:
+The migration system reads a custom configuration file from the system to
+be upgraded. The content of this file modifies the behavior of the
+upgrade process. Prior to the start of the upgrade process, create the
+following file:
 
 [listing]
 tux > ssh INSTANCE_USER@IP_OF_INSTANCE 'touch /etc/sle-migration-service.yml'
 
-The custom config file allows for the following settings:
+The custom config file supports the following settings:
 
 Control Zypper Installation Mode::
-If the upgrade process is used on systems that are not SLES registered
-or for which the SUSE Customer Center has no upgrade path, it's required to
-switch off the use of the migration plugin.
+If the upgrade process is used on systems that are not registered
+or for which the repository server has no upgrade path, it's required to
+switch off the use of the migration workflow.
 
 [listing]
 use_zypper_migration_plugin: true|false
 
 [NOTE]
-If the migration plugin is not used, the setup of the repositories must
+If the migration workflow is not used, the setup of the repositories must
 be performed manually. Once done, the upgrade process just calls `zypper dup`
 and expects all required repositories to be setup correctly.
 
 Specify Migration Product::
 With the SLE15-Migration package a predefined product setup is
 already applied. That setting can be overwritten with one of the
-following product names:
+following product specifications:
 
 * SLES/15/x86_64
 * SLES/15.1/x86_64
@@ -107,8 +110,8 @@ migration_product: SLES/15/x86_64
 
 [NOTE]
 If `use_zypper_migration_plugin: false` is set, the value for the
-target product will not be effective because it's used only in
-combination with the Zypper migration plugin.
+`migration_product` will not be effective because it's used only in
+combination with the Zypper migration workflow.
 
 Enable Debug Mode::
 If enabled, prevents the upgrade system from rewinding the setup
