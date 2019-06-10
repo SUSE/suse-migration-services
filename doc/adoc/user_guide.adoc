@@ -120,7 +120,7 @@ or for which the repository server has no upgrade path, it's required to
 switch off the use of the migration workflow.
 
 [listing]
-use_zypper_migration_plugin: true|false
+use_zypper_migration: true|false
 
 [NOTE]
 The use of the migration workflow is the default behavior. If the migration
@@ -140,7 +140,7 @@ following product specifications:
 migration_product: SLES/15/x86_64
 
 [NOTE]
-If `use_zypper_migration_plugin: false` is set, the value for the
+If `use_zypper_migration: false` is set, the value for the
 `migration_product` will not be effective because it's used only in
 combination with the Zypper migration workflow.
 
