@@ -87,7 +87,7 @@ class MigrationConfig(object):
         return self.config_data.get('debug', False)
 
     def is_zypper_migration_plugin_requested(self):
-        return self.config_data.get('use_zypper_migration_plugin', True)
+        return self.config_data.get('use_zypper_migration', True)
 
     def _write_config_file(self):
         with open(self.migration_config_file, 'w') as config:
