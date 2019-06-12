@@ -58,16 +58,16 @@ that modifies the bootloader configuration such that on the next boot the
 system will boot into the upgrade image. Once booted into the upgrade
 live image the following chain of services will be executed:
 
-1. detect the system to be upgraded
-2. mount the necessary file systems
-3. setup the network to match the network configuration of the
+1. Detect the system to be upgraded
+2. Mount the necessary file systems
+3. Setup the network to match the network configuration of the
    system to be upgraded
-4. prepare SSH access to the upgrade live image
-5. prepare the package manager for the upgrade task
-6. upgrade the system using zypper
-7. update the boot loader configuration
-8. unmount all mounted file systems
-9. reboot
+4. Prepare SSH access to the upgrade live image
+5. Prepare the package manager for the upgrade task
+6. Upgrade the system using zypper
+7. Update the boot loader configuration
+8. Unmount all mounted file systems
+9. Reboot
 
 In case an error occurs prior to the start of the upgrade the system will
 be reverted to its original state.
