@@ -1,1 +1,6 @@
 migration_product: 'SLES/15/x86_64'
+
+preserve:
+  rules:
+     - /etc/udev/rules.d/a.rules
+     - /etc/udev/rules.d/b.rules

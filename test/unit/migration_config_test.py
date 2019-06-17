@@ -27,6 +27,11 @@ class TestMigrationConfig(object):
     def test_get_migration_product(self):
         assert self.config.get_migration_product() == 'SLES/15/x86_64'
 
+    def test_get_preserve_udev_rules_list(self):
+        assert self.config.get_preserve_udev_rules_list() == [
+            '/etc/udev/rules.d/a.rules', '/etc/udev/rules.d/b.rules'
+        ]
+
     @patch('suse_migration_services.logger.log.error')
     def test_get_migration_product_targets(self, mock_error):
         self.config.config_data = {'not_migration_product': 'another_info'}

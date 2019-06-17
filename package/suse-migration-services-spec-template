@@ -54,6 +54,9 @@ python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
 install -D -m 644 systemd/suse-migration-mount-system.service \
     %{buildroot}%{_unitdir}/suse-migration-mount-system.service
 
+install -D -m 644 systemd/suse-migration-post-mount-system.service \
+    %{buildroot}%{_unitdir}/suse-migration-post-mount-system.service
+
 install -D -m 644 systemd/suse-migration-setup-host-network.service \
     %{buildroot}%{_unitdir}/suse-migration-setup-host-network.service
 
@@ -97,6 +100,9 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 
 %{_bindir}/suse-migration-mount-system
 %{_unitdir}/suse-migration-mount-system.service
+
+%{_bindir}/suse-migration-post-mount-system
+%{_unitdir}/suse-migration-post-mount-system.service
 
 %{_bindir}/suse-migration-setup-host-network
 %{_unitdir}/suse-migration-setup-host-network.service

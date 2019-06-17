@@ -63,6 +63,20 @@ class MigrationConfig(object):
 
         return migration_product
 
+    def get_preserve_udev_rules_list(self):
+        """
+        Returns list of udev rule file(s)
+
+        The returned file list is used to make those rule files
+        available to the migration live system such that the
+        same behavior the rules apply on the system to be
+        upgraded also applies to the live migration system
+        while the upgrade runs
+        """
+        preserve_data = self.config_data.get('preserve')
+        if preserve_data:
+            return preserve_data.get('rules')
+
     def update_migration_config_file(self):
         """
         Update the default migration configuration with custom values
