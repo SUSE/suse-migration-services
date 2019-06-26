@@ -100,7 +100,7 @@ version installation media.
 To install the distribution migration system run:
 
 [listing]
-tux > sudo zypper in SLE15-Migration suse-migration-sle15-activation
+tux > sudo zypper in SLES15-Migration suse-migration-sle15-activation
 
 == Optional Customization of the Upgrade Process
 The upgrade live image is pre-configured to run without any further
@@ -129,7 +129,7 @@ manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
 Specify Migration Product::
-With the SLE15-Migration package a predefined product setup is
+With the SLES15-Migration package a predefined product setup is
 already applied. That setting can be overwritten with one of the
 following product specifications:
 
