@@ -5,7 +5,7 @@ Requires=suse-migration-mount-system.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/suse-migration-post-mount
+ExecStart=/usr/bin/suse-migration-post-mount-system
 
 [Install]
 WantedBy=multi-user.target
