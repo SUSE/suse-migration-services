@@ -1,0 +1,11 @@
+[Unit]
+Description=Preserve Data After System Mount
+After=suse-migration-mount-system.service
+Requires=suse-migration-mount-system.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-post-mount
+
+[Install]
+WantedBy=multi-user.target

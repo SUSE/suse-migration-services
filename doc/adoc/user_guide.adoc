@@ -144,6 +144,23 @@ If `use_zypper_migration: false` is set, the value for the
 `migration_product` will not be effective because it's used only in
 combination with the Zypper migration workflow.
 
+Preserve System Data::
+Preserve custom data file(s) e.g udev rules from the system
+to be migrated into the upgrade live system and make sure
+they will become effective.
+
+[listing]
+preserve:
+  rules:
+￼   - /etc/udev/rules.d/a.rules
+￼   - /etc/udev/rules.d/b.rules
+
+[NOTE]
+udev rules that require custom drivers will not have the desired effect
+as the migration system will not include these drivers and therefore
+execution of those rules will fail. Rules with such properties should
+not be listed.
+
 Enable Debug Mode::
 If enabled, prevents the upgrade system from rewinding the setup
 steps and rebooting due to a failed upgrade, allowing the issue to
