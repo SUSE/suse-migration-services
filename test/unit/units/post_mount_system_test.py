@@ -26,5 +26,6 @@ class TestPostMountSystem(object):
         ]
         assert mock_Command_run.call_args_list == [
             call(['udevadm', 'control', '--reload']),
-            call(['udevadm', 'trigger', '--type=subsystems', '--action=add'])
+            call(['udevadm', 'trigger', '--type=subsystems', '--action=add']),
+            call(['udevadm', 'trigger', '--type=devices', '--action=add'])
         ]

@@ -55,3 +55,6 @@ def main():
         Command.run(
             ['udevadm', 'trigger', '--type=subsystems', '--action=add']
         )
+        Command.run(
+            ['udevadm', 'trigger', '--type=devices', '--action=add']
+        )
