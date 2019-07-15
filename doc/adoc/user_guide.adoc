@@ -7,7 +7,7 @@ Marcus Schäfer; Jesús Velázquez
 
 :Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
 :Publication_Date: TBD
-:Latest_Version: 0.6.1
+:Latest_Version: 0.7.0
 :Contributors: 
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
@@ -48,15 +48,15 @@ The migration implementation also supports an upgrade mode that works with
 systems not registered to a repository service. For details
 see <<Optional Customization of the Upgrade Process>>
 
-The upgrade to a new major versions requires the system to be offline
+The upgrade to a new major version requires the system to be offline
 during the upgrade to avoid system inconsistencies that may leave the
 system in a state that does not allow recovery. This behavior is implemented
 using a Live Migration Image.
 
-The distribution migration system provides the live image and a component
-that modifies the bootloader configuration such that on the next boot the
-system will boot into the upgrade image. Once booted into the upgrade
-live image the following chain of services will be executed:
+The distribution migration system provides the live image and a startup
+utility named: `run_migration` which reboots the running system into the
+upgrade live image. Once booted into the upgrade live image the following
+chain of services will be executed:
 
 1. Detect the system to be upgraded
 2. Mount the necessary file systems
@@ -100,7 +100,7 @@ version installation media.
 To install the distribution migration system run:
 
 [listing]
-tux > sudo zypper in SLES15-Migration suse-migration-sle15-activation
+tux > sudo zypper in SLES15-Migration
 
 == Optional Customization of the Upgrade Process
 The upgrade live image is pre-configured to run without any further
@@ -170,10 +170,11 @@ be debugged.
 debug: true|false
 
 == Run the Migration
-The `suse-migration-sle15-activation package` configures the boot loader
-to boot into the live image which will start the upgrade automatically.
-After the installation of the packages is complete, reboot the system to
-start the upgrade process.
+After the install of the `SLES15-Migration` package, start the migration
+by calling the following command:
+
+[listing]
+tux > sudo run_migration
 
 After the upgrade has started, the only way to access the system during the
 upgrade process is via ssh with a user called `migration`:

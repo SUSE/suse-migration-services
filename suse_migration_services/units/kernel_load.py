@@ -84,7 +84,9 @@ def _get_cmdline(kernel_name):
         )
     with open(grub_config_file_path) as grub_config_file:
         grub_content = grub_config_file.read()
-    pattern = r'(?<=linux)[ \t]+{0}([{1}|boot/{1}].*)'.format(os.sep, kernel_name)
+    pattern = r'(?<=linux)[ \t]+{0}([{1}|boot/{1}].*)'.format(
+        os.sep, kernel_name
+    )
     cmd_line = re.findall(pattern, grub_content)[0]
     cmd_line = cmd_line.split()
     cmd_line_options = []

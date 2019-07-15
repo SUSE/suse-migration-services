@@ -24,15 +24,6 @@ build: check test
 	# provide rpm rpmlintrc
 	cp package/suse-migration-services-rpmlintrc dist
 
-sle15_activation: check
-	rm -f dist/*
-	git log grub.d | helper/changelog_generator |\
-		helper/changelog_descending > \
-		dist/suse-migration-sle15-activation.changes
-	cp package/suse-migration-sle15-activation-spec-template \
-		dist/suse-migration-sle15-activation.spec
-	tar -czf dist/suse-migration-sle15-activation.tar.gz grub.d
-
 .PHONY: test
 test:
 	tox -e unit_py3
