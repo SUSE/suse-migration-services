@@ -7,7 +7,7 @@ Marcus Schäfer; Jesús Velázquez
 
 :Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
 :Publication_Date: TBD
-:Latest_Version: 0.7.0
+:Latest_Version: 1.0.0
 :Contributors: 
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
