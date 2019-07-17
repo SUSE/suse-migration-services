@@ -102,6 +102,18 @@ To install the distribution migration system run:
 [listing]
 tux > sudo zypper in SLES15-Migration
 
+[NOTE]
+The `run_migration` utility is based on `kexec` to boot the live image
+kernel. Not all Cloud Service Providers supports this method. Especially
+those using Xen based virtualization, like on Amazon EC2, will not work.
+In this case additionally install the package:
+
+[listing]
+tux > sudo zypper in suse-migration-sle15-activation
+
+The install of the package modifies the bootloader configuration such
+that on the next boot the system will boot into the upgrade image.
+
 == Optional Customization of the Upgrade Process
 The upgrade live image is pre-configured to run without any further
 setup. The migration system reads a custom configuration file from the
@@ -175,6 +187,13 @@ by calling the following command:
 
 [listing]
 tux > sudo run_migration
+
+[NOTE]
+If the `suse-migration-sle15-activation` package was installed,
+start the migration by a reboot of the system as follows:
+
+[listing]
+tux > sudo reboot
 
 After the upgrade has started, the only way to access the system during the
 upgrade process is via ssh with a user called `migration`:
