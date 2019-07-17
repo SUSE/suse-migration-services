@@ -51,6 +51,9 @@ python3 setup.py build
 %install
 python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
 
+install -D -m 755 tools/run_migration \
+    %{buildroot}%{_sbindir}/run_migration
+
 install -D -m 644 systemd/suse-migration-mount-system.service \
     %{buildroot}%{_unitdir}/suse-migration-mount-system.service
 
@@ -94,6 +97,8 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 %files
 %defattr(-,root,root,-)
 %{python3_sitelib}/*
+
+%{_sbindir}/run_migration
 
 %{_bindir}/suse-migration-ssh-keys
 %{_unitdir}/suse-migration-ssh-keys.service

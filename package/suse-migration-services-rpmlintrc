@@ -10,3 +10,6 @@ addFilter("systemd-service-without-service_del_preun .*")
 
 # Migration services runs once and never manually
 addFilter("suse-missing-rclink .*")
+
+# don't check for file duplicates, python stub
+addFilter("files-duplicate .*")

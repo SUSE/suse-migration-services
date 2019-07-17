@@ -32,9 +32,8 @@ def main():
     DistMigration update grub to migrated version
 
     Setup and update grub with content from the migrated system
-    Uninstall activation and live migration packages such that
-    a subsequent call of grub2-mkconfig will delete the migration
-    menu entry
+    Uninstall live migration packages such that they are no longer
+    part of the now migrated system.
     """
     root_path = Defaults.get_system_root_path()
     grub_config_file = Defaults.get_grub_config_file()
@@ -43,7 +42,6 @@ def main():
         log.info('Running grub setup service')
         migration_packages = [
             'SLE*-Migration',
-            'suse-migration-*-activation',
         ]
         log.info(
             'Uninstalling migration: {0}{1}'.format(

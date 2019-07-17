@@ -1,0 +1,115 @@
+#!/bin/bash
+# Copyright (c) 2019 SUSE Software Solutions Germany GmbH.  All rights reserved.
+# 
+# This file is part of suse-migration-services.
+#
+# suse-migration-services is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# suse-migration-services is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
+#
+# Enable shell globbing
+set +o noglob
+
+logfile=/var/log/migration_startup.log
+
+function setup_logging {
+    rm -f "${logfile}"
+    exec 2>>"${logfile}"
+    set -x
+}
+
+function cleanup {
+    # shellcheck disable=SC2181
+    if [ ! $? = 0 ];then
+        echo "Migration run failed: see ${logfile} for details"
+    fi
+    umount /mnt &>/dev/null
+}
+
+function get_migration_image {
+    # """
+    # Search for migration ISO file
+    # """
+    echo /usr/share/migration-image/*-Migration.*.iso
+}
+
+function get_system_root_device {
+    # """
+    # Looking for running system root device
+    # """
+    lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" "
+}
+
+function get_boot_options {
+    # """
+    # Create boot options list for kexec
+    # """
+    local boot_options
+    boot_options="iso-scan/filename=$1 root=live:CDLABEL=CDROM rd.live.image"
+    if mdadm --detail "$(get_system_root_device)" &>/dev/null; then
+        boot_options="${boot_options} rd.auto"
+    fi
+    echo "${boot_options}"
+}
+
+function extract_kernel_and_initrd {
+    # """
+    # Extract kernel and initrd for kexec load operation
+    #
+    # The method assumes EFI layout of the live image
+    # """
+    local migration_image=$1
+    local boot_data_dir
+    if mount -o ro "${migration_image}" /mnt; then
+        boot_data_dir=$(mktemp -d -t migration_XXXX)
+        if \
+            cp /mnt/boot/*/loader/initrd /mnt/boot/*/loader/linux \
+            "${boot_data_dir}"
+        then
+            umount /mnt &>/dev/null
+            echo "${boot_data_dir}"
+        fi
+    fi
+}
+
+# Check on permissions
+if (( EUID != 0 )); then
+    echo "Migration startup requires root permissions"
+    exit 1
+fi
+
+# Set signal handler on EXIT
+trap cleanup EXIT
+
+# Setup logging
+setup_logging
+
+# Lookup installed migration ISO image
+migration_iso=$(get_migration_image)
+if [ ! -e "${migration_iso}" ];then
+    echo "Migration image ISO file not found: ${migration_iso}"
+    exit 1
+fi
+
+# Extract kexec boot data from migration ISO image
+boot_dir=$(extract_kernel_and_initrd "${migration_iso}")
+if [ ! -e "${boot_dir}" ];then
+    echo "Failed to extract boot files"
+    exit 1
+fi
+
+# Run Migration
+kexec \
+    --load "${boot_dir}/linux" \
+    --initrd "${boot_dir}/initrd" \
+    --command-line "$(get_boot_options "${migration_iso}")"
+kexec --exec
