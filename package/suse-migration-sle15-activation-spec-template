@@ -1,0 +1,58 @@
+#
+# spec file for package suse-migration-activation
+#
+# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#
+
+
+Name:             suse-migration-sle15-activation
+Version:          1.2.0
+Release:          0
+Url:              https://github.com/SUSE/suse-migration-services
+Summary:          SUSE Distribution SLE15 Migration Activation
+License:          GPL-3.0+
+Group:            System/Management
+Source:           suse-migration-sle15-activation.tar.gz
+BuildRoot:        %{_tmppath}/%{name}-%{version}-build
+BuildArch:        noarch
+BuildRequires:    grub2
+Requires:         SLES15-Migration
+Requires:         grub2
+
+%description -n suse-migration-sle15-activation
+Script code to activate the SLE15 migration image to be booted at
+next reboot of the machine.
+
+%prep
+%setup -q -n grub.d
+
+%build
+# nothing to do here
+
+%install
+install -D -m 755 99_migration \
+    %{buildroot}/etc/grub.d/99_migration
+
+%post
+/usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
+
+%postun
+/usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
+
+%files
+%defattr(-,root,root,-)
+%dir /etc/grub.d
+/etc/grub.d/*
+
+%changelog
