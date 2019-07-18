@@ -42,6 +42,7 @@ def main():
         log.info('Running grub setup service')
         migration_packages = [
             'SLE*-Migration',
+            'suse-migration-*-activation'
         ]
         log.info(
             'Uninstalling migration: {0}{1}'.format(

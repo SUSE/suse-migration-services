@@ -1,0 +1,44 @@
+# SUSE Migration activation menu entry based on isofile
+
+. /usr/share/grub2/grub-mkconfig_lib
+
+CLASS="--class memtest86 --class gnu --class tools"
+
+if [ -z "${GRUB_DISTRIBUTOR}" ] ; then
+    OS=Migration
+else
+    OS="${GRUB_DISTRIBUTOR} Migration"
+    CLASS="--class $(
+        echo "${GRUB_DISTRIBUTOR}" | tr '[:upper:]' '[:lower:]' | cut -d' ' -f1
+    ) ${CLASS}"
+fi
+
+migration_iso=$(echo /usr/share/migration-image/*-Migration.*.iso)
+root_device=$(lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" ")
+root_uuid=$(blkid -s UUID -o value "${root_device}")
+root_type=$(blkid -s TYPE -o value "${root_device}")
+boot_options="rd.live.image root=live:CDLABEL=CDROM"
+if mdadm --detail "${root_device}" &>/dev/null; then
+    boot_options="${boot_options} rd.auto"
+fi
+
+if grub_file_is_not_garbage "${migration_iso}"; then
+    kernel="(loop)/boot/x86_64/loader/linux"
+    initrd="(loop)/boot/x86_64/loader/initrd"
+    boot_device_id="$(grub_get_device_id "${GRUB_DEVICE_BOOT}")"
+    printf "menuentry '%s' %s \${menuentry_id_option} '%s' {\n" \
+        "${OS}" "${CLASS}" "Migration-${boot_device_id}"
+    printf "    insmod %s\n" "${root_type}"
+    printf "    search --no-floppy --fs-uuid --set=root %s\n" "${root_uuid}"
+    printf "    set isofile='%s'\n" \
+        "${migration_iso}"
+    printf "    loopback loop (\$root)\$isofile\n"
+    printf "    linux %s iso-scan/filename=\$isofile %s\n" \
+        "${kernel}" "${boot_options}"
+    printf "    initrd %s\n" \
+        "${initrd}"
+    printf "}\n"
+
+    printf "set default='%s'\n" "${OS}"
+    printf "set timeout=1\n"
+fi

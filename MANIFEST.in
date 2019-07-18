@@ -1,5 +1,7 @@
 # Manifest describing source package contents
 
+prune grub.d
+
 graft tools
 graft suse_migration_services/units
 graft package
