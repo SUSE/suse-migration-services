@@ -7,7 +7,7 @@ Marcus Schäfer; Jesús Velázquez
 
 :Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
 :Publication_Date: TBD
-:Latest_Version: 1.0.0
+:Latest_Version: 1.1.0
 :Contributors: 
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
@@ -102,17 +102,30 @@ To install the distribution migration system run:
 [listing]
 tux > sudo zypper in SLES15-Migration
 
-[NOTE]
-The `run_migration` utility is based on `kexec` to boot the live image
-kernel. Not all Cloud Service Providers supports this method. Especially
-those using Xen based virtualization, like on Amazon EC2, will not work.
-In this case additionally install the package:
+The distribution migration process can be invoked using different methods.
+One method of activating the migration is the `run_migration` included with
+the SLES15-Migration package. The second method to invoking the migration
+process is via reboot after installing the suse-migration-sle15-activation
+package.
 
 [listing]
 tux > sudo zypper in suse-migration-sle15-activation
 
-The install of the package modifies the bootloader configuration such
-that on the next boot the system will boot into the upgrade image.
+The `run_migration` uses `kexec` to boot into the kernel deliverd with the
+upgrade image deliverd by the SLES15-Migration package. Once this system
+is live after the `kexec` the distribution migration process is automatically
+atarted. However, `kexec` is not supported and does not function in certain
+conditions. The `run_migration` utility does not work in Xen based
+environments.
+
+Starting the migration via reboot after installing the
+suse-migration-sle15-activation package covers the Xen use case but does
+not work in cases where there is no direct acces to the root filesystem
+from the bootloader or on architectures other than x86_64. During
+installation of the suse-migration-sle15-activation package the bootloader
+configuration is modified  such that on the next boot the system will boot
+into the upgrade image. This in turns starts the automated distribution
+migration process.
 
 == Optional Customization of the Upgrade Process
 The upgrade live image is pre-configured to run without any further
@@ -226,8 +239,6 @@ a pointer to the respective log file.
 * For Public Cloud instances the metadata will not change. As far as the
   cloud framework is concerned, you will still be running a "SLES 12 SP4"
   instance even if you upgraded to SLES 15. This cannot be changed.
-* Upgrade is only possible for systems that have direct access to the root
-  file system from the boot loader.
 * Upgrade is only possible for systems that use unencrypted root file systems,
   at the OS level. Encrypting the root device using a cloud framework
   encryption mechanism happens at a different level.
