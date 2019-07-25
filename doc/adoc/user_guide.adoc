@@ -45,8 +45,8 @@ Repository Management Tool (RMT), and the Subscription Management Tool (SMT).
 The request response contains the list of repositories required to upgrade the
 system. This requires the system to be upgraded to be registered.
 The migration implementation also supports an upgrade mode that works with
-systems not registered to a repository service. For details
-see <<Optional Customization of the Upgrade Process>>
+systems not registered to a repository service. For details,
+see <<Optional Customization of the Upgrade Process>>.
 
 The upgrade to a new major version requires the system to be offline
 during the upgrade to avoid system inconsistencies that may leave the
@@ -79,10 +79,10 @@ Systems that are to be upgraded need to be registered.
 to the SUSE operated update infrastructure. All other systems must be
 connected to the SUSE Customer Center (SCC), a Subscription Management
 Tool (SMT), or a Repository Management tool (RMT) server. For systems
-managed via SUSE Manager use the upgrade path provided by SUSE Manager.
+managed via SUSE Manager, use the upgrade path provided by SUSE Manager.
 
 Recommendation for SSH access during upgrade::
-During the upgrade it is only possible to log in via SSH key-based login.
+During the upgrade, it is only possible to log in via SSH key-based login.
 If your system is not configured for it, it is recommended that at least
 one of the users on the system has a `~/.ssh/authorized_keys` file with a
 private key accessible by the person executing the system upgrade.
@@ -111,16 +111,16 @@ package.
 [listing]
 tux > sudo zypper in suse-migration-sle15-activation
 
-The `run_migration` uses `kexec` to boot into the kernel deliverd with the
-upgrade image deliverd by the SLES15-Migration package. Once this system
+The `run_migration` uses `kexec` to boot into the kernel delivered with the
+upgrade image delivered by the SLES15-Migration package. Once this system
 is live after the `kexec` the distribution migration process is automatically
-atarted. However, `kexec` is not supported and does not function in certain
+started. However, `kexec` is not supported and does not function in certain
 conditions. The `run_migration` utility does not work in Xen based
 environments.
 
 Starting the migration via reboot after installing the
 suse-migration-sle15-activation package covers the Xen use case but does
-not work in cases where there is no direct acces to the root filesystem
+not work in cases where there is no direct access to the root file system
 from the bootloader or on architectures other than x86_64. During
 installation of the suse-migration-sle15-activation package the bootloader
 configuration is modified  such that on the next boot the system will boot
@@ -170,15 +170,15 @@ If `use_zypper_migration: false` is set, the value for the
 combination with the Zypper migration workflow.
 
 Preserve System Data::
-Preserve custom data file(s) e.g udev rules from the system
+Preserve custom data file(s) e.g. udev rules from the system
 to be migrated into the upgrade live system and make sure
 they will become effective.
 
 [listing]
 preserve:
   rules:
-￼   - /etc/udev/rules.d/a.rules
-￼   - /etc/udev/rules.d/b.rules
+    - /etc/udev/rules.d/a.rules
+    - /etc/udev/rules.d/b.rules
 
 [NOTE]
 udev rules that require custom drivers will not have the desired effect
