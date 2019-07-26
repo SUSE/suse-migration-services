@@ -135,7 +135,7 @@ class TestMountSystem(object):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
         mock_yaml_safe_load.return_value = {
-            'migration_product': 'SLES/15/x86_64'
+            'migration_product': '/15/x86_64'
         }
         with patch('builtins.open', create=True) as mock_open:
             main()

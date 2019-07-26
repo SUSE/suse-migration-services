@@ -68,3 +68,18 @@ class TestMigrationConfig(object):
             mock_yaml_dump.assert_called_once_with(
                 self.config.config_data, file_handle, default_flow_style=False
             )
+
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_root_path')
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch('suse_migration_services.logger.log.info')
+    def test_update_migration_config_file_detect_product(
+        self, mock_info, mock_write_config_file, mock_get_system_root_path,
+        mock_get_migration_config_file  # , mock_ElementTree
+    ):
+        mock_get_system_root_path.return_value = '../data/'
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config-detect-product.yml'
+        self.config = MigrationConfig()
+        self.config.update_migration_config_file()
+        assert self.config.get_migration_product() == 'SLES_SAP/15.1/x86_64'

@@ -18,6 +18,7 @@
 import yaml
 import os
 from textwrap import dedent
+from xml.etree.ElementTree import ElementTree
 
 # project
 from suse_migration_services.defaults import Defaults
@@ -96,6 +97,16 @@ class MigrationConfig(object):
                     self.migration_config_file, self.migration_custom_file
                 ).lstrip()
             )
+        else:  # auto-detect baseproduct
+            baseproduct_xml_file = self._read_baseproduct()
+            baseproduct_names = baseproduct_xml_file.findall('name')
+            for name in baseproduct_names:
+                default_migration_target = self.config_data.get('migration_product').split('/')
+                migration_product = '/'.join(
+                    [name.text, default_migration_target[0], default_migration_target[1]]
+                )
+                self.config_data['migration_product'] = migration_product
+                self._write_config_file()
 
     def is_debug_requested(self):
         return self.config_data.get('debug', False)
@@ -106,3 +117,11 @@ class MigrationConfig(object):
     def _write_config_file(self):
         with open(self.migration_config_file, 'w') as config:
             yaml.dump(self.config_data, config, default_flow_style=False)
+
+    def _read_baseproduct(self):
+        xml = ElementTree()
+        root_path = Defaults.get_system_root_path()
+        baseproduct_metadata = os.sep.join(
+            [root_path, 'etc', 'products.d', 'baseproduct']
+        )
+        return xml.parse(baseproduct_metadata)
