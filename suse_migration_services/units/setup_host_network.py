@@ -56,7 +56,7 @@ def main():
     sysconfig_network_providers = os.sep.join(
         [root_path, 'etc', 'sysconfig', 'network', 'providers']
     )
-    sysconfig_interfaces = os.sep.join(
+    sysconfig_network_setup = os.sep.join(
         [root_path, 'etc', 'sysconfig', 'network', '*']
     )
     try:
@@ -74,10 +74,10 @@ def main():
         system_mount.add_entry(
             sysconfig_network_providers, '/etc/sysconfig/network/providers'
         )
-        for interface_setup in glob.glob(sysconfig_interfaces):
-            if os.path.isfile(interface_setup):
+        for network_setup in glob.glob(sysconfig_network_setup):
+            if os.path.isfile(network_setup):
                 shutil.copy(
-                    interface_setup, '/etc/sysconfig/network'
+                    network_setup, '/etc/sysconfig/network'
                 )
         Command.run(
             ['systemctl', 'reload', 'network']
