@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import glob
 import os
 import shutil
 
@@ -52,8 +53,11 @@ def main():
         resolv_conf, '/etc/resolv.conf'
     )
 
-    sysconfig_network = os.sep.join(
-        [root_path, 'etc', 'sysconfig', 'network']
+    sysconfig_network_providers = os.sep.join(
+        [root_path, 'etc', 'sysconfig', 'network', 'providers']
+    )
+    sysconfig_network_setup = os.sep.join(
+        [root_path, 'etc', 'sysconfig', 'network', '*']
     )
     try:
         log.info('Running setup host network service')
@@ -62,11 +66,19 @@ def main():
             Defaults.get_system_mount_info_file()
         )
         Command.run(
-            ['mount', '--bind', sysconfig_network, '/etc/sysconfig/network']
+            [
+                'mount', '--bind', sysconfig_network_providers,
+                '/etc/sysconfig/network/providers'
+            ]
         )
         system_mount.add_entry(
-            sysconfig_network, '/etc/sysconfig/network'
+            sysconfig_network_providers, '/etc/sysconfig/network/providers'
         )
+        for network_setup in glob.glob(sysconfig_network_setup):
+            if os.path.isfile(network_setup):
+                shutil.copy(
+                    network_setup, '/etc/sysconfig/network'
+                )
         Command.run(
             ['systemctl', 'reload', 'network']
         )
