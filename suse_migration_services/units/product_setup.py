@@ -15,14 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-import os
-import glob
-from xml.etree.ElementTree import ElementTree
-
 # project
-from suse_migration_services.command import Command
-from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
+from suse_migration_services.suse_product import SUSEBaseProduct
 
 from suse_migration_services.exceptions import (
     DistMigrationProductSetupException
@@ -40,8 +35,6 @@ def main():
     data such that the plugin's rollback mechanism is not
     negatively influenced.
     """
-    root_path = Defaults.get_system_root_path()
-
     try:
         # Note:
         # zypper implements a handling for the distro_target attribute.
@@ -56,73 +49,9 @@ def main():
         # including distro_target. The current workaround solution is
         # to delete the target specification in the baseproduct
         # registration if present.
-        products_metadata = os.sep.join(
-            [root_path, 'etc', 'products.d']
-        )
-        if os.path.exists(products_metadata):
-            log.info('Creating backup of Product data')
-            Command.run(
-                [
-                    'rsync', '-zav', '--delete', products_metadata + os.sep,
-                    '/tmp/products.d.backup/'
-                ]
-            )
-        baseproducts = get_baseproduct(products_metadata)
-        if len(baseproducts) != 1:
-            if not baseproducts:
-                message = 'There is no baseproduct'
-            else:
-                message = ('Found multiple product definitions '
-                           'without element <flavor>: \n{0}'
-                           .format('\n'.join(baseproducts)))
-            log.error(message)
-            raise DistMigrationProductSetupException(message)
-
         log.info('Updating Base Product to be suitable for migration')
-        delete_target_registration(baseproducts[0])
+        SUSEBaseProduct().delete_target_registration()
     except Exception as issue:
         message = 'Base Product update failed with: {0}'.format(issue)
         log.error(message)
         raise DistMigrationProductSetupException(message)
-
-
-def get_baseproduct(products_metadata):
-    prod_filenames = glob.glob(
-        os.path.join(products_metadata, '*.prod')
-    )
-    base_product_files = []
-    xml = ElementTree()
-    for prod_filename in prod_filenames:
-        try:
-            xml.parse(prod_filename)
-            register_sections = xml.findall('register')
-            for register in register_sections:
-                flavor = register.findall('flavor')
-                if not flavor:
-                    base_product_files.append(prod_filename)
-
-        except Exception as issue:
-            log.warning(
-                'Parsing XML file {0} failed with: {1}'
-                .format(prod_filename, issue)
-            )
-
-    return base_product_files
-
-
-def delete_target_registration(baseproduct_prod_filename):
-    try:
-        xml = ElementTree()
-        xml.parse(baseproduct_prod_filename)
-        register_sections = xml.findall('register')
-        for register in register_sections:
-            target_sections = register.findall('target')
-            for target in target_sections:
-                register.remove(target)
-        xml.write(
-            baseproduct_prod_filename, encoding="UTF-8", xml_declaration=True
-        )
-    except Exception as issue:
-        log.error(
-            'Could not delete target registration with {0}'.format(issue)
-        )
