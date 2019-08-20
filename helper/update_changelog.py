@@ -54,10 +54,11 @@ if arguments['--since']:
     # Read latest date from reference file
     try:
         with open(reference_file, 'r') as gitlog:
-            # read separator
+            # read commit and author
+            gitlog.readline()
             gitlog.readline()
             # read date
-            latest_date = gitlog.readline().split('-')[0].strip()
+            latest_date = gitlog.readline().replace('AuthorDate:', '').strip()
             date_reference = parser.parse(latest_date)
     except Exception:
         latest_date = None

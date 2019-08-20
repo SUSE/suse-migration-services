@@ -16,7 +16,7 @@ build: check test
 		dist/suse-migration-services.tar.gz
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
-		--since package/suse-migration-services.changes > \
+		--since package/suse-migration-services.changes.ref --utc > \
         dist/suse-migration-services.changes
 	helper/update_changelog.py \
 		--file package/suse-migration-services.changes >> \
@@ -32,8 +32,8 @@ sle15_activation: check
 	rm -f dist/*
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
-		--since package/suse-migration-sle15-activation.changes \
-		--from grub.d > \
+		--since package/suse-migration-sle15-activation.changes.ref \
+		--from grub.d --utc > \
 		dist/suse-migration-sle15-activation.changes
 	helper/update_changelog.py \
 		--file package/suse-migration-sle15-activation.changes >> \

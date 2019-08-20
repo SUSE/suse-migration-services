@@ -1,0 +1,7 @@
+commit d33e3b61338d57b0230ddf61c56fce8d71262ff6 (tag: v0.5.30)
+Author:     Marcus Schäfer <ms@suse.de>
+AuthorDate: Thu May 2 15:16:38 2019 +0200
+Commit:     Marcus Schäfer <ms@suse.de>
+CommitDate: Thu May 2 15:16:38 2019 +0200
+
+    Bump version: 0.5.29 → 0.5.30

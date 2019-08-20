@@ -1,0 +1,9 @@
+commit cc3f0b43dabc45166559953c037dc1fa68ec40af
+Author:     Marcus Schäfer <ms@suse.de>
+AuthorDate: Thu May 2 15:14:31 2019 +0200
+Commit:     Marcus Schäfer <ms@suse.de>
+CommitDate: Thu May 2 15:14:31 2019 +0200
+
+    Reference commit for SUSE maintenance
+    
+    This submission creates a reference to fate#327175 and bsc#1133919
