@@ -1,0 +1,1065 @@
+-------------------------------------------------------------------
+Thu May  2 15:16:38 CEST 2019 - ms@suse.de
+
+- Bump version: 0.5.29 → 0.5.30
+  
+-------------------------------------------------------------------
+Thu May  2 15:14:31 CEST 2019 - ms@suse.de
+  
+- Reference commit for SUSE maintenance
+  
+  This submission creates a reference to fate#327175 and bsc#1133919
+  
+-------------------------------------------------------------------
+Wed May  1 19:02:00 CEST 2019 - ms@suse.de
+  
+- Bump version: 0.5.28 → 0.5.29
+  
+-------------------------------------------------------------------
+Tue Apr 30 11:56:05 CEST 2019 - ms@suse.de
+  
+- Fix reboot race condition
+  
+  The issue described here came up with the package split and
+  rename of the activation package. The grub setup service
+  deletes the activation package and calls grub2-mkconfig which
+  deletes the migration live boot entry as well as updates grub
+  to boot the migrated system. However if the activation package
+  could not be removed the process ends in a boot loop. Therefore
+  one part of this patch makes the removal of the migration
+  packages more robust. Another part provides detailed log
+  information about the removal and the grub setup in the log
+  file.
+  
+  Last but not least the patch includes a refactoring of the
+  umount and reboot process which offers a race condition if
+  the grub-setup service has failed. The patch here also
+  Delete the umount service and put the code in the reboot
+  service. Only on reboot we umount the system. In case of
+  debugging we want to have full access to the root of the
+  system that should have become migrated. In addition the
+  systemd dependency chain for the kernel-load vs. reboot
+  service was racy and got fixed by a clear dependency
+  for grub-setup -> kernel-load -> reboot
+  
+-------------------------------------------------------------------
+Tue Apr 30 10:06:28 CEST 2019 - ms@suse.de
+  
+- Bump version: 0.5.27 → 0.5.28
+  
+-------------------------------------------------------------------
+Tue Apr 30 10:04:59 CEST 2019 - ms@suse.de
+  
+- Fixed deletion of activation package
+  
+  Due to the split of the services package the activation
+  package name is target specific and needs to be matched
+  by a pattern
+  
+-------------------------------------------------------------------
+Mon Apr 29 11:28:09 CEST 2019 - ms@suse.de
+  
+- Split activation package from services
+  
+  From a release process it doesn't make sense to keep the activation
+  script as a sub package of the services. The reason is because the
+  suse-migration-services package will be released to the migration
+  target distribution and the activation package will be released to
+  the migration start distribution. Thus the code is relevant on
+  different distributions and it is not useful to maintain that in
+  one package. This Fixes #74
+  
+-------------------------------------------------------------------
+Wed Apr 24 17:20:47 CEST 2019 - ms@suse.de
+  
+- Bump version: 0.5.26 → 0.5.27
+  
+-------------------------------------------------------------------
+Wed Apr 24 14:50:45 CEST 2019 - ms@suse.de
+  
+- Fixed network requirement
+  
+  To come up with a race free network start the setup-host-network
+  service has to be called after network.target. This ensures the
+  wicked service is already active. An active wicked service allows
+  for a reload of the network service. The setup-host-network
+  service overmounts /etc/sysconfig/network and reloads the network
+  service. That tells the running wicked service to elaborate
+  over the new ifcfg configurations and updates the network status.
+  In the prepare unit we require the network-online target which
+  makes sure it operates only on an online network.
+  
+-------------------------------------------------------------------
+Fri Apr 12 16:00:07 CEST 2019 - ms@suse.de
+  
+- Bump version: 0.5.25 → 0.5.26
+  
+-------------------------------------------------------------------
+Thu Apr 11 14:21:17 CEST 2019 - ms@suse.de
+  
+- Fix network setup service
+  
+  The network setup service for the migration inherits the
+  network as it is configured on the system to become migrated.
+  As part of that process the network is restarted through
+  systemctl. However this is a problem because it interferes
+  with the network service dependency chain. This could result
+  in a failed network startup depending on how fast other
+  services e.g dbus are up and running. So the way we do it
+  causes a race condition. This commit deletes the network
+  startup from our network setup service. Our network setup
+  service runs by definition of the unit file before the
+  network.target. This means at the time the network service
+  activates the network our setup routine is already done and
+  a normal network startup should be guaranteed.
+  
+-------------------------------------------------------------------
+Wed Apr 10 18:28:43 CEST 2019 - ms@suse.de
+  
+- Bump version: 0.5.24 → 0.5.25
+  
+-------------------------------------------------------------------
+Wed Apr 10 11:50:24 CEST 2019 - ms@suse.de
+  
+- Make sure /var/lib/cloudregister exists
+  
+  At cloud registration time information about the SMT/RMT server
+  is provided below /var/lib/cloudregister. For migration it's
+  required to bind mount this path from the system to become
+  migrated into the live migration system.
+  
+-------------------------------------------------------------------
+Tue Apr  9 17:56:09 CEST 2019 - ms@suse.de
+  
+- Support new cloud regionsrv client
+  
+  The new cloud region service client comes with a plugin for
+  zypper that translates repo URIs into a specific plugin format
+  such that it's no longer possible to gain access to the SLES
+  repositories of our public cloud infrastructure by playing
+  tricks with snapshotting an on-demand instance without the
+  billingtag. However the new and fancy way makes migration of
+  such a system more difficult because the new repo URI format
+  must be known to zypper migration. This requires all software
+  components to be provided in the live migration image which
+  has been done in the image description but furthermore requires
+  that the cloud specific /etc/regionserverclnt.cfg and the
+  contents of /usr/lib/zypp/plugins from the system to migrate
+  are available in the migration live image. The later is
+  implemented in this commit and Fixes #69
+  
+-------------------------------------------------------------------
+Tue Mar 26 15:13:03 CET 2019 - jesus.bv@suse.com
+  
+- Bump version: 0.5.23 → 0.5.24
+  
+-------------------------------------------------------------------
+Tue Mar 26 09:21:30 CET 2019 - jesus.bv@suse.com
+  
+- Fix pattern for initrd
+  
+  Some images have an extra boot partition,
+  so there are grub files with '/vmlinuz'
+  and we need to handle that case.
+  
+-------------------------------------------------------------------
+Mon Mar 25 10:12:40 CET 2019 - jesus.bv@suse.com
+  
+- Bump version: 0.5.22 → 0.5.23
+  
+-------------------------------------------------------------------
+Fri Mar 22 13:06:06 CET 2019 - jesus.bv@suse.com
+  
+- Copy kernel and initrd for access
+  
+  It copies the files in-memory so kexec can access them
+  once root-path gets umounted.
+  
+  Fixes #65
+  
+-------------------------------------------------------------------
+Thu Mar 21 16:12:18 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.21 → 0.5.22
+  
+-------------------------------------------------------------------
+Thu Mar 21 16:05:25 CET 2019 - ms@suse.de
+  
+- Fixed dependency for reboot service
+  
+  The reboot service must be called after mount-service and
+  after umount-service. The mount-service handles the setup
+  of the debug flag. If the reboot service is too fast the
+  debug flag setup is not respected
+  
+-------------------------------------------------------------------
+Thu Mar 21 16:02:12 CET 2019 - ms@suse.de
+  
+- Fixed logging to logfile
+  
+  The setup of the logfile has to be done on each service
+  at import time. Each service is an extra python call
+  done by systemd. The setup of the logfile needs to be done
+  as an initializer for any unit invocation
+  
+-------------------------------------------------------------------
+Thu Mar 21 14:04:24 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.20 → 0.5.21
+  
+-------------------------------------------------------------------
+Thu Mar 21 12:13:08 CET 2019 - ms@suse.de
+  
+- Added systemctl status output to logfile
+  
+  As part of the reboot service add the systemctl status information
+  collected up to that point into the logfile.
+  
+-------------------------------------------------------------------
+Thu Mar 21 10:56:33 CET 2019 - ms@suse.de
+  
+- Fixed log reference in console log service
+  
+  The systemd unit file was still pointing to the old file
+  name but that has changed to var/log/distro_migration.log
+  
+-------------------------------------------------------------------
+Thu Mar 21 10:47:37 CET 2019 - ms@suse.de
+  
+- Initialize logging and debug as early as possible
+  
+  The earliest opportunity to setup the log file and the
+  debug flag is directly after the mount-system code has
+  successfully mounted the target to migrate. At this point
+  we should init the logfile and also the debugging if
+  needed. The code before this commit has potential to
+  not even reach the log/debug setup. With this commit
+  the only requirement is a successful mount of the target
+  system.
+  
+-------------------------------------------------------------------
+Wed Mar 20 18:10:00 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.19 → 0.5.20
+  
+-------------------------------------------------------------------
+Wed Mar 20 17:56:29 CET 2019 - jesus.bv@suse.com
+  
+- Add option to handle file conflicts
+  
+  In the scenario where there are packaging bugs,
+  this option install packages even if they
+  replaces files from other packages.
+  
+  Fixes #58
+  
+-------------------------------------------------------------------
+Wed Mar 20 17:51:58 CET 2019 - ms@suse.de
+  
+- Fixed handling of debug flag file
+  
+  If this file is present we want to stay in the migration system
+  no matter what happened. This is urgently required to keep us
+  with a way to debug the process. Current testing has shown that
+  only the log file is not enough to debug the complete pipeline.
+  
+-------------------------------------------------------------------
+Fri Mar 15 14:57:46 CET 2019 - jesus.bv@suse.com
+  
+- Bump version: 0.5.18 → 0.5.19
+  
+-------------------------------------------------------------------
+Fri Mar 15 08:06:34 CET 2019 - jesus.bv@suse.com
+  
+- Add flag to handle zypper migration errors
+  
+  Zypper has extra error codes that does not necessarily have to
+  stop a distribution migration.
+  
+  Fixes #52
+  
+-------------------------------------------------------------------
+Thu Mar  7 16:29:29 CET 2019 - jesus.bv@suse.com
+  
+- Bump version: 0.5.17 → 0.5.18
+  
+-------------------------------------------------------------------
+Thu Mar  7 12:14:08 CET 2019 - jesus.bv@suse.com
+  
+- Path for log file
+  
+  After reboot, if the migration has failed, the file
+  /etc/issue has a message pointing to the log file.
+  The path of that log file must exist inside the rebooted system.
+  
+-------------------------------------------------------------------
+Tue Mar  5 09:19:07 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.16 → 0.5.17
+  
+-------------------------------------------------------------------
+Mon Mar  4 14:13:57 CET 2019 - ms@suse.de
+  
+- Add rootpart detection to grub activation script
+  
+  The live migration image gets installed to the system again
+  because of the space limitation on /boot. This affects the
+  menuentry created on grub side in a way that we can't use
+  the pre-allocated pointer to the boot device but have to search
+  the root partition like in a real grub root entry. This patch
+  adds the needed code changes to locate the root part, insert
+  the needed filesystem module and initializes the root variable
+  to allow the loopback loading of the image. This Fixes #54
+  
+-------------------------------------------------------------------
+Mon Mar  4 13:40:57 CET 2019 - ms@suse.de
+  
+- Revert location change from /usr/share to /boot
+  
+  This reverts commit 66dd8d4943d38f121f4b16b70bf0ab8d0b2ec82d.
+  If there is an extra boot partition and it's too small we
+  are not able to install the migration system and the customer
+  will not be able to use the migration concept. The image is
+  usually around ~300MB of size and that can often be too much
+  for an extra boot partition which is often designed to be small
+  
+-------------------------------------------------------------------
+Fri Mar  1 13:57:07 CET 2019 - jesus.bv@suse.com
+  
+- Bump version: 0.5.15 → 0.5.16
+  
+-------------------------------------------------------------------
+Wed Feb 20 11:35:36 CET 2019 - jesus.bv@suse.com
+  
+- Right path for debug file
+  
+  Copy debug file in a different path so reboot code
+  can read that location in case of debugging.
+  
+-------------------------------------------------------------------
+Tue Feb 19 08:59:29 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.14 → 0.5.15
+  
+-------------------------------------------------------------------
+Wed Feb 13 11:12:11 CET 2019 - jesus.bv@suse.com
+  
+- Reboot system after migration unless debug
+  
+  The migration process will reboot the system whether it has succeeded or not
+  unless there is a file indicating not to reboot.
+  
+  Fixes #48
+  
+-------------------------------------------------------------------
+Tue Feb 12 10:50:47 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.13 → 0.5.14
+  
+-------------------------------------------------------------------
+Mon Feb 11 12:39:21 CET 2019 - jesus.bv@suse.com
+  
+- Report migration error in /etc/issue
+  
+  In order to be able to reboot and still report errors in case the migration fails,
+  the error will be reported in a log file (/var/log/distro_migration.log).
+  The message and log file name to check will be indicated in /etc/issue.
+  
+  Fixes #47
+  
+-------------------------------------------------------------------
+Fri Feb  8 11:18:28 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.12 → 0.5.13
+  
+-------------------------------------------------------------------
+Fri Feb  8 09:21:09 CET 2019 - jesus.bv@suse.com
+  
+- Rename migration log file
+  
+  As zypper is part of the process but not the only
+  component, 'zypper_migration.log' does not describe it properly.
+  
+-------------------------------------------------------------------
+Fri Jan 25 16:01:07 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.11 → 0.5.12
+  
+-------------------------------------------------------------------
+Fri Jan 25 11:12:22 CET 2019 - ms@suse.de
+  
+- Change location for live migration ISO image
+  
+  Instead of /usr/share expect the image in /boot. The reason
+  for this change is because we don't know if the system uses
+  an extra boot partition to load the kernel and initrd from.
+  However the way we add the extra loop boot entry to grub
+  is based on reading the value for ($root) as it was configured
+  on the system. The location ($root) points to in grub could
+  be anywhere but we can trust /boot to be in there.
+  This Fixes the run of the migration in Azure and also
+  stabilizes the concept.
+  
+-------------------------------------------------------------------
+Tue Jan 22 17:32:32 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.10 → 0.5.11
+  
+-------------------------------------------------------------------
+Thu Jan 17 13:46:43 CET 2019 - jesus.bv@suse.com
+  
+- Detection of baseproduct
+  
+  Find the .prod files inside /etc/products.d
+  which does not contain a flavor tag.
+  
+  Remove the target registration in that .prod file.
+  
+-------------------------------------------------------------------
+Wed Jan 16 15:02:47 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.9 → 0.5.10
+  
+-------------------------------------------------------------------
+Wed Jan 16 11:39:55 CET 2019 - ms@suse.de
+  
+- Revert/Refactor distro_target handling
+  
+  zypper implements a handling for the distro_target attribute.
+  If present in the repository metadata, zypper compares the
+  value with the baseproduct <target> setup in /etc/products.d.
+  If they mismatch zypper refuses to create the repo. In the
+  process of a migration from distribution [A] to [B] this mismatch
+  always applies by design and prevents the zypper migration plugin
+  to work. In SCC or RMT the repositories doesn't contain the
+  distro_target attribute which is the reason why we don't see
+  this problem there. SMT however creates repos including
+  distro_target.
+  
+  The refactored workaround solution is now to delete the target
+  specification in the baseproduct registration if present, because
+  the overlay mounting of etc/products.d did not work as it would
+  lead to a wrong upgrade path on response from SCC.
+  
+  In addition a backup of the original products.d data is created
+  and used in the zypper migration plugin in case of an error
+  
+-------------------------------------------------------------------
+Wed Jan 16 09:06:55 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.8 → 0.5.9
+  
+-------------------------------------------------------------------
+Tue Jan 15 20:02:36 CET 2019 - ms@suse.de
+  
+- Added comments to explain the driver of the change
+  
+-------------------------------------------------------------------
+Tue Jan 15 17:39:16 CET 2019 - ms@suse.de
+  
+- Added product setup service
+  
+  During migration etc/products is a bind mounted location
+  to handle the distro_target issue. At the end of a successful
+  migration the data written to that location must be synced
+  into the migrated system. This task is done by the product
+  service
+  
+-------------------------------------------------------------------
+Tue Jan 15 17:11:34 CET 2019 - ms@suse.de
+  
+- Handle distro_target
+  
+  Long time ago zypper added a distro_target information into
+  the repository file and matches those with the product
+  information of the system. If the distro doesn't match
+  zypper refused to create the repository. In the migration
+  process using SMT this caused the zypper migration plugin
+  to fail because zypper never created repositories. That's
+  because in a migration process the repository and the
+  system to migrate never match. Therefore we bind mount
+  the /etc/products.d information from the migration live
+  system into the /system-root of the system to become
+  migrated. At the end of a successful migration the new
+  product information is copied to the migrated system
+  
+-------------------------------------------------------------------
+Tue Jan 15 09:14:53 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.7 → 0.5.8
+  
+-------------------------------------------------------------------
+Tue Jan 15 09:13:44 CET 2019 - ms@suse.de
+  
+- Fixed handling of os.listdir result
+  
+  os.listdir only returns the names of the files in the
+  directory. Thus the file reference in the subsequent
+  copy call was wrong.
+  
+-------------------------------------------------------------------
+Tue Jan 15 08:24:09 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.6 → 0.5.7
+  
+-------------------------------------------------------------------
+Mon Jan 14 16:58:06 CET 2019 - ms@suse.de
+  
+- Import certificates
+  
+  Copy certificates from /usr/share/pki/trust/anchors of the
+  system to become migrated into the live migration system
+  and update the certificate pool. This Fixes #37
+  
+-------------------------------------------------------------------
+Mon Jan 14 15:56:48 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.5 → 0.5.6
+  
+-------------------------------------------------------------------
+Mon Jan 14 15:56:12 CET 2019 - ms@suse.de
+  
+- Fixed console log service
+  
+  The systemd unit file was missing an install target
+  
+-------------------------------------------------------------------
+Mon Jan 14 15:30:22 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.4 → 0.5.5
+  
+-------------------------------------------------------------------
+Mon Jan 14 15:26:53 CET 2019 - ms@suse.de
+  
+- Changed service type for console logger
+  
+  Move to simple type service and set a restart policy.
+  The way the console logger was started before caused
+  a stop of the service as soon as the kernel or some
+  other program logs information on the console. However
+  during migration we want the console logger to be
+  actively occupy the console such that it's clear a
+  migration process is currently running
+  
+-------------------------------------------------------------------
+Mon Jan 14 15:08:59 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.3 → 0.5.4
+  
+-------------------------------------------------------------------
+Mon Jan 14 14:59:53 CET 2019 - ms@suse.de
+  
+- Fixed console log service
+  
+  Allow to start console log at any time. Make sure it starts
+  after prepare but do not require prepare as it causes the
+  prepare service to be called again.
+  
+-------------------------------------------------------------------
+Mon Jan 14 11:47:51 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.2 → 0.5.3
+  
+-------------------------------------------------------------------
+Mon Jan 14 09:58:04 CET 2019 - ms@suse.de
+  
+- Update prepare service on hosts file
+  
+  In the cloud the translation from a name into an IP might also
+  be configured via the static etc/hosts file. In case of SUSE's
+  public cloud infrastructure the connected smt server is
+  configured that way at registration time. For the migration
+  process this means that this information must be present otherwise
+  the host to upgrade cannot be resolved.
+  
+-------------------------------------------------------------------
+Mon Jan 14 09:07:30 CET 2019 - ms@suse.de
+  
+- Don't truncate migration log file
+  
+  If the zypper based migration process runs it truncates the
+  so far written logfile information. We want to keep all logging
+  data, thus the zypper call has to append information to the
+  existing log file and not overwrite them.
+  
+-------------------------------------------------------------------
+Mon Jan 14 09:05:56 CET 2019 - ms@suse.de
+  
+- Fixed executable path in console log service
+  
+  systemd requires an absolute path to the called program.
+  This patch fixes the path to the dialog program such
+  that systemd calls it
+  
+-------------------------------------------------------------------
+Fri Jan 11 10:59:03 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.1 → 0.5.2
+  
+-------------------------------------------------------------------
+Tue Jan  8 14:32:02 CET 2019 - jesus.bv@suse.com
+  
+- Mount kernel file systems inside /system-root
+  
+  The file systems were previously mounted in grub
+  service but because the migration service needs to
+  have access proc, dev and sys inside system-root
+  (e.g. when updating the bootloader) they are mounted
+  in an earlier step. There is no need to mount them
+  again in grub. They are unmounted properly before
+  rebooting.
+  
+  This Fixes #32
+  
+-------------------------------------------------------------------
+Mon Jan  7 11:15:24 CET 2019 - ms@suse.de
+  
+- Bump version: 0.5.0 → 0.5.1
+  
+-------------------------------------------------------------------
+Sun Dec 30 15:25:34 CET 2018 - ms@suse.de
+  
+- Fix log file initialization
+  
+  We agreed on writing the log file into the root filesystem
+  of the system to migrate. This implies that the first time
+  to initialize this log file is in the prepare service
+  after the mount system service has succeeded. Calling
+  set_logfile in the mount system service before the system
+  got mounted is the wrong place. This patch fixes this
+  and also improves the unit test for this condition.
+  
+-------------------------------------------------------------------
+Wed Dec 19 12:19:42 CET 2018 - ms@suse.de
+  
+- Bump version: 0.4.3 → 0.5.0
+  
+-------------------------------------------------------------------
+Tue Dec 18 16:59:25 CET 2018 - jesus.bv@suse.com
+  
+- Migration file (#30)
+  
+  * Add migration file
+    
+    This file is used to document the migration process inside the system.
+    
+  * Add logging for the services
+    
+-------------------------------------------------------------------
+Tue Dec 11 16:13:16 CET 2018 - ms@suse.de
+    
+- Require dialog package in spec file
+  
+-------------------------------------------------------------------
+Tue Dec 11 15:33:49 CET 2018 - ms@suse.de
+  
+- Added zypper migration console logging
+  
+  If the migration process starts the console should show a
+  progress information. We use a dialog tailbox which shows
+  the output of the zypper migration plugin while it runs.
+  The output is processed using a systemd service connected
+  to the console. In addition the log file
+  
+  var/log/zypper_migrate.log
+  
+  Is created inside of the system which gets migrated. This
+  allows for later inspection of what the migration plugin
+  did. This Fixes #27
+  
+-------------------------------------------------------------------
+Fri Dec  7 11:11:24 CET 2018 - ms@suse.de
+  
+- Bump version: 0.4.2 → 0.4.3
+  
+-------------------------------------------------------------------
+Fri Dec  7 11:10:51 CET 2018 - ms@suse.de
+  
+- Fixed typo in spec file
+  
+  syse vs. suse
+  
+-------------------------------------------------------------------
+Fri Dec  7 11:05:40 CET 2018 - ms@suse.de
+  
+- Bump version: 0.4.1 → 0.4.2
+  
+-------------------------------------------------------------------
+Fri Dec  7 11:04:56 CET 2018 - ms@suse.de
+  
+- Fixed spec file
+  
+  Missing installation of ssh service systemd unit file
+  
+-------------------------------------------------------------------
+Fri Dec  7 11:00:41 CET 2018 - ms@suse.de
+  
+- Bump version: 0.4.0 → 0.4.1
+  
+-------------------------------------------------------------------
+Wed Dec  5 15:05:08 CET 2018 - jesus.bv@suse.com
+  
+- Provide ssh access
+  
+  Copy the authorized key files into the authorized key file
+  of migration user to be able to access through ssh.
+  This checks in /home and /root paths.
+  Fixes #26
+  
+-------------------------------------------------------------------
+Wed Dec  5 15:00:34 CET 2018 - jesus.bv@suse.com
+  
+- Proper class name for test
+  
+-------------------------------------------------------------------
+Thu Nov 29 09:45:03 CET 2018 - ms@suse.de
+  
+- Bump version: 0.3.6 → 0.4.0
+  
+-------------------------------------------------------------------
+Wed Nov 28 17:15:00 CET 2018 - ms@suse.de
+  
+- Refactor reboot system
+  
+  The system gets rebooted via kexec or if failed by a hard reboot.
+  For kexec it's required to load kernel, initrd and boot parameters
+  from the migrated system. Thus the kexec load must be done before
+  umount of the system and the actual reboot after umount of the
+  system. Therefore this patch splits the kernel-reboot service
+  into two services, whereas the umount service will be called
+  in between of them.
+  
+-------------------------------------------------------------------
+Wed Nov 28 16:49:27 CET 2018 - ms@suse.de
+  
+- Fixup ExecStart in kernel reboot service
+  
+  The binary is named suse-migration-kernel-reboot not
+  suse-migration-kernel-load
+  
+-------------------------------------------------------------------
+Wed Nov 28 12:50:03 CET 2018 - ms@suse.de
+  
+- Bump version: 0.3.5 → 0.3.6
+  
+-------------------------------------------------------------------
+Wed Nov 28 12:41:58 CET 2018 - ms@suse.de
+  
+- Fixed removal of suse-migration-activation
+  
+  A simple rpm -e call leads to an error because the package
+  depends on the master package providing the image. Thus it's
+  better to instruct zypper to remove the package including its
+  dependencies
+  
+-------------------------------------------------------------------
+Wed Nov 28 12:31:13 CET 2018 - ms@suse.de
+  
+- Fixed invocation of Command.run
+  
+  Use of unexpected keyword argument
+  
+-------------------------------------------------------------------
+Wed Nov 28 12:26:14 CET 2018 - ms@suse.de
+  
+- Fixed kexec reboot kernel and grub lookup
+  
+  In the reboot service the kernel files and the grub config
+  was not searched in the root of the migrated system but in
+  the root of the migration live system, which is the wrong
+  place.
+  
+-------------------------------------------------------------------
+Wed Nov 28 11:56:34 CET 2018 - ms@suse.de
+  
+- Fixed kernel reboot service
+  
+  The unit requirements and dependencies were set wrong
+  
+-------------------------------------------------------------------
+Tue Nov 27 17:33:34 CET 2018 - ms@suse.de
+  
+- Bump version: 0.3.4 → 0.3.5
+  
+-------------------------------------------------------------------
+Tue Nov 27 09:56:34 CET 2018 - jesus.bv@suse.com
+  
+- Update target for uninstall
+  
+  Set the target properly to uninstall package suse-migration-activation.
+  Fixes #17
+  
+-------------------------------------------------------------------
+Mon Nov 26 10:46:56 CET 2018 - ms@suse.de
+  
+- Bump version: 0.3.3 → 0.3.4
+  
+-------------------------------------------------------------------
+Mon Nov 26 09:27:40 CET 2018 - jjesusbv@gmail.com
+  
+- Add kexec-tools (#16)
+  
+  * Add kexec-tools
+    
+    This is nedded for rebooting the migrated system
+    with the new kernel.
+    
+-------------------------------------------------------------------
+Sun Nov 25 16:10:27 CET 2018 - jesus.bv@suse.com
+    
+- Uninstall suse-migration-activation
+  
+  The new grub menu should not have this entry.
+  This solves issue #12
+  
+-------------------------------------------------------------------
+Fri Nov 23 10:28:20 CET 2018 - ms@suse.de
+  
+- Bump version: 0.3.2 → 0.3.3
+  
+-------------------------------------------------------------------
+Fri Nov 23 09:44:46 CET 2018 - ms@suse.de
+  
+- Set the Migration boot entry to be the default
+  
+  In addition set the boot timeout to 1sec
+  
+-------------------------------------------------------------------
+Thu Nov 22 17:54:59 CET 2018 - jesus.bv@suse.com
+  
+- Refactor get_cmdline
+  
+  More generic parameter name and better search
+  of target kernel command line options.
+  
+-------------------------------------------------------------------
+Thu Nov 22 15:58:36 CET 2018 - ms@suse.de
+  
+- Bump version: 0.3.1 → 0.3.2
+  
+-------------------------------------------------------------------
+Wed Nov 21 13:25:58 CET 2018 - jesus.bv@suse.com
+  
+- Add kexec reboot service
+  
+-------------------------------------------------------------------
+Wed Nov 21 09:21:23 CET 2018 - ms@suse.de
+  
+- Added grub config extension to activate migration
+  
+  Provide /etc/grub.d/99_migration plugin which causes
+  the creation of a Migration grub menu entry. In addition
+  the package build was cleaned up and extended by a new
+  sub-package suse-migration-activation which provides
+  that grub config plugin.
+  
+-------------------------------------------------------------------
+Wed Nov 21 09:19:31 CET 2018 - ms@suse.de
+  
+- Remount system root if booted via grub loopback
+  
+  if the system to become migrated was booted via a grub
+  loopback menuentry, the disk is blocked by that readonly
+  loopback mount and needs to be remounted for read write
+  access first
+  
+-------------------------------------------------------------------
+Mon Nov 19 10:12:17 CET 2018 - ms@suse.de
+  
+- Bump version: 0.3.0 → 0.3.1
+  
+-------------------------------------------------------------------
+Mon Nov 19 10:11:43 CET 2018 - ms@suse.de
+  
+- Hotfix fstab export method
+  
+  Put newline at the end of each fstab entry
+  
+-------------------------------------------------------------------
+Fri Nov 16 14:49:49 CET 2018 - ms@suse.de
+  
+- Bump version: 0.2.1 → 0.3.0
+  
+-------------------------------------------------------------------
+Fri Nov 16 13:17:26 CET 2018 - jesus.bv@suse.com
+  
+- Resolve the mount stack in reverse order
+  
+-------------------------------------------------------------------
+Fri Nov 16 12:42:15 CET 2018 - jesus.bv@suse.com
+  
+- Remove variable
+  
+-------------------------------------------------------------------
+Fri Nov 16 12:26:27 CET 2018 - jesus.bv@suse.com
+  
+- Cleanup of mounted paths
+  
+-------------------------------------------------------------------
+Thu Nov 15 14:01:11 CET 2018 - jesus.bv@suse.com
+  
+- Mount sys
+  
+-------------------------------------------------------------------
+Thu Nov 15 11:43:17 CET 2018 - jesus.bv@suse.com
+  
+- Test add entry of services calls
+  
+-------------------------------------------------------------------
+Thu Nov 15 10:50:30 CET 2018 - jesus.bv@suse.com
+  
+- Store service calls
+  
+-------------------------------------------------------------------
+Thu Nov 15 09:49:46 CET 2018 - jesus.bv@suse.com
+  
+- Make one call
+  
+-------------------------------------------------------------------
+Thu Nov 15 09:46:52 CET 2018 - jesus.bv@suse.com
+  
+- Add dependencies
+  
+-------------------------------------------------------------------
+Thu Nov 15 09:45:13 CET 2018 - jesus.bv@suse.com
+  
+- Specific service names
+  
+-------------------------------------------------------------------
+Wed Nov 14 20:29:13 CET 2018 - ms@suse.de
+  
+- Umount service must run after grub-setup service
+  
+-------------------------------------------------------------------
+Wed Nov 14 18:45:13 CET 2018 - ms@suse.de
+  
+- Refactor mount path handling
+  
+  Instead of duplicating code in the cleanup service make sure
+  all services which mounts a location updates the mount meta
+  data file /etc/system-root.fstab. The cleanup service in the
+  end just reverse reads that file and umounts all locations
+  
+-------------------------------------------------------------------
+Wed Nov 14 15:44:57 CET 2018 - jesus.bv@suse.com
+  
+- Update grub file to migrated version
+  
+-------------------------------------------------------------------
+Wed Nov 14 15:32:39 CET 2018 - ms@suse.de
+  
+- Added umount service
+  
+  The umount service cleans up the migration host such that
+  no active mount reference into the migrated systems exists
+  anymore and we are safe to reboot
+  
+-------------------------------------------------------------------
+Wed Nov 14 10:26:29 CET 2018 - rjschwei@suse.com
+  
+- Fix typo in doc string
+  
+-------------------------------------------------------------------
+Tue Nov 13 16:12:38 CET 2018 - ms@suse.de
+  
+- Bump version: 0.2.0 → 0.2.1
+  
+-------------------------------------------------------------------
+Tue Nov 13 13:20:48 CET 2018 - jesus.bv@suse.com
+  
+- Fix agree-licenses test
+  
+-------------------------------------------------------------------
+Tue Nov 13 13:12:15 CET 2018 - jesus.bv@suse.com
+  
+- Fix agree-licenses option typo
+  
+-------------------------------------------------------------------
+Tue Nov 13 11:16:20 CET 2018 - ms@suse.de
+  
+- Bump version: 0.1.2 → 0.2.0
+  
+-------------------------------------------------------------------
+Tue Nov 13 11:08:33 CET 2018 - ms@suse.de
+  
+- Use --non-interactive flag
+  
+  Instead of pre selecting a menu index use the non
+  interactive flag and make the code more robust
+  
+-------------------------------------------------------------------
+Mon Nov 12 15:40:51 CET 2018 - ms@suse.de
+  
+- Added zypper migration service
+  
+  The service which actually runs the zypper migration plugin.
+  The service is called after the preparation step has completed
+  successfully
+  
+-------------------------------------------------------------------
+Tue Oct 23 11:15:20 CEST 2018 - ms@suse.de
+  
+- Bump version: 0.1.1 → 0.1.2
+  
+-------------------------------------------------------------------
+Tue Oct 23 11:12:23 CEST 2018 - ms@suse.de
+  
+- make sure to restart the network actively
+  
+-------------------------------------------------------------------
+Tue Oct 23 09:31:36 CEST 2018 - ms@suse.de
+  
+- Bump version: 0.1.0 → 0.1.1
+  
+-------------------------------------------------------------------
+Mon Oct 22 10:35:07 CEST 2018 - ms@suse.de
+  
+- The presence of /etc/SUSEConnect is optional
+  
+  Do not fail the prepare service if there is no /etc/SUSEConnect
+  file available on the system to become migrated. Copy the
+  file if present and just continue otherwise
+  
+-------------------------------------------------------------------
+Tue Oct 16 09:02:56 CEST 2018 - ms@suse.de
+  
+- Bump version: 0.0.1 → 0.1.0
+  
+-------------------------------------------------------------------
+Mon Oct 15 15:22:47 CEST 2018 - ms@suse.de
+  
+- Added prepare service
+  
+  The prepare service runs the preparation tasks for systemd
+  to perform the migration. This includes the import of the
+  SUSEConnect configuration from the host as well as the
+  bind mount of the zypp metadata
+  
+-------------------------------------------------------------------
+Mon Oct 15 11:55:11 CEST 2018 - ms@suse.de
+  
+- Added setup host network service
+  
+  Added service to activate the migration host system network
+  
+-------------------------------------------------------------------
+Wed Oct 10 16:29:56 CEST 2018 - ms@suse.de
+  
+- Implement mount_system service
+  
+  The mount_system service looks for existing disk partitions
+  and for an fstab file on that partitions. The first partition
+  found with an fstab file is considered the system to upgrade.
+  The fstab file is read in and mounted /system-root
+  in the order of the fstab entries
+  
+-------------------------------------------------------------------
+Wed Oct 10 15:44:42 CEST 2018 - ms@suse.de
+  
+- Activate travis Ci
+  
+-------------------------------------------------------------------
+Wed Oct 10 15:43:09 CEST 2018 - ms@suse.de
+  
+- Added command and path helper classes
+  

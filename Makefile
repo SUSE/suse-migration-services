@@ -14,9 +14,13 @@ build: check test
 	# provide rpm source tarball
 	mv dist/suse_migration_services-${version}.tar.gz \
 		dist/suse-migration-services.tar.gz
-	# provide rpm changelog from git changelog
-	git log | helper/changelog_generator |\
-		helper/changelog_descending > dist/suse-migration-services.changes
+	# update rpm changelog using reference file
+	helper/update_changelog.py \
+		--since package/suse-migration-services.changes > \
+        dist/suse-migration-services.changes
+	helper/update_changelog.py \
+		--file package/suse-migration-services.changes >> \
+        dist/suse-migration-services.changes
 	# update package version in spec file
 	cat package/suse-migration-services-spec-template \
 		| sed -e s'@%%VERSION@${version}@' \
@@ -26,8 +30,13 @@ build: check test
 
 sle15_activation: check
 	rm -f dist/*
-	git log grub.d | helper/changelog_generator |\
-		helper/changelog_descending > \
+	# update rpm changelog using reference file
+	helper/update_changelog.py \
+		--since package/suse-migration-sle15-activation.changes \
+		--from grub.d > \
+		dist/suse-migration-sle15-activation.changes
+	helper/update_changelog.py \
+		--file package/suse-migration-sle15-activation.changes >> \
 		dist/suse-migration-sle15-activation.changes
 	cp package/suse-migration-sle15-activation-spec-template \
 		dist/suse-migration-sle15-activation.spec

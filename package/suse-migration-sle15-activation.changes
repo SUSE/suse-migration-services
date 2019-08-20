@@ -1,0 +1,55 @@
+-------------------------------------------------------------------
+Thu May  2 15:38:09 CEST 2019 - ms@suse.de
+
+- Reference commit for SUSE maintenance
+  
+  This submission creates a reference to fate#327175 and bsc#1133919
+  
+-------------------------------------------------------------------
+Mon Mar  4 14:13:57 CET 2019 - ms@suse.de
+  
+- Add rootpart detection to grub activation script
+  
+  The live migration image gets installed to the system again
+  because of the space limitation on /boot. This affects the
+  menuentry created on grub side in a way that we can't use
+  the pre-allocated pointer to the boot device but have to search
+  the root partition like in a real grub root entry. This patch
+  adds the needed code changes to locate the root part, insert
+  the needed filesystem module and initializes the root variable
+  to allow the loopback loading of the image. This Fixes #54
+  
+-------------------------------------------------------------------
+Mon Mar  4 13:40:57 CET 2019 - ms@suse.de
+  
+- Revert location change from /usr/share to /boot
+  
+  This reverts commit 66dd8d4943d38f121f4b16b70bf0ab8d0b2ec82d.
+  If there is an extra boot partition and it's too small we
+  are not able to install the migration system and the customer
+  will not be able to use the migration concept. The image is
+  usually around ~300MB of size and that can often be too much
+  for an extra boot partition which is often designed to be small
+  
+-------------------------------------------------------------------
+Fri Jan 25 11:12:22 CET 2019 - ms@suse.de
+  
+- Change location for live migration ISO image
+  
+  Instead of /usr/share expect the image in /boot. The reason
+  for this change is because we don't know if the system uses
+  an extra boot partition to load the kernel and initrd from.
+  However the way we add the extra loop boot entry to grub
+  is based on reading the value for ($root) as it was configured
+  on the system. The location ($root) points to in grub could
+  be anywhere but we can trust /boot to be in there.
+  This Fixes the run of the migration in Azure and also
+  stabilizes the concept.
+  
+-------------------------------------------------------------------
+Fri Nov 23 09:44:46 CET 2018 - ms@suse.de
+  
+- Set the Migration boot entry to be the default
+  
+  In addition set the boot timeout to 1sec
+  
