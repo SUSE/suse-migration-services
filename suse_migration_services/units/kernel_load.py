@@ -24,6 +24,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
 from suse_migration_services.path import Path
+from suse_migration_services.migration_config import MigrationConfig
 
 from suse_migration_services.exceptions import (
     DistMigrationKernelRebootException
@@ -36,6 +37,10 @@ def main():
 
     Loads the new kernel/initrd after migration for system reboot
     """
+    if not MigrationConfig().is_soft_reboot_requested():
+        log.info('skipping kexec --load (hard reboot requested)')
+        return
+
     root_path = Defaults.get_system_root_path()
 
     target_kernel = os.sep.join([root_path, Defaults.get_target_kernel()])

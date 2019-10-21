@@ -194,6 +194,14 @@ be debugged.
 [listing]
 debug: true|false
 
+Configure Reboot Method::
+By default, the migration system uses `kexec` to boot back into the host
+system once migration is complete.  If this is in any way problematic,
+a regular `reboot` can be requested by setting `soft_reboot: false`.
+
+[listing]
+soft_reboot: true|false
+
 == Run the Migration
 After the install of the `SLES15-Migration` package, start the migration
 by calling the following command:
