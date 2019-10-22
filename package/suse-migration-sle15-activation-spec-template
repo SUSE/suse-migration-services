@@ -28,6 +28,7 @@ BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildArch:        noarch
 BuildRequires:    grub2
 Requires:         SLES15-Migration
+Requires:         util-linux
 Requires:         grub2
 
 %description -n suse-migration-sle15-activation

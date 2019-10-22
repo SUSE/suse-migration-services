@@ -14,9 +14,8 @@ else
 fi
 
 migration_iso=$(echo /usr/share/migration-image/*-Migration.*.iso)
-root_device=$(lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" ")
+root_device=$(findmnt -n -f -o SOURCE /)
 root_uuid=$(blkid -s UUID -o value "${root_device}")
-root_type=$(blkid -s TYPE -o value "${root_device}")
 boot_options="rd.live.image root=live:CDLABEL=CDROM"
 if mdadm --detail "${root_device}" &>/dev/null; then
     boot_options="${boot_options} rd.auto"
@@ -28,7 +27,6 @@ if grub_file_is_not_garbage "${migration_iso}"; then
     boot_device_id="$(grub_get_device_id "${GRUB_DEVICE_BOOT}")"
     printf "menuentry '%s' %s \${menuentry_id_option} '%s' {\n" \
         "${OS}" "${CLASS}" "Migration-${boot_device_id}"
-    printf "    insmod %s\n" "${root_type}"
     printf "    search --no-floppy --fs-uuid --set=root %s\n" "${root_uuid}"
     printf "    set isofile='%s'\n" \
         "${migration_iso}"
