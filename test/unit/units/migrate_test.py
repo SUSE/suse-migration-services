@@ -101,6 +101,7 @@ class TestMigration(object):
                 '--gpg-auto-import-keys '
                 '--no-selfupdate '
                 '--auto-agree-with-licenses '
+                '--allow-vendor-change '
                 '--strict-errors-dist-migration '
                 '--replacefiles '
                 '--product SLES/15/x86_64 '
@@ -131,6 +132,7 @@ class TestMigration(object):
                 '--root /system-root '
                 'dup '
                 '--auto-agree-with-licenses '
+                '--allow-vendor-change '
                 '--replacefiles '
                 '&>> /system-root/var/log/distro_migration.log'
             ], raise_on_error=False

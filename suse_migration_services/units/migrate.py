@@ -49,6 +49,7 @@ def main():
                     '--gpg-auto-import-keys',
                     '--no-selfupdate',
                     '--auto-agree-with-licenses',
+                    '--allow-vendor-change',
                     '--strict-errors-dist-migration',
                     '--replacefiles',
                     '--product', migration_config.get_migration_product(),
@@ -68,6 +69,7 @@ def main():
                     '--root', root_path,
                     'dup',
                     '--auto-agree-with-licenses',
+                    '--allow-vendor-change',
                     '--replacefiles',
                     '&>>', Defaults.get_migration_log_file()
                 ]
