@@ -67,9 +67,14 @@ def main():
                     )
                 )
             log.info(
-                'Reboot system: [kexec]: {0}{1}'.format(
+                # reboot is performed through systemd. The call through
+                # systemd checks if there is a kexec loaded kernel and
+                # transparently turns 'systemctl reboot' into
+                # 'systemctl kexec'. Thus both ways, soft and hard
+                # reboot are managed in one call.
+                'Reboot system: {0}{1}'.format(
                     os.linesep, Command.run(
-                        ['kexec', '--exec']
+                        ['systemctl', 'reboot']
                     )
                 )
             )
@@ -79,5 +84,5 @@ def main():
         # Keep fingers crossed:
         log.warning('Reboot system: [Force Reboot]')
         Command.run(
-            ['reboot', '-f']
+            ['systemctl', '--force', 'reboot']
         )
