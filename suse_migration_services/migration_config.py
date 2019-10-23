@@ -83,8 +83,28 @@ class MigrationConfig(object):
         """
         if os.path.exists(self.migration_custom_file):
             with open(self.migration_custom_file, 'r') as custom_config:
-                new_config = yaml.safe_load(custom_config)
-                self.config_data.update(new_config)
+                try:
+                    new_config = yaml.safe_load(custom_config)
+                    if isinstance(new_config, dict):
+                        # We have a valid config file (the YAML parsed
+                        # into a dict) so it's safe to update the config
+                        self.config_data.update(new_config)
+                    elif new_config is None:
+                        # The config file is empty (or is all comments),
+                        # so there's nothing to do.
+                        return
+                    else:
+                        # The config file is slightly corrupt (e.g. if it's
+                        # one line "foo:bar" with no space after the ':', it
+                        # will be a str, not a dict, and thus unusable).
+                        raise Exception
+                except Exception:
+                    # Either the config file is *really* broken (yaml.safe_load
+                    # raised an exception), or it's slightly broken as mentioned
+                    # above.  Either way, we can't use it.
+                    log.warning("Can't use custom configuration ({} is not valid YAML)".format(
+                        self.migration_custom_file))
+                    return
 
             self._write_config_file()
 
