@@ -57,7 +57,7 @@ class TestKernelReboot(object):
                 ['umount', '--lazy', '/system-root/'],
                 raise_on_error=False
             ),
-            call(['kexec', '--exec'])
+            call(['systemctl', 'reboot'])
         ]
 
     @patch.object(Defaults, 'get_migration_config_file')
@@ -100,8 +100,8 @@ class TestKernelReboot(object):
                 ['umount', '--lazy', '/system-root/'],
                 raise_on_error=False
             ),
-            call(['kexec', '--exec']),
-            call(['reboot', '-f'])
+            call(['systemctl', 'reboot']),
+            call(['systemctl', '--force', 'reboot'])
         ]
         mock_warning.assert_called_once_with(
             'Reboot system: [Force Reboot]'
