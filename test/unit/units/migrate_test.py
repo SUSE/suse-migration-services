@@ -6,6 +6,7 @@ from pytest import raises
 
 from suse_migration_services.units.migrate import main
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.exceptions import (
     DistMigrationZypperException
 )
@@ -82,14 +83,16 @@ class TestMigration(object):
             zypper_call.returncode = 107
             main()
 
+    @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.command.Command.run')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.logger.log.info')
     def test_main_zypper_migration_plugin(
         self, mock_info, mock_error, mock_get_migration_config_file,
-        mock_Command_run
+        mock_Command_run, mock_get_system_root_path
     ):
+        mock_get_system_root_path.return_value = 'SLES/15/x86_64'
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
         main()

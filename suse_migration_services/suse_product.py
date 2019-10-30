@@ -117,3 +117,23 @@ class SUSEBaseProduct(object):
                 'Parsing XML file {0} failed with: {1}'
                 .format(self.base_product, issue)
             )
+
+    def get_product_name(self):
+        """Get the product name to be migrated to."""
+        migration_product_name = None
+        try:
+            name = self.get_tag('name')[0]
+            arch = self.get_tag('arch')[0]
+            if name and arch:
+                migration_product_name = '/'.join(
+                    [name, self.get_default_target_version(), arch]
+                )
+        except Exception as issue:
+            log.error(
+                'Base product could not be detected: {0}.'.format(issue)
+            )
+
+        return migration_product_name
+
+    def get_default_target_version(self):
+        return Defaults.get_os_release().version_id

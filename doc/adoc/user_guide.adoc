@@ -8,7 +8,7 @@ Marcus Schäfer; Jesús Velázquez
 :Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
 :Publication_Date: TBD
 :Latest_Version: 1.1.0
-:Contributors: 
+:Contributors:
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
 ifdef::env-github[]
@@ -154,12 +154,14 @@ manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
 Specify Migration Product::
-With the SLES15-Migration package a predefined product setup is
-already applied. That setting can be overwritten with one of the
+With the SLES15-Migration package an auto detected product is
+already applied. If that detection failed, the setting can be overwritten with one of the
 following product specifications:
 
 * SLES/15/x86_64
 * SLES/15.1/x86_64
+* SLES_SAP/15/x86_64
+* SLES_SAP/15.1/x86_64
 
 [listing]
 migration_product: SLES/15/x86_64

@@ -3,8 +3,10 @@ from unittest.mock import (
 )
 from pytest import raises
 import io
+from collections import namedtuple
 
 from suse_migration_services.migration_config import MigrationConfig
+from suse_migration_services.suse_product import SUSEBaseProduct
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.exceptions import (
     DistMigrationProductNotFoundException
@@ -24,27 +26,87 @@ class TestMigrationConfig(object):
             '../data/custom-migration-config.yml'
         self.config = MigrationConfig()
 
-    def test_get_migration_product(self):
-        assert self.config.get_migration_product() == 'SLES/15/x86_64'
+    @patch.object(Defaults, 'get_os_release')
+    @patch.object(Defaults, 'get_system_root_path')
+    def test_get_migration_product_auto_detected(
+        self, mock_get_system_root_path, mock_get_os_release
+    ):
+        os_release_tuple = namedtuple(
+            'OSRelease', [
+                'name', 'version', 'version_id',
+                'pretty_name', 'id', 'id_like', 'ansi_color', 'cpe_name'
+            ]
+        )
+        os_release_result = os_release_tuple(
+            name='SLES', version='15-SP1', version_id='15.1',
+            pretty_name='SUSE Linux Enterprise Server 15 SP1',
+            id='sles', id_like='suse', ansi_color='0;32',
+            cpe_name='cpe:/o:suse:sles:15:sp1'
+        )
+
+        mock_get_system_root_path.return_value = '../data'
+        mock_get_os_release.return_value = os_release_result  # '../data/etc/os-release'
+        assert self.config.get_migration_product() == 'SLES/15.1/x86_64'
 
     def test_get_preserve_udev_rules_list(self):
         assert self.config.get_preserve_udev_rules_list() == [
             '/etc/udev/rules.d/a.rules', '/etc/udev/rules.d/b.rules'
         ]
 
+    @patch.object(Defaults, 'get_os_release')
+    @patch.object(SUSEBaseProduct, 'get_tag')
+    @patch.object(Defaults, 'get_system_root_path')
     @patch('suse_migration_services.logger.log.error')
-    def test_get_migration_product_targets(self, mock_error):
+    def test_get_migration_product_targets(
+        self, mock_error, mock_get_system_root_path,
+        mock_get_product_name, mock_get_os_release
+    ):
+        os_release_tuple = namedtuple(
+            'OSRelease', [
+                'name', 'version', 'version_id',
+                'pretty_name', 'id', 'id_like', 'ansi_color', 'cpe_name'
+            ]
+        )
+        os_release_result = os_release_tuple(
+            name='SLES', version='15-SP1', version_id='15.1',
+            pretty_name='SUSE Linux Enterprise Server 15 SP1',
+            id='sles', id_like='suse', ansi_color='0;32',
+            cpe_name='cpe:/o:suse:sles:15:sp1'
+        )
+        mock_get_system_root_path.return_value = '../data'
+        mock_get_os_release.return_value = os_release_result
+        mock_get_product_name.side_effect = Exception
         self.config.config_data = {'not_migration_product': 'another_info'}
 
         with raises(DistMigrationProductNotFoundException):
             self.config.get_migration_product()
             assert mock_error.called
 
+    @patch.object(Defaults, 'get_os_release')
+    @patch.object(SUSEBaseProduct, 'get_product_name')
+    @patch.object(Defaults, 'get_system_root_path')
     @patch.object(MigrationConfig, '_write_config_file')
     @patch('suse_migration_services.logger.log.info')
-    def test_update_migration_config_file(
+    def test_update_migration_config_file_no_autodetect(
         self, mock_info, mock_write_config_file,
+        mock_get_system_root_path, mock_get_product_name,
+        mock_get_os_release
     ):
+        os_release_tuple = namedtuple(
+            'OSRelease', [
+                'name', 'version', 'version_id',
+                'pretty_name', 'id', 'id_like', 'ansi_color', 'cpe_name'
+            ]
+        )
+        os_release_result = os_release_tuple(
+            name='SLES', version='15-SP1', version_id='15.1',
+            pretty_name='SUSE Linux Enterprise Server 15 SP1',
+            id='sles', id_like='suse', ansi_color='0;32',
+            cpe_name='cpe:/o:suse:sles:15:sp1'
+        )
+        mock_get_os_release.return_value = os_release_result
+        mock_get_system_root_path.return_value = '../data'
+        mock_get_product_name.return_value = None
         self.config.update_migration_config_file()
         assert self.config.get_migration_product() == 'SLES/15.1/x86_64'
         assert self.config.is_debug_requested() is True
