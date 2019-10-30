@@ -40,7 +40,6 @@ class SUSEBaseProduct(object):
         base_product_files = []
         xml = ElementTree()
         for prod_filename in self.prod_filenames:
-            print(prod_filename)
             try:
                 xml.parse(prod_filename)
                 register_sections = xml.findall('register')
