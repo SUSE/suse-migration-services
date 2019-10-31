@@ -28,6 +28,7 @@ BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildRequires:    python3-devel
 BuildRequires:    python3-setuptools
 BuildRequires:    systemd-rpm-macros
+Requires:         python3-Cerberus
 Requires:         python3-PyYAML
 Requires:         python3-setuptools
 Requires:         util-linux

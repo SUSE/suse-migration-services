@@ -18,11 +18,14 @@
 import yaml
 import os
 from textwrap import dedent
+from cerberus import Validator
 
 # project
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import log
+from suse_migration_services.schema import schema
 from suse_migration_services.exceptions import (
+    DistMigrationConfigDataException,
     DistMigrationProductNotFoundException
 )
 
@@ -43,8 +46,31 @@ class MigrationConfig(object):
             Defaults.get_migration_config_file()
         self.migration_custom_file = \
             Defaults.get_system_migration_custom_config_file()
-        with open(self.migration_config_file, 'r') as config:
-            self.config_data = yaml.safe_load(config)
+        self.config_data = self._parse_config_file(self.migration_config_file)
+
+    def _parse_config_file(self, config_file):
+        config_data = {}
+        with open(config_file, 'r') as config:
+            try:
+                validator = Validator(schema)
+                config_data = yaml.safe_load(config)
+                if config_data is None:
+                    # Config file is empty (or all comments), reset to empty dict
+                    config_data = {}
+                validator.validate(config_data)
+            except Exception as e:
+                message = 'Loading {0} failed: {1}: {2}'.format(
+                    config_file, type(e).__name__, e
+                )
+                log.error(message)
+                raise DistMigrationConfigDataException(message)
+            if validator.errors:
+                message = 'Validating {0} failed: {1}'.format(
+                    config_file, validator.errors
+                )
+                log.error(message)
+                raise DistMigrationConfigDataException(message)
+        return config_data
 
     def get_migration_product(self):
         """
@@ -82,20 +108,20 @@ class MigrationConfig(object):
         Update the default migration configuration with custom values
         """
         if os.path.exists(self.migration_custom_file):
-            with open(self.migration_custom_file, 'r') as custom_config:
-                new_config = yaml.safe_load(custom_config)
+            new_config = self._parse_config_file(self.migration_custom_file)
+            if new_config:
                 self.config_data.update(new_config)
 
-            self._write_config_file()
+                self._write_config_file()
 
-            message = dedent('''
-                The migration file '{0}' has been updated with '{1}' info
-            ''')
-            log.info(
-                message.format(
-                    self.migration_config_file, self.migration_custom_file
-                ).lstrip()
-            )
+                message = dedent('''
+                    The migration file '{0}' has been updated with '{1}' info
+                ''')
+                log.info(
+                    message.format(
+                        self.migration_config_file, self.migration_custom_file
+                    ).lstrip()
+                )
 
     def is_debug_requested(self):
         return self.config_data.get('debug', False)

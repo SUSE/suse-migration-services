@@ -1,2 +1,3 @@
 setuptools
 PyYAML
+cerberus
