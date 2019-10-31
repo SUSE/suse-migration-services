@@ -35,6 +35,7 @@ Requires:         kexec-tools
 Requires:         ca-certificates
 Requires:         dialog
 Requires:         rsync
+Requires:         SUSEConnect >= 0.3.20
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
