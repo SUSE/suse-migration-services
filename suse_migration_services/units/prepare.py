@@ -95,15 +95,6 @@ def main():
     cloud_register_metadata = os.sep.join(
         [root_path, 'var', 'lib', 'cloudregister']
     )
-    dev_mount_point = os.sep.join(
-        [root_path, 'dev']
-    )
-    proc_mount_point = os.sep.join(
-        [root_path, 'proc']
-    )
-    sys_mount_point = os.sep.join(
-        [root_path, 'sys']
-    )
     try:
         # log network info as network-online.target is done at this point
         log_network_details()
@@ -135,25 +126,6 @@ def main():
                     '/var/lib/cloudregister'
                 ]
             )
-        log.info('Mounting kernel file systems inside {0}'.format(root_path))
-        Command.run(
-            ['mount', '-t', 'devtmpfs', 'devtmpfs', dev_mount_point]
-        )
-        system_mount.add_entry(
-            'devtmpfs', dev_mount_point
-        )
-        Command.run(
-            ['mount', '-t', 'proc', 'proc', proc_mount_point]
-        )
-        system_mount.add_entry(
-            '/proc', proc_mount_point
-        )
-        Command.run(
-            ['mount', '-t', 'sysfs', 'sysfs', sys_mount_point]
-        )
-        system_mount.add_entry(
-            'sysfs', sys_mount_point
-        )
         system_mount.export(
             Defaults.get_system_mount_info_file()
         )
@@ -163,11 +135,8 @@ def main():
                 issue
             )
         )
-        log.info('Unmounting kernel file systems, if any')
-        for entry in reversed(system_mount.get_devices()):
-            Command.run(
-                ['umount', entry.mountpoint], raise_on_error=False
-            )
+        # Not unmounting any of the bind mounts above; the reboot
+        # service should take care of that anyway
         raise DistMigrationZypperMetaDataException(
             'Preparation of zypper metadata failed with {0}'.format(
                 issue

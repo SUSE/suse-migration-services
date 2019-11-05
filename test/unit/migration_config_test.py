@@ -9,6 +9,7 @@ from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.suse_product import SUSEBaseProduct
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.exceptions import (
+    DistMigrationConfigDataException,
     DistMigrationProductNotFoundException
 )
 
@@ -130,3 +131,97 @@ class TestMigrationConfig(object):
             mock_yaml_dump.assert_called_once_with(
                 self.config.config_data, file_handle, default_flow_style=False
             )
+
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch('suse_migration_services.logger.log.info')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    def test_update_migration_config_file_empty(
+        self, mock_get_system_migration_config_custom_file,
+        mock_get_migration_config_file,
+        mock_info, mock_write_config_file,
+    ):
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_get_system_migration_config_custom_file.return_value = \
+            '../data/custom-migration-config-empty.yml'
+        self.config = MigrationConfig()
+        self.config.update_migration_config_file()
+        mock_info.assert_not_called()
+
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch('suse_migration_services.logger.log.info')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    def test_update_migration_config_file_just_comments(
+        self, mock_get_system_migration_config_custom_file,
+        mock_get_migration_config_file,
+        mock_info, mock_write_config_file,
+    ):
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_get_system_migration_config_custom_file.return_value = \
+            '../data/custom-migration-config-just-comments.yml'
+        self.config = MigrationConfig()
+        self.config.update_migration_config_file()
+        mock_info.assert_not_called()
+
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    def test_update_migration_config_file_slightly_broken(
+        self, mock_get_system_migration_config_custom_file,
+        mock_get_migration_config_file,
+        mock_info, mock_error, mock_write_config_file,
+    ):
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_get_system_migration_config_custom_file.return_value = \
+            '../data/custom-migration-config-corrupt-string.yml'
+        self.config = MigrationConfig()
+        with raises(DistMigrationConfigDataException):
+            self.config.update_migration_config_file()
+        mock_info.assert_not_called()
+        assert mock_error.called
+
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    def test_update_migration_config_file_very_broken(
+        self, mock_get_system_migration_config_custom_file,
+        mock_get_migration_config_file,
+        mock_info, mock_error, mock_write_config_file,
+    ):
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_get_system_migration_config_custom_file.return_value = \
+            '../data/custom-migration-config-corrupt-mess.yml'
+        self.config = MigrationConfig()
+        with raises(DistMigrationConfigDataException):
+            self.config.update_migration_config_file()
+        mock_info.assert_not_called()
+        assert mock_error.called
+
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.log.info')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    def test_update_migration_config_file_violates_schema(
+        self, mock_get_system_migration_config_custom_file,
+        mock_get_migration_config_file,
+        mock_info, mock_error, mock_write_config_file,
+    ):
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_get_system_migration_config_custom_file.return_value = \
+            '../data/custom-migration-config-violates-schema.yml'
+        self.config = MigrationConfig()
+        with raises(DistMigrationConfigDataException):
+            self.config.update_migration_config_file()
+        mock_info.assert_not_called()
+        assert mock_error.called

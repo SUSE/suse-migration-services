@@ -1,0 +1,3 @@
+debug: 'must be boolean'
+preserve: 'must be a dict'
+this_key: 'is not even in the schema!'

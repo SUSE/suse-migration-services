@@ -127,3 +127,9 @@ class DistMigrationSUSEBaseProductException(DistMigrationException):
     from the bind mounted etc/products.d location into the
     migrated system has failed
     """
+
+
+class DistMigrationConfigDataException(DistMigrationException):
+    """
+    Exception raised if the custom config file is invalid or corrupt
+    """
