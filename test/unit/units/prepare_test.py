@@ -134,15 +134,6 @@ class TestSetupPrepare(object):
                     'mount', '--bind', '/system-root/var/lib/cloudregister',
                     '/var/lib/cloudregister'
                 ]
-            ),
-            call(
-                ['mount', '-t', 'devtmpfs', 'devtmpfs', '/system-root/dev']
-            ),
-            call(
-                ['mount', '-t', 'proc', 'proc', '/system-root/proc']
-            ),
-            call(
-                ['mount', '-t', 'sysfs', 'sysfs', '/system-root/sys']
             )
         ]
         fstab.read.assert_called_once_with(
@@ -154,15 +145,6 @@ class TestSetupPrepare(object):
             ),
             call(
                 '/system-root/usr/lib/zypp/plugins', '/usr/lib/zypp/plugins'
-            ),
-            call(
-                'devtmpfs', '/system-root/dev'
-            ),
-            call(
-                '/proc', '/system-root/proc'
-            ),
-            call(
-                'sysfs', '/system-root/sys'
             )
         ]
         fstab.export.assert_called_once_with(

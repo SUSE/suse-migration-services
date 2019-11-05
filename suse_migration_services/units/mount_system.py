@@ -126,10 +126,9 @@ def read_system_fstab(root_path):
 
 def mount_system(root_path, fstab):
     log.info('Mount system in {0}'.format(root_path))
-    mount_list = []
     system_mount = Fstab()
-    for fstab_entry in fstab.get_devices():
-        try:
+    try:
+        for fstab_entry in fstab.get_devices():
             mountpoint = ''.join(
                 [root_path, fstab_entry.mountpoint]
             )
@@ -143,16 +142,44 @@ def mount_system(root_path, fstab):
             system_mount.add_entry(
                 fstab_entry.device, mountpoint, fstab_entry.fstype
             )
-            mount_list.append(mountpoint)
-        except Exception as issue:
-            log.error(
-                'Mounting system for upgrade failed with {0}'.format(issue)
-            )
-            for mountpoint in reversed(mount_list):
-                Command.run(['umount', mountpoint])
-            raise DistMigrationSystemMountException(
-                'Mounting system for upgrade failed with {0}'.format(issue)
-            )
+
+        log.info('Mounting kernel file systems inside {0}'.format(root_path))
+        dev_mount_point = os.sep.join(
+            [root_path, 'dev']
+        )
+        Command.run(
+            ['mount', '-t', 'devtmpfs', 'devtmpfs', dev_mount_point]
+        )
+        system_mount.add_entry(
+            'devtmpfs', dev_mount_point
+        )
+        proc_mount_point = os.sep.join(
+            [root_path, 'proc']
+        )
+        Command.run(
+            ['mount', '-t', 'proc', 'proc', proc_mount_point]
+        )
+        system_mount.add_entry(
+            '/proc', proc_mount_point
+        )
+        sys_mount_point = os.sep.join(
+            [root_path, 'sys']
+        )
+        Command.run(
+            ['mount', '-t', 'sysfs', 'sysfs', sys_mount_point]
+        )
+        system_mount.add_entry(
+            'sysfs', sys_mount_point
+        )
+    except Exception as issue:
+        log.error(
+            'Mounting system for upgrade failed with {0}'.format(issue)
+        )
+        for entry in reversed(system_mount.get_devices()):
+            Command.run(['umount', entry.mountpoint])
+        raise DistMigrationSystemMountException(
+            'Mounting system for upgrade failed with {0}'.format(issue)
+        )
     system_mount.export(
         Defaults.get_system_mount_info_file()
     )
