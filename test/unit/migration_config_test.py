@@ -44,9 +44,8 @@ class TestMigrationConfig(object):
             id='sles', id_like='suse', ansi_color='0;32',
             cpe_name='cpe:/o:suse:sles:15:sp1'
         )
-
         mock_get_system_root_path.return_value = '../data'
-        mock_get_os_release.return_value = os_release_result  # '../data/etc/os-release'
+        mock_get_os_release.return_value = os_release_result
         assert self.config.get_migration_product() == 'SLES/15.1/x86_64'
 
     def test_get_preserve_udev_rules_list(self):

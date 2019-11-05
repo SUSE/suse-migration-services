@@ -42,35 +42,34 @@ class MigrationConfig(object):
     version as part of the live migration image build.
     """
     def __init__(self):
-        self.config_data = {}
         self.migration_config_file = \
             Defaults.get_migration_config_file()
         self.migration_custom_file = \
             Defaults.get_system_migration_custom_config_file()
-        self.config_data = self._parse_config_file(self.migration_config_file)
+        self.config_data = self._parse_config_file(
+            self.migration_config_file
+        )
 
     def _parse_config_file(self, config_file):
         config_data = {}
-        with open(config_file, 'r') as config:
-            try:
-                validator = Validator(schema)
-                config_data = yaml.safe_load(config)
-                if config_data is None:
-                    # Config file is empty (or all comments), reset to empty dict
-                    config_data = {}
-                validator.validate(config_data)
-            except Exception as e:
-                message = 'Loading {0} failed: {1}: {2}'.format(
-                    config_file, type(e).__name__, e
-                )
-                log.error(message)
-                raise DistMigrationConfigDataException(message)
-            if validator.errors:
-                message = 'Validating {0} failed: {1}'.format(
-                    config_file, validator.errors
-                )
-                log.error(message)
-                raise DistMigrationConfigDataException(message)
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as config:
+                try:
+                    validator = Validator(schema)
+                    config_data = yaml.safe_load(config) or {}
+                    validator.validate(config_data)
+                except Exception as e:
+                    message = 'Loading {0} failed: {1}: {2}'.format(
+                        config_file, type(e).__name__, e
+                    )
+                    log.error(message)
+                    raise DistMigrationConfigDataException(message)
+                if validator.errors:
+                    message = 'Validating {0} failed: {1}'.format(
+                        config_file, validator.errors
+                    )
+                    log.error(message)
+                    raise DistMigrationConfigDataException(message)
         return config_data
 
     def get_migration_product(self):
