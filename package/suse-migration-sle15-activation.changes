@@ -1,4 +1,66 @@
 -------------------------------------------------------------------
+Fri Aug 23 10:08:20 UTC 2019 - Jesús Bermúdez Velázquez <jesusbv@suse.com>
+
+- Reference commit for SUSE maintenance
+  
+  Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108) 
+
+-------------------------------------------------------------------
+Wed Jul 17 13:10:22 UTC 2019 - Marcus Schäfer <ms@suse.de>
+
+- Partially revert the no bootloader based startup
+
+  After testing the kexec based implementation to start the
+  migration live image, we found that kexec does not work in
+  all cloud providers. Especially those using Xen like AWS
+  do not work. Thus it's required to keep the alternative
+  bootloader based startup sequence
+
+-------------------------------------------------------------------
+Mon Jul 15 16:26:04 UTC 2019 - Marcus Schäfer <ms@suse.de>
+
+- Avoid bootloader to run the migration
+
+  Instead of a reboot the customer should run the migration
+  by calling run_migration. This commit adds a service utility
+  to run the migration. The concept is based on kexec and
+  avoids the modification to the bootloader setup. This allows
+  more flexibility for clouds that runs instances not directly
+  through a bootloader and also avoids infinite boot/reboot
+  cycles in case of an early error of the migration mount
+  service. This Fixes #108
+
+-------------------------------------------------------------------
+Wed May 29 09:37:12 UTC 2019 - Marcus Schäfer <ms@suse.de>
+
+- Fix grub setup if root is on a raid device
+
+  If the root filesystem is on a raid device the boot parameter
+  rd.auto must be passed to the boot such that the dracut raid
+  module can setup the raid prior to iso-scan.sh searching
+  through the devices. Related to Issue #96
+
+-------------------------------------------------------------------
+Tue May 28 13:39:48 UTC 2019 - Tim Serong <tserong@suse.com>
+
+- Use `uniq` when finding root device in grub activation script
+
+  If the system is using mdraid on the root disk, the `lsblk` invocation
+  will return two lines matching "/$", e.g.:
+
+  /dev/md1
+  /dev/md1
+
+  This then breaks the subsequent `blkid` invocations, so $root_uuid and
+  $root_type are set to empty strings.  When you later boot into the
+  migration system, grub gives two errors:
+
+  error: one argument expected.
+  error: no such device: root.
+
+  Adding `uniq` fixes this.
+
+-------------------------------------------------------------------
 Thu May  2 15:38:09 CEST 2019 - ms@suse.de
 
 - Reference commit for SUSE maintenance
