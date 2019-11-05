@@ -21,6 +21,7 @@ from textwrap import dedent
 
 # project
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.suse_product import SUSEBaseProduct
 from suse_migration_services.logger import log
 from suse_migration_services.exceptions import (
     DistMigrationProductNotFoundException
@@ -53,13 +54,17 @@ class MigrationConfig(object):
         The value returned is passed to the --product option in the
         zypper migration call
         """
+        # check for a custom migration product
         migration_product = self.config_data.get('migration_product')
         if not migration_product:
-            message = (
-                'Migration product not found, aborting migration attempt.'
-            )
-            log.error(message)
-            raise DistMigrationProductNotFoundException(message)
+            migration_product = SUSEBaseProduct().get_product_name()
+            if not migration_product:
+                # auto detection went wrong
+                message = (
+                    'Migration product not found, aborting migration attempt.'
+                )
+                log.error(message)
+                raise DistMigrationProductNotFoundException(message)
 
         return migration_product
 

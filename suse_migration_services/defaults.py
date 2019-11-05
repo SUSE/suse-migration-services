@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
+from collections import namedtuple
 
 
 class Defaults(object):
@@ -85,3 +86,16 @@ class Defaults(object):
     @classmethod
     def get_system_sshd_config_path(self):
         return '/etc/ssh/sshd_config'
+
+    @classmethod
+    def get_os_release(self):
+        with open('/etc/os-release', 'r') as handle:
+            keys, values = zip(
+                *[
+                    (key.lower(), value.strip('\'"')) for (key, value) in (
+                        line.strip().split('=', 1) for line in
+                        handle.read().strip().split(os.linesep)
+                    )
+                ]
+            )
+            return namedtuple('OSRelease', keys)(*values)
