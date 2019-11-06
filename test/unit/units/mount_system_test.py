@@ -124,7 +124,7 @@ class TestMountSystem(object):
         fstab_mock.read.return_value = fstab.read('../data/fstab')
         fstab_mock.get_devices.return_value = fstab.get_devices()
         mock_is_mounted.side_effect = _is_mounted
-        mock_path_exists.side_effect = [True, False]
+        mock_path_exists.side_effect = [True, True, False]
         mock_Fstab.return_value = fstab_mock
         command = Mock()
         command.returncode = 1
