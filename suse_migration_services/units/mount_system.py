@@ -150,26 +150,17 @@ def mount_system(root_path, fstab):
         Command.run(
             ['mount', '-t', 'devtmpfs', 'devtmpfs', dev_mount_point]
         )
-        system_mount.add_entry(
-            'devtmpfs', dev_mount_point
-        )
         proc_mount_point = os.sep.join(
             [root_path, 'proc']
         )
         Command.run(
             ['mount', '-t', 'proc', 'proc', proc_mount_point]
         )
-        system_mount.add_entry(
-            '/proc', proc_mount_point
-        )
         sys_mount_point = os.sep.join(
             [root_path, 'sys']
         )
         Command.run(
             ['mount', '-t', 'sysfs', 'sysfs', sys_mount_point]
-        )
-        system_mount.add_entry(
-            'sysfs', sys_mount_point
         )
     except Exception as issue:
         log.error(

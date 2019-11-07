@@ -223,15 +223,6 @@ class TestMountSystem(object):
                     '/dev/mynode',
                     '/system-root/foo',
                     'ext4'
-                ),
-                call(
-                    'devtmpfs', '/system-root/dev'
-                ),
-                call(
-                    '/proc', '/system-root/proc'
-                ),
-                call(
-                    'sysfs', '/system-root/sys'
                 )
             ]
             fstab_mock.export.assert_called_once_with(
