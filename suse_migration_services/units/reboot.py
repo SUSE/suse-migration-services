@@ -66,15 +66,14 @@ def main():
                         )
                     )
                 )
+            if not MigrationConfig().is_soft_reboot_requested():
+                restart_system = 'reboot'
+            else:
+                restart_system = 'kexec'
             log.info(
-                # reboot is performed through systemd. The call through
-                # systemd checks if there is a kexec loaded kernel and
-                # transparently turns 'systemctl reboot' into
-                # 'systemctl kexec'. Thus both ways, soft and hard
-                # reboot are managed in one call.
                 'Reboot system: {0}{1}'.format(
                     os.linesep, Command.run(
-                        ['systemctl', 'reboot']
+                        ['systemctl', restart_system]
                     )
                 )
             )
