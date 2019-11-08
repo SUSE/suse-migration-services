@@ -57,7 +57,7 @@ class TestKernelReboot(object):
                 ['umount', '--lazy', '/system-root/'],
                 raise_on_error=False
             ),
-            call(['systemctl', 'reboot'])
+            call(['systemctl', 'kexec'])
         ]
 
     @patch.object(Defaults, 'get_migration_config_file')
@@ -83,7 +83,7 @@ class TestKernelReboot(object):
             None
         ]
         mock_get_migration_config_file.return_value = \
-            '../data/migration-config.yml'
+            '../data/migration-config-hard-reboot.yml'
         main()
         assert mock_info.called
         assert mock_Command_run.call_args_list == [
