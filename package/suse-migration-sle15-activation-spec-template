@@ -19,6 +19,7 @@
 Name:             suse-migration-sle15-activation
 Version:          1.2.0
 Release:          0
+%global           MinSLEVersion 12.3
 Url:              https://github.com/SUSE/suse-migration-services
 Summary:          SUSE Distribution SLE15 Migration Activation
 License:          GPL-3.0+
@@ -29,6 +30,7 @@ BuildArch:        noarch
 BuildRequires:    grub2
 Requires:         SLES15-Migration
 Requires:         grub2
+Requires:         product(SLES) >= %{MinSLEVersion} || product(SLES_SAP) >= %{MinSLEVersion}
 
 %description -n suse-migration-sle15-activation
 Script code to activate the SLE15 migration image to be booted at
