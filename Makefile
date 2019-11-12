@@ -33,6 +33,7 @@ sle15_activation: check
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
 		--since package/suse-migration-sle15-activation.changes.ref \
+		--from package/suse-migration-sle15-activation-spec-template \
 		--from grub.d --utc > \
 		dist/suse-migration-sle15-activation.changes
 	helper/update_changelog.py \

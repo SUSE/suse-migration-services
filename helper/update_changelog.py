@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """
 usage: update_changelog (--since=<reference_file>|--file=<reference_file>)
-            [--from=<path>]
+            [--from=<path>...]
             [--utc]
 
 arguments:
@@ -72,7 +72,8 @@ if arguments['--since']:
     if latest_date:
         git_arguments.append('--since="{0}"'.format(latest_date))
     if arguments.get('--from'):
-        git_arguments.append(arguments.get('--from'))
+        for source_repo in arguments.get('--from'):
+            git_arguments.append(source_repo)
 
     process = subprocess.Popen(
         git_arguments, stdout=subprocess.PIPE
