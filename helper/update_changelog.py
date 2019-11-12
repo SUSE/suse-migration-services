@@ -86,6 +86,9 @@ else:
         log_lines = gitlog.readlines()
 
 if arguments['--since']:
+    # append empty commit to prevent loosing log data if
+    # only one commit of change was found
+    log_lines.append(b'commit')
     # Iterate over log data and convert to changelog format
     for line_data in log_lines:
         line = line_data.decode(encoding='utf-8')
@@ -131,11 +134,11 @@ if arguments['--since']:
     for author_date in reversed(sorted(log_data.keys())):
         if date_reference:
             if date_reference < author_date:
-                sys.stdout.write(log_data[author_date])
+                sys.stdout.write(log_data[author_date] + os.linesep)
             else:
                 skip_list.append(author_date)
         else:
-            sys.stdout.write(log_data[author_date])
+            sys.stdout.write(log_data[author_date] + os.linesep)
 else:
     for line_data in log_lines:
         line = line_data.decode(encoding='utf-8')

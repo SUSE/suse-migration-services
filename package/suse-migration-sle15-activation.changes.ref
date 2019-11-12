@@ -1,9 +1,9 @@
-commit cc3f0b43dabc45166559953c037dc1fa68ec40af
-Author:     Marcus Schäfer <ms@suse.de>
-AuthorDate: Thu May 2 15:14:31 2019 +0200
-Commit:     Marcus Schäfer <ms@suse.de>
-CommitDate: Thu May 2 15:14:31 2019 +0200
+commit 9c1d0f22bfe3e74975fe76a50b8029d5a7325a52
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Tue Aug 20 11:39:04 2019 +0100
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Tue Aug 20 11:39:04 2019 +0100
 
     Reference commit for SUSE maintenance
     
-    This submission creates a reference to fate#327175 and bsc#1133919
+    Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108)
