@@ -30,7 +30,7 @@ BuildArch:        noarch
 BuildRequires:    grub2
 Requires:         SLES15-Migration
 Requires:         grub2
-Requires:         product(SLES) >= %{MinSLEVersion} || product(SLES_SAP) >= %{MinSLEVersion}
+Requires:         product(SLES) >= %{MinSLEVersion} or product(SLES_SAP) >= %{MinSLEVersion}
 
 %description -n suse-migration-sle15-activation
 Script code to activate the SLE15 migration image to be booted at
