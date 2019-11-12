@@ -134,11 +134,12 @@ if arguments['--since']:
     for author_date in reversed(sorted(log_data.keys())):
         if date_reference:
             if date_reference < author_date:
-                sys.stdout.write(log_data[author_date] + os.linesep)
+                sys.stdout.write(log_data[author_date])
             else:
                 skip_list.append(author_date)
         else:
-            sys.stdout.write(log_data[author_date] + os.linesep)
+            sys.stdout.write(log_data[author_date])
+    sys.stdout.write(os.linesep)
 else:
     for line_data in log_lines:
         line = line_data.decode(encoding='utf-8')
