@@ -39,8 +39,10 @@ sle15_activation: check
 	helper/update_changelog.py \
 		--file package/suse-migration-sle15-activation.changes >> \
 		dist/suse-migration-sle15-activation.changes
-	cp package/suse-migration-sle15-activation-spec-template \
-		dist/suse-migration-sle15-activation.spec
+	# update package version in spec file
+	cat package/suse-migration-sle15-activation-spec-template \
+		| sed -e s'@%%VERSION@${version}@' \
+		> dist/suse-migration-sle15-activation.spec
 	tar -czf dist/suse-migration-sle15-activation.tar.gz grub.d
 
 .PHONY: test

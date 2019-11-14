@@ -14,12 +14,11 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-
+%global           MinSLEVersion 12.3
 
 Name:             suse-migration-sle15-activation
-Version:          1.2.0
+Version:          %%VERSION
 Release:          0
-%global           MinSLEVersion 12.3
 Url:              https://github.com/SUSE/suse-migration-services
 Summary:          SUSE Distribution SLE15 Migration Activation
 License:          GPL-3.0+
@@ -30,8 +29,6 @@ BuildArch:        noarch
 BuildRequires:    grub2
 Requires:         SLES15-Migration
 Requires:         grub2
-# No Boolean 'or' expression because available with rpm >= 4.13, SLE12 uses an older version
-# This enforces minimun version as SLES_SAP provides product(SLES) = %{version}-%{release}
 Requires:         product(SLES) >= %{MinSLEVersion}
 
 %description -n suse-migration-sle15-activation
