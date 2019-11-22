@@ -125,8 +125,8 @@ class TestSetupPrepare(object):
             ),
             call(
                 [
-                    'mount', '--bind', '/system-root/usr/lib/zypp/plugins',
-                    '/usr/lib/zypp/plugins'
+                    'mount', '--bind', '/system-root/usr/lib/zypp/plugins/services',
+                    '/usr/lib/zypp/plugins/services'
                 ]
             ),
             call(
@@ -144,7 +144,8 @@ class TestSetupPrepare(object):
                 '/system-root/etc/zypp', '/etc/zypp'
             ),
             call(
-                '/system-root/usr/lib/zypp/plugins', '/usr/lib/zypp/plugins'
+                '/system-root/usr/lib/zypp/plugins/services',
+                '/usr/lib/zypp/plugins/services'
             )
         ]
         fstab.export.assert_called_once_with(

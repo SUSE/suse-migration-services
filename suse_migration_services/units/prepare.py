@@ -89,8 +89,8 @@ def main():
     zypp_metadata = os.sep.join(
         [root_path, 'etc', 'zypp']
     )
-    zypp_plugins = os.sep.join(
-        [root_path, 'usr', 'lib', 'zypp', 'plugins']
+    zypp_plugins_services = os.sep.join(
+        [root_path, 'usr', 'lib', 'zypp', 'plugins', 'services']
     )
     cloud_register_metadata = os.sep.join(
         [root_path, 'var', 'lib', 'cloudregister']
@@ -112,10 +112,10 @@ def main():
         )
         log.info('Bind mounting /usr/lib/zypp/plugins')
         Command.run(
-            ['mount', '--bind', zypp_plugins, '/usr/lib/zypp/plugins']
+            ['mount', '--bind', zypp_plugins_services, '/usr/lib/zypp/plugins/services']
         )
         system_mount.add_entry(
-            zypp_plugins, '/usr/lib/zypp/plugins'
+            zypp_plugins_services, '/usr/lib/zypp/plugins/services'
         )
         if os.path.exists(cloud_register_metadata):
             log.info('Bind mounting /var/lib/cloudregister')
