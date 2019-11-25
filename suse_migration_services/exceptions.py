@@ -133,3 +133,9 @@ class DistMigrationConfigDataException(DistMigrationException):
     """
     Exception raised if the custom config file is invalid or corrupt
     """
+
+
+class DistMigrationSystemNotRegisteredException(DistMigrationException):
+    """
+    Exception raised if the system is not registered
+    """

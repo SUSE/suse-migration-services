@@ -23,13 +23,15 @@ from suse_migration_services.path import Path
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.suse_connect import SUSEConnect
 from suse_migration_services.logger import log
 from suse_migration_services.units.setup_host_network import (
     log_network_details
 )
 
 from suse_migration_services.exceptions import (
-    DistMigrationZypperMetaDataException
+    DistMigrationZypperMetaDataException,
+    DistMigrationSystemNotRegisteredException
 )
 
 
@@ -96,6 +98,12 @@ def main():
         [root_path, 'var', 'lib', 'cloudregister']
     )
     try:
+        # System must be registered for the migration to succeed
+        if not SUSEConnect.is_registered():
+            message = 'System not registered. Aborting migration.'
+            log.error(message)
+            raise DistMigrationSystemNotRegisteredException(message)
+
         # log network info as network-online.target is done at this point
         log_network_details()
         log.info('Running prepare service')

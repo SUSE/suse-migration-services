@@ -5,6 +5,7 @@ from unittest.mock import (
 from pytest import raises
 
 from suse_migration_services.units.prepare import main
+from suse_migration_services.suse_connect import SUSEConnect
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.exceptions import (
     DistMigrationZypperMetaDataException
@@ -69,6 +70,7 @@ class TestSetupPrepare(object):
                 call(['umount', '/system-root/dev'], raise_on_error=False)
             ]
 
+    @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
@@ -78,12 +80,13 @@ class TestSetupPrepare(object):
     @patch('os.listdir')
     def test_main(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Path, mock_Fstab, mock_Command_run, mock_info
+        mock_Path, mock_Fstab, mock_Command_run, mock_info, mock_is_registered
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_os_listdir.return_value = ['foo', 'bar']
         mock_os_path_exists.return_value = True
+        mock_is_registered.return_value = True
         main()
         assert mock_shutil_copy.call_args_list == [
             call('/system-root/etc/SUSEConnect', '/etc/SUSEConnect'),
@@ -155,3 +158,16 @@ class TestSetupPrepare(object):
         mock_Command_run.assert_any_call(
             ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
         )
+
+    @patch.object(SUSEConnect, 'is_registered')
+    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.path.exists')
+    def test_main_no_registered_instance(
+        self, mock_os_path_exists, mock_Command_run,
+        mock_error, mock_is_registered
+    ):
+        mock_os_path_exists.return_value = False
+        mock_is_registered.return_value = False
+        with raises(DistMigrationZypperMetaDataException):
+            main()
