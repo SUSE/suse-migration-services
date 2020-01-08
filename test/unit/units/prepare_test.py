@@ -128,7 +128,8 @@ class TestSetupPrepare(object):
             ),
             call(
                 [
-                    'mount', '--bind', '/system-root/usr/lib/zypp/plugins/services',
+                    'mount', '--bind',
+                    '/system-root/usr/lib/zypp/plugins/services',
                     '/usr/lib/zypp/plugins/services'
                 ]
             ),
@@ -160,14 +161,23 @@ class TestSetupPrepare(object):
         )
 
     @patch.object(SUSEConnect, 'is_registered')
+    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.units.prepare.Path')
     @patch('os.path.exists')
+    @patch('shutil.copy')
+    @patch('os.listdir')
     def test_main_no_registered_instance(
-        self, mock_os_path_exists, mock_Command_run,
-        mock_error, mock_is_registered
+        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
+        mock_Path, mock_Fstab, mock_Command_run, mock_log_error,
+        mock_log_info, mock_is_registered
     ):
-        mock_os_path_exists.return_value = False
+        fstab = Mock()
+        mock_Fstab.return_value = fstab
+        mock_os_listdir.return_value = ['foo', 'bar']
+        mock_os_path_exists.return_value = True
         mock_is_registered.return_value = False
         with raises(DistMigrationZypperMetaDataException):
             main()
