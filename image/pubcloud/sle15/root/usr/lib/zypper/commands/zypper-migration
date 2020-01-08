@@ -1,0 +1,677 @@
+#!/usr/bin/ruby
+
+require 'optparse'
+require 'fileutils'
+require "suse/connect"
+
+class ProductVersion
+  include Comparable
+  attr :v
+
+  def cmp_array(a1, a2)
+    return 0 if a1.length == 0 && a2.length == 0
+    first1 = a1.length > 0 ? a1.shift : "0"
+    first2 = a2.length > 0 ? a2.shift : "0"
+
+    cmp = first1.to_i <=> first2.to_i
+    cmp = cmp_array(a1, a2) if cmp == 0
+    return cmp
+  end
+
+  def <=>(v2)
+    a_ver, a_rel = @v.split("-")
+    b_ver, b_rel = v2.v.split("-")
+    cmp_array(a_ver.split('.'), b_ver.split('.'))
+  end
+  def initialize(v)
+    @v = v
+  end
+  def inspect
+    @v
+  end
+end
+
+
+
+def create_tarball(tarball_path, root, paths)
+  # tar reports an error if a file does not exist.
+  # So we have to check this before.
+  existing_paths = paths.select { |p| File.exist?(File.join(root, p)) }
+
+  # ensure directory exists
+  FileUtils.mkdir_p(File.dirname(tarball_path))
+
+  paths_without_prefix = existing_paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+
+  command = "tar c -C '#{root}'"
+  # no shell escaping here, but we backup reasonable files and want to allow globs
+  command << " " + paths_without_prefix.join(" ")
+  # use parallel gzip for faster compression (uses all available CPU cores)
+  command << " | pigz - > '#{tarball_path}'"
+  res = system command
+
+
+  # tarball can contain sensitive data, so prevent read to non-root
+  # do it for sure even if tar failed as it can contain partial content
+  FileUtils.chmod(0600, tarball_path) if File.exist?(tarball_path)
+
+  raise "Failed to create backup." unless res
+end
+
+def create_restore_script(script_path, tarball_path, paths)
+  paths_without_prefix = paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+
+  # remove leading "/" from tarball to allow to run it from different root
+  tarball_path = tarball_path[1..-1] if tarball_path.start_with?("/")
+  script_content = <<EOF
+#! /bin/sh
+# change root to first parameter or use / as default
+# it is needed to allow restore in installation
+cd ${1:-/}
+#{paths_without_prefix.map{ |p| "rm -rf #{p}" }.join("\n")}
+
+tar xvf #{tarball_path} --overwrite
+# return back to original dir
+cd -
+EOF
+
+  File.write(script_path, script_content)
+  # allow execution of script
+  FileUtils.chmod(0744, script_path)
+end
+
+
+def zypp_backup(root)
+  tarball_path = "/var/adm/backup/system-upgrade/repos.tar.gz"
+  paths = [
+            "/etc/zypp/repos.d",
+            "/etc/zypp/credentials.d",
+            "/etc/zypp/services.d"
+          ]
+
+  create_tarball(tarball_path, root, paths)
+
+  script_path = "/var/adm/backup/system-upgrade/repos.sh"
+  create_restore_script(script_path, tarball_path, paths)
+end
+
+def zypp_restore()
+  system "sh /var/adm/backup/system-upgrade/repos.sh >/dev/null"
+end
+
+def check_if_param(opt, message)
+  unless opt
+    print message
+    exit 1
+  end
+end
+
+def products_restore()
+  # while running zypper-migration, one use case can lead to
+  # migrate from distribution [A] to [B] where A is different of B.
+  # This can lead to a scenario where, during that migration, a mismatch
+  # is produced due to this difference between distributions, making
+  # the migration to fail every time. To avoid that, there is an approach
+  # where the products information is backed up in tmp_products_path
+  # and restored if failed before rollingback in this plugin.
+  tmp_products_path = "/tmp/products.d.backup/"
+  if File.exist?(tmp_products_path) and File.directory?(tmp_products_path)
+    etc_products_path = "/etc/products.d/"
+    root_path = "/system-root"
+    system "rsync -av --delete #{tmp_products_path} #{root_path}#{etc_products_path}"
+  end
+end
+
+def has_failed?(exit_status)
+  # In zypper any return code == 0 or >= 100 is considered success.
+  # Any return code different from 0 and < 100 is treated as an
+  # error we care for. Return codes >= 100 indicates an issue
+  # like 'new kernel needs reboot of the system' or similar which
+  # cam be ignored in the scope of migrating
+  failed =
+    if exit_status == 104 || exit_status == 105 || exit_status == 106
+      # Treat the following exit codes as error
+      # 104 - ZYPPER_EXIT_INF_CAP_NOT_FOUND
+      # 105 - ZYPPER_EXIT_ON_SIGNAL
+      # 106 - ZYPPER_EXIT_INF_REPOS_SKIPPED
+      true
+    elsif exit_status == 0 || exit_status >= 100
+      false
+    else
+      true
+    end
+
+  return failed
+end
+
+def get_available_services_based_on_url
+  url = SUSE::Connect::Config.new().url
+  url = "suse.com" if url.nil?
+
+  SUSE::Connect::Zypper::services.select do |service|
+    service if service[:url].include?(url) || service[:url].include?("plugin:/susecloud") || service[:url].include?("plugin:susecloud") || service[:url].include?("susecloud.net")
+  end
+end
+
+def update_services_no_path(services, current_service)
+  service_index = services.index { |serv| serv[:name] == current_service[:name] }
+  unless service_index.nil?
+    services.delete_at(service_index)
+  end
+end
+
+def remove_services_no_migration_path(services, verbose)
+  services.each do |service|
+    # remove services which do not have an offline migration path
+    print "Removing service #{service[:name]}.\n" if verbose
+    SUSE::Connect::Migration::remove_service service[:name]
+  end
+end
+
+options = {
+    :allow_vendor_change => false,
+    :verbose => false,
+    :quiet => false,
+    :non_interactive => false,
+    :query => false,
+    :migration => 0,
+    :repo => [],
+    :from => [],
+    :auto_agree => false,
+    :debug_solver => false,
+    :recommends => false,
+    :no_recommends => false,
+    :replacefiles => false,
+    :details => false,
+    :download => nil,
+    :no_snapshots => false,
+    :to_product => nil,
+    :gpg_auto_import_keys => false,
+    :break_my_system => false,
+    :selfupdate => true,
+    :root => nil,
+    :strict_errors_dist_migration => false
+}
+
+STDOUT.sync = true
+
+save_argv = Array.new(ARGV)
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: zypper migration [options]"
+
+  opts.on("-v", "--[no-]allow-vendor-change", "Allow vendor change") do |v|
+    options[:allow_vendor_change] = v
+  end
+
+  opts.on("-v", "--[no-]verbose", "Increase verbosity") do |v|
+    options[:verbose] = v
+  end
+
+  opts.on("-q", "--[no-]quiet", "Suppress normal output, print only error messages") do |q|
+    options[:quiet] = q
+  end
+
+  opts.on("-n", "--non-interactive", "Do not ask anything, use default answers automatically") do |n|
+    options[:non_interactive] = n
+  end
+
+  opts.on("--query", "Query available migration options and exit") do |q|
+    options[:query] = q
+  end
+
+  opts.on("--disable-repos", "Disable obsolete repositories without asking") do |d|
+    options[:disable_repos] = d
+  end
+
+  opts.on("--migration N", OptionParser::DecimalInteger, "Select migration option N") do |n|
+    options[:migration] = n
+  end
+
+  opts.on("--from REPO", "Restrict upgrade to specified repository") do |r|
+    options[:from] << r
+  end
+
+  opts.on("-r", "--repo REPO", "Load only the specified repository") do |r|
+    options[:repo] << r
+  end
+
+  opts.on("-l", "--auto-agree-with-licenses", "Automatically say 'yes' to third party license confirmation prompt") do |a|
+    options[:auto_agree] = a
+  end
+
+  opts.on("--debug-solver", "Create solver test case for debugging") do |a|
+    options[:debug_solver] = a
+  end
+
+  opts.on("--recommends", "Install also recommended packages") do
+    options[:recommends] = true
+  end
+
+  opts.on("--no-recommends", "Do not install recommended packages") do
+    options[:no_recommends] = true
+  end
+
+  opts.on("--replacefiles", "Install the packages even if they replace files from other packages") do |a|
+    options[:replacefiles] = a
+  end
+
+  opts.on("--details", "Show the detailed installation summary") do |a|
+    options[:details] = a
+  end
+
+  opts.on("--download MODE", ["only", "in-advance", "in-heaps", "as-needed"],"Set the download-install mode") do |a|
+    options[:download] = a
+  end
+
+  opts.on("--download-only", "Replace repositories and download the packages, do not install. WARNING: Upgrade with 'zypper dist-upgrade' as soon as possible.") do |d|
+    options[:download] = "only" if d
+  end
+
+  opts.on("--no-snapshots", "Do not create snapshots.") do
+    options[:no_snapshots] = true
+  end
+
+  opts.on("--break-my-system", "For testing and debugging purpose only.") do
+    options[:break_my_system] = true
+  end
+
+  opts.on("--product PRODUCT", "Specify a product to which the system should be upgraded in offline mode.",
+          "Format: <name>/<version>/<architecture>") do |p|
+    check_if_param(p, 'Please provide a product identifier')
+    check_if_param((p =~ /\S+\/\S+\/\S+/), 'Please provide the product identifier in this format: ' \
+                   '<internal name>/<version>/<architecture>.')
+    options[:to_product] = p
+  end
+
+  opts.on("--gpg-auto-import-keys", "Trust and import any new repository signing key.") do
+    options[:gpg_auto_import_keys] = true
+  end
+
+  opts.on("--[no-]selfupdate", "Do not update the update stack first") do |s|
+    options[:selfupdate] = s
+  end
+
+  opts.on("--root DIR", "Operate on a different root directory") do |r|
+    options[:root] = r
+    SUSE::Connect::System.filesystem_root = r
+    # if we update a chroot system, we cannot create snapshots of it
+    options[:no_snapshots] = true
+  end
+
+  opts.on("--strict-errors-dist-migration", "Handle only breaking distro migration errors") do
+    options[:strict_errors_dist_migration] = true
+  end
+
+end.parse!
+
+if options[:to_product] && !options[:root] && !options[:break_my_system]
+  print "The --product option can only be used together with the --root option\n"
+  exit 1
+end
+
+if options[:selfupdate]
+  # Update stack can be outside of the to be updated system
+  cmd = "zypper " +
+        (options[:non_interactive] ? "--non-interactive " : "") +
+        (options[:verbose] ? "--verbose " : "") +
+        (options[:quiet] ? "--quiet " : "") +
+        "patch-check --updatestack-only"
+  print "\nExecuting '#{cmd}'\n\n" unless options[:quiet]
+  if !system cmd
+    if $?.exitstatus >= 100
+      # install pending updates and restart
+      cmd = "zypper " +
+            (options[:non_interactive] ? "--non-interactive " : "") +
+            (options[:verbose] ? "--verbose " : "") +
+            (options[:quiet] ? "--quiet " : "") +
+            "--no-refresh patch --updatestack-only"
+      print "\nExecuting '#{cmd}'\n\n" unless options[:quiet]
+      system cmd
+
+      # stop infinite restarting
+      # check that the patches were really installed
+      cmd = "zypper " +
+        (options[:root] ? "--root #{options[:root]} " : "") +
+        "--non-interactive --quiet --no-refresh patch-check --updatestack-only > /dev/null"
+      if ! system cmd
+        print "patch failed, exiting.\n"
+        exit 1
+      end
+
+      print "\nRestarting the migration script...\n" unless options[:quiet]
+      exec $0, *save_argv
+    end
+    exit 1
+  end
+end
+print "\n" unless options[:quiet]
+
+# This is only necessary, if we run with --root option
+cmd = "zypper " +
+      (options[:root] ? "--root #{options[:root]} " : "") +
+      (options[:non_interactive] ? "--non-interactive " : "") +
+      (options[:verbose] ? "--verbose " : "") +
+      (options[:quiet] ? "--quiet " : "") +
+      (options[:gpg_auto_import_keys] ? "--gpg-auto-import-keys ": "") +
+      " refresh"
+print "\nExecuting '#{cmd}'\n\n" unless options[:quiet]
+if !system cmd
+  print print "repository refresh failed, exiting\n"
+  exit 1
+end
+
+begin
+  system_products = SUSE::Connect::Migration::system_products
+
+  release_package_missing = false
+  system_products.each do |ident|
+    begin
+      # if a release package for registered product is missing -> try install it
+      SUSE::Connect::Migration.install_release_package(ident.identifier)
+    rescue => e
+      release_package_missing = true
+      print "Can't install release package for registered product #{ident.identifier}\n" unless options[:quiet]
+      print "#{e.class}: #{e.message}\n" unless options[:quiet]
+    end
+  end
+
+  if release_package_missing
+    # some release packages are missing and can't be installed
+    print "Calling SUSEConnect rollback to make sure SCC is synchronized with the system state.\n" unless options[:quiet]
+    SUSE::Connect::Migration.rollback
+
+    # re-read the list of products
+    system_products = SUSE::Connect::Migration::system_products
+  end
+
+  if options[:verbose]
+    print "Installed products:\n"
+    system_products.each {|p|
+      printf "  %-25s %s\n", "#{p.identifier}/#{p.version}/#{p.arch}", p.summary
+    }
+    print "\n"
+  end
+rescue => e
+  print "Can't determine the list of installed products: #{e.class}: #{e.message}\n"
+  exit 1
+end
+
+if system_products.length == 0
+  print "No products found, migration is not possible.\n"
+  exit 1
+end
+
+if options[:to_product]
+  begin
+    identifier, version, arch = options[:to_product].split('/')
+    new_product = OpenStruct.new(
+                                 identifier: identifier,
+                                 version:   version,
+                                 arch:       arch
+                                 )
+    migrations_all = SUSE::Connect::YaST.system_offline_migrations(system_products, new_product)
+  rescue => e
+    print "Can't get available migrations from server: #{e.class}: #{e.message}\n"
+    exit 1
+  end
+else
+  begin
+    migrations_all = SUSE::Connect::YaST.system_migrations system_products
+  rescue => e
+    print "Can't get available migrations from server: #{e.class}: #{e.message}\n"
+    exit 1
+  end
+end
+
+#preprocess the migrations lists
+migrations = Array.new
+migrations_unavailable = Array.new
+migrations_all.each do |migration|
+  migr_available = true
+  migration.each do |p|
+    p.available = !defined?(p.available) || p.available
+    p.already_installed = !! system_products.detect { |ip| ip.identifier.eql?(p.identifier) && ip.version.eql?(p.version) && ip.arch.eql?(p.arch) }
+    if !p.available
+      migr_available = false
+    end
+  end
+  # put already_installed products last and base products first
+  migration = migration.sort_by.with_index { |p, idx| [p.already_installed ? 1 : 0, p.base ? 0 : 1, idx] }
+  if migr_available
+    migrations << migration
+  else
+    migrations_unavailable << migration
+  end
+end
+
+if migrations_unavailable.length > 0 && !options[:quiet]
+  print "Unavailable migrations (product is not mirrored):\n\n"
+  migrations_unavailable.each do |migration|
+    migration.each do |p|
+      print "        #{p.friendly_name}" + (p.available ? "" : " (not available)") + (p.already_installed ? " (already installed)" : "") + "\n"
+    end
+    print "\n"
+  end
+  print "\n"
+end
+
+if migrations.length == 0
+  print "No migration available.\n\n" unless options[:quiet]
+  if migrations_unavailable.length > 0
+    # no need to print a msg - unavailable migrations are listed above
+    exit 1
+  end
+  exit 0
+end
+
+migration_num = options[:migration]
+if options[:non_interactive] && migration_num == 0
+  # select the first option
+  migration_num = 1
+end
+
+
+while migration_num <= 0 || migration_num > migrations.length do
+  print "Available migrations:\n\n"
+  migrations.each_with_index do |migration, index|
+    printf "   %2d |", index + 1
+    migration.each do |p|
+      print " #{p.friendly_name}" + (p.already_installed ? " (already installed)" : "") + "\n       "
+    end
+    print "\n"
+  end
+  print "\n"
+  if options[:query]
+    exit 0
+  end
+  while migration_num <= 0 || migration_num > migrations.length do
+    print "[num/q]: "
+    choice = gets
+    if !choice
+      print "\nStandard input seems to be closed, please use '--non-interactive' option\n" unless options[:quiet]
+      exit 1
+    end
+    choice.chomp!
+    exit 0 if choice.eql?("q") || choice.eql?("Q")
+    migration_num = choice.to_i
+  end
+end
+
+migration = migrations[migration_num - 1]
+
+if !options[:no_snapshots]
+  cmd = "snapper create --type pre --cleanup-algorithm=number --print-number --userdata important=yes --description 'before online migration'"
+  print "\nExecuting '#{cmd}'\n\n" unless options[:quiet]
+  pre_snapshot_num = `#{cmd}`.to_i
+end
+
+ENV['DISABLE_SNAPPER_ZYPP_PLUGIN'] = '1'
+
+base_product_version = nil # unknown yet
+
+result = false
+fs_inconsistent = false
+msg = "Preparing migration"
+
+begin
+  # allow interrupt only at specified points
+  # we have to check zypper exitstatus == 8 even after interrupt
+  interrupted = false
+  trap('INT') { interrupted = true }
+  trap('TERM') { interrupted = true }
+
+  zypp_backup(options[:root] ? options[:root]: "/")
+
+  raise "Interrupted." if interrupted
+
+  filtered_services = get_available_services_based_on_url
+
+  migration.each do |p|
+    msg = "Upgrading product #{p.friendly_name}"
+    print "#{msg}.\n" unless options[:quiet]
+    service = SUSE::Connect::YaST.upgrade_product p
+
+    update_services_no_path(filtered_services, service)
+
+    unless service[:obsoleted_service_name].empty?
+      msg = "Removing service #{service[:obsoleted_service_name]}"
+      print "#{msg}.\n" if options[:verbose]
+      SUSE::Connect::Migration::remove_service service[:obsoleted_service_name]
+    end
+
+    SUSE::Connect::Migration::find_products(p.identifier).each do |available_product|
+      # filter out "(System Packages)" and already disabled repos
+      next unless SUSE::Connect::Migration::repositories.detect { |r| r[:name].eql?(available_product[:repository]) && r[:enabled] != 0 }
+      if ProductVersion.new(available_product[:edition]) < ProductVersion.new(p.version)
+        print "Found obsolete repository #{available_product[:repository]}" unless options[:quiet]
+        if options[:non_interactive] || options[:disable_repos]
+          print "... disabling.\n" unless options[:quiet]
+          SUSE::Connect::Migration::disable_repository available_product[:repository]
+        else
+          while true
+            print "\nDisable obsolete repository #{available_product[:repository]} [y/n] (y): "
+            choice = gets.chomp
+            raise "Interrupted." if interrupted
+            if choice.eql?('n') || choice.eql?('N')
+              print "\n"
+              break
+            end
+            if  choice.eql?('y') || choice.eql?('Y')|| choice.eql?('')
+              print "... disabling.\n"
+              SUSE::Connect::Migration::disable_repository available_product[:repository]
+              break
+            end
+          end
+        end
+      end
+    end
+
+    remove_services_no_migration_path(filtered_services, options[:verbose])
+
+    msg = "Adding service #{service[:name]}"
+    print "#{msg}.\n" if options[:verbose]
+    SUSE::Connect::Migration::add_service service[:url], service[:name]
+
+    # store the base product version
+    if p.base
+      base_product_version = p.version
+    end
+    raise "Interrupted." if interrupted
+  end
+
+  cmd = "zypper " +
+        (options[:root] ? "--root #{options[:root]} " : "") +
+        (base_product_version ? "--releasever #{base_product_version} " : "") +
+        "ref -f"
+  msg = "Executing '#{cmd}'"
+  print "\n#{msg}\n\n" unless options[:quiet]
+  result = system cmd
+
+  raise "Refresh of repositories failed." unless result
+  raise "Interrupted." if interrupted
+
+  cmd = "zypper " +
+        (options[:root] ? "--root #{options[:root]} " : "") +
+        (base_product_version ? "--releasever #{base_product_version} " : "") +
+        (options[:non_interactive] ? "--non-interactive " : "") +
+        (options[:verbose] ? "--verbose " : "") +
+        (options[:quiet] ? "--quiet " : "") +
+        " --no-refresh " +
+        " dist-upgrade " +
+        (options[:allow_vendor_change] ? "--allow-vendor-change " : "--no-allow-vendor-change ") +
+        (options[:auto_agree] ? "--auto-agree-with-licenses " : "") +
+        (options[:debug_solver] ? "--debug-solver " : "") +
+        (options[:recommends] ? "--recommends " : "") +
+        (options[:no_recommends] ? "--no-recommends " : "") +
+        (options[:replacefiles] ? "--replacefiles " : "") +
+        (options[:details] ? "--details " : "") +
+        (options[:download] ? "--download #{options[:download]} " : "") +
+        (options[:repo].map { |r| "--repo #{r}" }.join(" ")) +
+        (options[:from].map { |r| "--from #{r}" }.join(" "))
+  msg = "Executing '#{cmd}'"
+  print "\n#{msg}\n\n" unless options[:quiet]
+  result = system cmd
+  result = true if !result && options[:strict_errors_dist_migration] && !has_failed?($?.exitstatus)
+  fs_inconsistent = true if $?.exitstatus == 8
+  raise "Interrupted." if interrupted
+
+rescue => e
+  print "#{msg}: #{e.class}: #{e.message}\n"
+  result = false
+end
+
+print "\nMigration failed.\n\n" unless result || options[:quiet]
+
+if fs_inconsistent
+  print "The migration to the new service pack has failed. The system is most\n"
+  print "likely in an inconsistent state.\n"
+  print "\n"
+  print "We strongly recommend to rollback to a snapshot created before the\n"
+  print "migration was started (via selecting the snapshot in the boot menu\n"
+  print "if you use snapper) or restore the system from a backup.\n"
+  exit 2
+end
+
+if !options[:no_snapshots] && pre_snapshot_num > 0
+  cmd = "snapper create --type post --pre-number #{pre_snapshot_num} --cleanup-algorithm=number --print-number --userdata important=yes --description 'after online migration'"
+  print "\nExecuting '#{cmd}'\n\n" unless options[:quiet]
+  post_snapshot_num = `#{cmd}`.to_i
+#  Filesystem rollback - considered too dangerous
+#  if !result && post_snapshot_num > 0 && fs_inconsistent
+#    cmd = "snapper undochange #{pre_snapshot_num}..#{post_snapshot_num}"
+#    unless options[:non_interactive]
+#      while true
+#        print "Perform filesystem rollback with '#{cmd}' [y/n] (y): "
+#        choice = gets.chomp
+#        print "\n"
+#        if choice.eql?('n') || choice.eql?('N')
+#          fs_inconsistent = false
+#          break
+#        end
+#        if choice.eql?('y') || choice.eql?('Y')|| choice.eql?('')
+#          break
+#        end
+#      end
+#    end
+#    if fs_inconsistent
+#      print "\nExecuting '#{cmd}'\n\n" unless options[:quiet]
+#      system cmd
+#    end
+#  end
+end
+
+if !result
+  print "\nPerforming repository rollback...\n" unless options[:quiet]
+  begin
+    products_restore
+    # restore repo configuration from backup file
+    zypp_restore
+    ret = SUSE::Connect::Migration.rollback
+    print "Rollback successful.\n" unless options[:quiet]
+  rescue => e
+    print "Rollback failed: #{e.class}: #{e.message}\n"
+  end
+end
+
+exit 1 unless result
