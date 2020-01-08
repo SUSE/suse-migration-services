@@ -21,7 +21,8 @@ from suse_migration_services.logger import log
 
 
 class SUSEConnect:
-    def is_registered(self):
+    @staticmethod
+    def is_registered():
         extensions_cmd_result = Command.run(
             ['SUSEConnect', '--list-extensions'],
             raise_on_error=False
