@@ -120,7 +120,10 @@ def main():
         )
         log.info('Bind mounting /usr/lib/zypp/plugins')
         Command.run(
-            ['mount', '--bind', zypp_plugins_services, '/usr/lib/zypp/plugins/services']
+            [
+                'mount', '--bind', zypp_plugins_services,
+                '/usr/lib/zypp/plugins/services'
+            ]
         )
         system_mount.add_entry(
             zypp_plugins_services, '/usr/lib/zypp/plugins/services'

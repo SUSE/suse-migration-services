@@ -21,12 +21,12 @@ import os
 from .command import Command
 
 
-class Path(object):
+class Path:
     """
     **Directory path helpers**
     """
-    @classmethod
-    def create(self, path):
+    @staticmethod
+    def create(path):
         """
         Create path and all sub directories to target
 
@@ -36,8 +36,8 @@ class Path(object):
             ['mkdir', '-p', path]
         )
 
-    @classmethod
-    def wipe(self, path):
+    @staticmethod
+    def wipe(path):
         """
         Delete path and all contents
 
@@ -47,8 +47,8 @@ class Path(object):
             ['rm', '-r', '-f', path]
         )
 
-    @classmethod
-    def remove(self, path):
+    @staticmethod
+    def remove(path):
         """
         Delete empty path, causes an error if target is not empty
 
@@ -58,9 +58,9 @@ class Path(object):
             ['rmdir', path]
         )
 
-    @classmethod
+    @staticmethod
     def which(
-        self, filename, alternative_lookup_paths=None,
+        filename, alternative_lookup_paths=None,
         custom_env=None, access_mode=None
     ):
         """

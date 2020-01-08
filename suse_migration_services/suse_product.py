@@ -28,7 +28,7 @@ from suse_migration_services.exceptions import (
 )
 
 
-class SUSEBaseProduct(object):
+class SUSEBaseProduct:
     def __init__(self):
         root_path = Defaults.get_system_root_path()
         self.products_metadata = os.sep.join(

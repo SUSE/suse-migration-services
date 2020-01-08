@@ -19,76 +19,80 @@ import os
 from collections import namedtuple
 
 
-class Defaults(object):
+class Defaults:
     """
     **Implements default values**
 
     Provides class methods for default values
     """
-    @classmethod
-    def get_system_root_path(self):
+    @staticmethod
+    def get_system_root_path():
         return '/system-root'
 
-    @classmethod
-    def get_migration_config_file(self):
+    @staticmethod
+    def get_migration_config_file():
         return '/etc/migration-config.yml'
 
-    @classmethod
-    def get_migration_log_file(self):
+    @staticmethod
+    def get_migration_log_file():
         return os.sep.join(
-            [self.get_system_root_path(), 'var/log/distro_migration.log']
+            [Defaults.get_system_root_path(), 'var/log/distro_migration.log']
         )
 
-    @classmethod
-    def get_system_migration_custom_config_file(self):
+    @staticmethod
+    def get_system_migration_custom_config_file():
         return os.sep.join(
-            [self.get_system_root_path(), 'etc/sle-migration-service.yml']
+            [Defaults.get_system_root_path(), 'etc/sle-migration-service.yml']
         )
 
-    @classmethod
-    def get_system_mount_info_file(self):
+    @staticmethod
+    def get_system_mount_info_file():
         return '/etc/system-root.fstab'
 
-    @classmethod
-    def get_grub_config_file(self):
+    @staticmethod
+    def get_grub_config_file():
         return 'boot/grub2/grub.cfg'
 
-    @classmethod
-    def get_target_kernel(self):
+    @staticmethod
+    def get_target_kernel():
         return 'boot/vmlinuz'
 
-    @classmethod
-    def get_target_initrd(self):
+    @staticmethod
+    def get_target_initrd():
         return 'boot/initrd'
 
-    @classmethod
-    def get_ssh_keys_paths(self):
+    @staticmethod
+    def get_ssh_keys_paths():
         return [
-            self._get_ssh_keys_path(self, 'home/*'),
-            self._get_ssh_keys_path(self, 'root')
+            Defaults._get_ssh_keys_path('home/*'),
+            Defaults._get_ssh_keys_path('root')
         ]
 
-    @classmethod
-    def get_migration_ssh_file(self):
+    @staticmethod
+    def get_migration_ssh_file():
         return '/home/migration/.ssh/authorized_keys'
 
-    def _get_ssh_keys_path(self, prefix_path):
+    @staticmethod
+    def _get_ssh_keys_path(prefix_path):
         return os.sep.join(
-            [self.get_system_root_path(), prefix_path, '.ssh/authorized_keys']
+            [
+                Defaults.get_system_root_path(), prefix_path,
+                '.ssh/authorized_keys'
+            ]
         )
 
-    @classmethod
-    def get_system_ssh_host_keys_glob_path(self):
+    @staticmethod
+    def get_system_ssh_host_keys_glob_path():
         return os.sep.join(
-            [self.get_system_root_path(), 'etc/ssh/ssh_host_*']
+            [Defaults.get_system_root_path(), 'etc/ssh/ssh_host_*']
         )
 
-    @classmethod
-    def get_system_sshd_config_path(self):
+    @staticmethod
+    def get_system_sshd_config_path():
         return '/etc/ssh/sshd_config'
 
-    @classmethod
-    def get_os_release(self):
+    @staticmethod
+    def get_os_release():
         with open('/etc/os-release', 'r') as handle:
             keys, values = zip(
                 *[
