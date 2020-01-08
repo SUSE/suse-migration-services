@@ -22,7 +22,7 @@ from collections import namedtuple
 from suse_migration_services.logger import log
 
 
-class Fstab(object):
+class Fstab:
     """
     **Managing fstab values**
     """

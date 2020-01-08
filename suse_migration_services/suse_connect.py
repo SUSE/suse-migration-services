@@ -20,7 +20,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.logger import log
 
 
-class SUSEConnect(object):
+class SUSEConnect:
     def is_registered(self):
         extensions_cmd_result = Command.run(
             ['SUSEConnect', '--list-extensions'],

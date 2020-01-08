@@ -31,7 +31,7 @@ from suse_migration_services.exceptions import (
 )
 
 
-class MigrationConfig(object):
+class MigrationConfig:
     """
     **Implements reading of migration configuration file:**
 
