@@ -11,7 +11,7 @@
     </description>
     <preferences>
         <type image="iso" primary="true" flags="overlay" firmware="efi" boottimeout="1"/>
-        <version>1.2.1</version>
+        <version>1.2.2</version>
         <packagemanager>zypper</packagemanager>
         <locale>en_US</locale>
         <keytable>us</keytable>
