@@ -18,13 +18,21 @@
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.logger import log
+from suse_migration_services.defaults import Defaults
 
 
 class SUSEConnect:
     @staticmethod
     def is_registered():
+        """
+        Run SUSEConnect to list available extensions and modules.
+        If that list exists the system is registered. If this
+        information cannot be provided for some reason, the system
+        is considered unregistered
+        """
+        root_path = Defaults.get_system_root_path()
         extensions_cmd_result = Command.run(
-            ['SUSEConnect', '--list-extensions'],
+            ['chroot', root_path, 'SUSEConnect', '--list-extensions'],
             raise_on_error=False
         )
         result = True

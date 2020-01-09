@@ -98,12 +98,6 @@ def main():
         [root_path, 'var', 'lib', 'cloudregister']
     )
     try:
-        # System must be registered for the migration to succeed
-        if not SUSEConnect.is_registered():
-            message = 'System not registered. Aborting migration.'
-            log.error(message)
-            raise DistMigrationSystemNotRegisteredException(message)
-
         # log network info as network-online.target is done at this point
         log_network_details()
         log.info('Running prepare service')
@@ -140,6 +134,13 @@ def main():
         system_mount.export(
             Defaults.get_system_mount_info_file()
         )
+        # Check if system is registered
+        if not SUSEConnect.is_registered():
+            message = 'System not registered. Aborting migration.'
+            log.error(message)
+            raise DistMigrationSystemNotRegisteredException(
+                message
+            )
     except Exception as issue:
         log.error(
             'Preparation of zypper metadata failed with {0}'.format(
