@@ -8,13 +8,13 @@ from suse_migration_services.defaults import Defaults
 
 class TestPostMountSystem(object):
     @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('shutil.copy')
     def test_main(
         self, mock_shutil_copy, mock_get_system_root_path,
-        mock_Command_run, mock_log_info, mock_get_migration_config_file
+        mock_Command_run, mock_logger_setup, mock_get_migration_config_file
     ):
         mock_get_system_root_path.return_value = '../data'
         mock_get_migration_config_file.return_value = \

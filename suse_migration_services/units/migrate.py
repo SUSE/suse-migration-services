@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import os
 
 # project
 from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperException,
@@ -36,6 +37,8 @@ def main():
     Call zypper migration plugin and migrate the system.
     The output of the call is logged on the system to migrate
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
 
     try:

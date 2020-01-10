@@ -34,6 +34,10 @@ class Defaults:
         return '/etc/migration-config.yml'
 
     @staticmethod
+    def get_migration_log_name():
+        return 'suse-migration'
+
+    @staticmethod
     def get_migration_log_file():
         return os.sep.join(
             [Defaults.get_system_root_path(), 'var/log/distro_migration.log']

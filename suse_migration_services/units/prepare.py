@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import os
 import shutil
 
@@ -25,7 +26,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.suse_connect import SUSEConnect
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 from suse_migration_services.units.setup_host_network import (
     log_network_details
 )
@@ -48,6 +49,8 @@ def main():
     information from the target system. This service makes the necessary
     information available inside the live system that performs the migration.
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
     suse_connect_setup = os.sep.join(
         [root_path, 'etc', 'SUSEConnect']

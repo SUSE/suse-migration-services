@@ -1,8 +1,11 @@
+import logging
 from xml.etree.ElementTree import ElementTree
 from unittest.mock import (
     patch, MagicMock
 )
-from pytest import raises
+from pytest import (
+    raises, fixture
+)
 
 from suse_migration_services.units.product_setup import main
 from suse_migration_services.exceptions import (
@@ -11,39 +14,39 @@ from suse_migration_services.exceptions import (
 
 
 class TestProductSetup(object):
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_raises_on_product_setup_flavors(
-        self, mock_info, mock_error,
-        mock_get_system_root_path
+        self, mock_logger_setup, mock_get_system_root_path
     ):
         mock_get_system_root_path.return_value = '../data/bad_products/too_many'
         with raises(DistMigrationProductSetupException):
             main()
-        assert mock_error.called
 
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_raises_on_product_setup_non_flavor(
-        self, mock_info, mock_error,
-        mock_get_system_root_path
+        self, mock_logger_setup, mock_get_system_root_path
     ):
         mock_get_system_root_path.return_value = '../data/bad_products/none'
-        with raises(DistMigrationProductSetupException):
-            main()
-        mock_error.assert_called_with('Base Product update failed with: '
-                                      'There is no baseproduct')
+        with self._caplog.at_level(logging.ERROR):
+            with raises(DistMigrationProductSetupException):
+                main()
+        assert 'Base Product update failed with: There is no baseproduct' in \
+            self._caplog.text
 
     @patch('suse_migration_services.suse_product.ElementTree')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.exists')
     def test_main(
         self, mock_os_path_exists, mock_Command_run,
-        mock_info, mock_get_system_root_path, mock_ElementTree
+        mock_logger_setup, mock_get_system_root_path, mock_ElementTree
     ):
         xml = ElementTree()
         xml.write = MagicMock()
@@ -62,4 +65,3 @@ class TestProductSetup(object):
             '../data/etc/products.d/SLES.prod',
             encoding='UTF-8', xml_declaration=True
         )
-        assert mock_info.called

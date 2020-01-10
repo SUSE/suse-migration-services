@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import yaml
 import os
 from textwrap import dedent
@@ -23,12 +24,13 @@ from cerberus import Validator
 # project
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.suse_product import SUSEBaseProduct
-from suse_migration_services.logger import log
 from suse_migration_services.schema import schema
 from suse_migration_services.exceptions import (
     DistMigrationConfigDataException,
     DistMigrationProductNotFoundException
 )
+
+log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 class MigrationConfig:

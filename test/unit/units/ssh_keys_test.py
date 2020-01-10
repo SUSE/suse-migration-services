@@ -8,15 +8,13 @@ from suse_migration_services.defaults import Defaults
 
 
 class TestSSHKeys(object):
-    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('glob.glob')
     def test_migration_continues_on_error(
-        self, mock_glob_glob, mock_error
+        self, mock_glob_glob, mock_logger_setup
     ):
         mock_glob_glob.return_value = []
-        mock_error.levelno = 40
         main()  # expect pass and comment
-        assert mock_error.called
 
     @patch('suse_migration_services.command.Command.run')
     @patch('shutil.copy')
@@ -24,9 +22,9 @@ class TestSSHKeys(object):
     @patch.object(Defaults, 'get_ssh_keys_paths')
     @patch('glob.glob')
     @patch.object(Defaults, 'get_migration_ssh_file')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     def test_main(
-        self, mock_info, mock_get_migration_ssh_file, mock_glob_glob,
+        self, mock_logger_setup, mock_get_migration_ssh_file, mock_glob_glob,
             mock_get_ssh_key_path, mock_get_system_sshd_config_path,
             mock_shutil_copy, mock_Command_run
     ):

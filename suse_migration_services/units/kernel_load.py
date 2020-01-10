@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import re
 import os
 import shutil
@@ -22,7 +23,7 @@ import shutil
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 from suse_migration_services.path import Path
 from suse_migration_services.migration_config import MigrationConfig
 
@@ -37,6 +38,8 @@ def main():
 
     Loads the new kernel/initrd after migration for system reboot
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     if not MigrationConfig().is_soft_reboot_requested():
         log.info('skipping kexec --load (hard reboot requested)')
         return
@@ -73,6 +76,7 @@ def main():
 
 
 def _get_cmdline(kernel_name):
+    log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Getting cmdline for {0}'.format(kernel_name))
     grub_config_file_path = os.sep.join(
         [Defaults.get_system_root_path(), Defaults.get_grub_config_file()]

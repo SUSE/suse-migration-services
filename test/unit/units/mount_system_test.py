@@ -16,54 +16,40 @@ from suse_migration_services.exceptions import (
 
 
 class TestMountSystem(object):
-    @patch.object(Defaults, 'get_migration_log_file')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
     @patch('os.path.exists')
     def test_main_system_already_mounted(
         self, mock_path_exists, mock_path_create,
-        mock_Command_run, mock_info, mock_log_file
+        mock_Command_run, mock_logger_setup
     ):
-        mock_log_file.return_value = '../data/logfile'
         mock_path_exists.return_value = True
         command = Mock()
         command.returncode = 0
         mock_Command_run.return_value = command
         main()
         mock_path_create.assert_called_once_with('/system-root')
-        assert mock_info.called
 
-    @patch.object(Defaults, 'get_migration_log_file')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
     def test_main_no_system_found(
-        self, mock_path_create, mock_Command_run,
-        mock_info, mock_error, mock_log_file
+        self, mock_path_create, mock_Command_run, mock_logger_setup
     ):
-        mock_log_file.return_value = '../data/logfile'
         with raises(DistMigrationSystemNotFoundException):
             main()
-            assert mock_info.called
-            assert mock_error.called
 
-    @patch.object(Defaults, 'get_migration_log_file')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
-    @patch('suse_migration_services.logger.log.warning')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     def test_mount_system_raises(
-            self, mock_Command_run, mock_warning, mock_info,
-            mock_error, mock_log_file
+        self, mock_Command_run, mock_logger_setup,
     ):
         def command_calls(command):
             # mock error on mounting home, testing reverse umount
             if '/system-root/home' in command:
                 raise Exception
 
-        mock_log_file.return_value = '../data/logfile'
         mock_Command_run.side_effect = command_calls
         with raises(DistMigrationSystemMountException):
             fstab = Fstab()
@@ -88,17 +74,13 @@ class TestMountSystem(object):
             call(['umount', '/system-root/boot/efi']),
             call(['umount', '/system-root/'])
         ]
-        assert mock_info.called
-        assert mock_error.called
 
     @patch('yaml.safe_load')
     @patch('yaml.dump')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(MigrationConfig, 'update_migration_config_file')
-    @patch.object(Defaults, 'get_migration_log_file')
-    @patch('suse_migration_services.logger.log.info')
-    @patch('suse_migration_services.logger.log.set_logfile')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
     @patch('suse_migration_services.units.mount_system.Path.wipe')
@@ -108,8 +90,8 @@ class TestMountSystem(object):
     def test_main(
         self, mock_path_exists, mock_is_mounted, mock_Fstab,
         mock_path_wipe, mock_path_create, mock_Command_run,
-        mock_set_logfile, mock_info, mock_log_file,
-        mock_update_migration_config_file, mock_get_migration_config_file,
+        mock_logger_setup, mock_update_migration_config_file,
+        mock_get_migration_config_file,
         mock_get_system_migration_custom_config_file, mock_yaml_dump,
         mock_yaml_safe_load
     ):
@@ -118,7 +100,6 @@ class TestMountSystem(object):
                 return True
             return False
 
-        mock_log_file.return_value = '../data/logfile'
         fstab = Fstab()
         fstab_mock = Mock()
         fstab_mock.read.return_value = fstab.read('../data/fstab')
@@ -238,8 +219,5 @@ class TestMountSystem(object):
                 '/etc/system-root.fstab'
             )
             assert mock_open.call_args_list == [
-                call('../data/logfile', 'w'),
                 call('../data/migration-config.yml', 'r')
             ]
-            mock_set_logfile.assert_called_once_with('../data/logfile'),
-            assert mock_info.called
