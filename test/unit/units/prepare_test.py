@@ -71,6 +71,7 @@ class TestSetupPrepare(object):
             ]
 
     @patch.object(SUSEConnect, 'is_registered')
+    @patch('suse_migration_services.units.prepare.MigrationConfig')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
@@ -80,8 +81,13 @@ class TestSetupPrepare(object):
     @patch('os.listdir')
     def test_main(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Path, mock_Fstab, mock_Command_run, mock_info, mock_is_registered
+        mock_Path, mock_Fstab, mock_Command_run, mock_info,
+        mock_MigrationConfig, mock_is_registered
     ):
+        migration_config = Mock()
+        migration_config.is_zypper_migration_plugin_requested.return_value = \
+            True
+        mock_MigrationConfig.return_value = migration_config
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_os_listdir.return_value = ['foo', 'bar']
@@ -161,6 +167,7 @@ class TestSetupPrepare(object):
         )
 
     @patch.object(SUSEConnect, 'is_registered')
+    @patch('suse_migration_services.units.prepare.MigrationConfig')
     @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.logger.log.error')
     @patch('suse_migration_services.command.Command.run')
@@ -172,8 +179,12 @@ class TestSetupPrepare(object):
     def test_main_no_registered_instance(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
         mock_Path, mock_Fstab, mock_Command_run, mock_log_error,
-        mock_log_info, mock_is_registered
+        mock_log_info, mock_MigrationConfig, mock_is_registered
     ):
+        migration_config = Mock()
+        migration_config.is_zypper_migration_plugin_requested.return_value = \
+            True
+        mock_MigrationConfig.return_value = migration_config
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_os_listdir.return_value = ['foo', 'bar']

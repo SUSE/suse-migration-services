@@ -19,6 +19,7 @@ import os
 import shutil
 
 # project
+from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.path import Path
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
@@ -135,12 +136,14 @@ def main():
             Defaults.get_system_mount_info_file()
         )
         # Check if system is registered
-        if not SUSEConnect.is_registered():
-            message = 'System not registered. Aborting migration.'
-            log.error(message)
-            raise DistMigrationSystemNotRegisteredException(
-                message
-            )
+        migration_config = MigrationConfig()
+        if migration_config.is_zypper_migration_plugin_requested():
+            if not SUSEConnect.is_registered():
+                message = 'System not registered. Aborting migration.'
+                log.error(message)
+                raise DistMigrationSystemNotRegisteredException(
+                    message
+                )
     except Exception as issue:
         log.error(
             'Preparation of zypper metadata failed with {0}'.format(
