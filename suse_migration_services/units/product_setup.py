@@ -15,8 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
+
 # project
-from suse_migration_services.logger import log
+from suse_migration_services.defaults import Defaults
+from suse_migration_services.logger import Logger
 from suse_migration_services.suse_product import SUSEBaseProduct
 
 from suse_migration_services.exceptions import (
@@ -35,6 +38,8 @@ def main():
     data such that the plugin's rollback mechanism is not
     negatively influenced.
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     try:
         # Note:
         # zypper implements a handling for the distro_target attribute.

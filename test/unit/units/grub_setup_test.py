@@ -10,12 +10,10 @@ from suse_migration_services.exceptions import (
 
 
 class TestGrubSetup(object):
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     def test_main_raises_on_grub_update(
-        self, mock_Command_run,
-        mock_info, mock_error
+        self, mock_Command_run, mock_logger_setup
     ):
         mock_Command_run.side_effect = [
             None,
@@ -23,13 +21,11 @@ class TestGrubSetup(object):
         ]
         with raises(DistMigrationGrubConfigException):
             main()
-            assert mock_info.called
-            assert mock_error.called
 
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     def test_main(
-        self, mock_Command_run, mock_info
+        self, mock_Command_run, mock_logger_setup
     ):
         main()
         assert mock_Command_run.call_args_list == [
@@ -48,4 +44,3 @@ class TestGrubSetup(object):
                 ]
             )
         ]
-        assert mock_info.called

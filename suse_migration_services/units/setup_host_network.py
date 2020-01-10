@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import glob
 import os
 import shutil
@@ -23,7 +24,7 @@ import shutil
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 
 from suse_migration_services.exceptions import (
     DistMigrationNameResolverException,
@@ -39,6 +40,8 @@ def main():
     to become migrated. This includes the import of the resolver
     and network configuration from the migration host
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
 
     resolv_conf = os.sep.join(
@@ -105,6 +108,7 @@ def log_network_details():
     The method must be called in an active and online network state to provide
     most useful information about the network interfaces and its setup.
     """
+    log = logging.getLogger(Defaults.get_migration_log_name())
     log.info(
         'All Network Interfaces {0}{1}'.format(
             os.linesep, Command.run(

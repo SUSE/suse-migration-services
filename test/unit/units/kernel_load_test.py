@@ -14,21 +14,18 @@ from suse_migration_services.exceptions import (
 
 
 class TestKernelLoad(object):
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.path.exists')
     def test_get_cmd_line_grub_cfg_not_present(
-        self, mock_os_path_exists, mock_info, mock_error
+        self, mock_os_path_exists, mock_logger_setup
     ):
         mock_os_path_exists.return_value = False
         with raises(DistMigrationKernelRebootException):
             _get_cmdline(Defaults.get_grub_config_file())
-            assert mock_info.called
-            assert mock_error.called
 
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.path.exists')
-    def test_get_cmd_line(self, mock_path_exists, mock_info):
+    def test_get_cmd_line(self, mock_path_exists, mock_logger_setup):
         mock_path_exists.return_value = True
         with open('../data/fake_grub.cfg') as fake_grub:
             fake_grub_data = fake_grub.read()
@@ -46,12 +43,11 @@ class TestKernelLoad(object):
                 '/system-root/boot/grub2/grub.cfg'
             )
             assert result == grub_cmd_content
-            assert mock_info.called
 
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.path.exists')
     def test_get_cmd_line_extra_boot_partition(
-        self, mock_path_exists, mock_info
+        self, mock_path_exists, mock_logger_setup
     ):
         mock_path_exists.return_value = True
         with open('../data/fake_grub_with_bootpart.cfg') as fake_grub:
@@ -70,17 +66,15 @@ class TestKernelLoad(object):
                 '/system-root/boot/grub2/grub.cfg'
             )
             assert result == grub_cmd_content
-            assert mock_info.called
 
     @patch.object(Defaults, 'get_migration_config_file')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('shutil.copy')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main_raises_on_kernel_load(
-        self, mock_get_cmdline, mock_Command_run, mock_info,
-        mock_error, mock_shutil_copy, mock_get_migration_config_file
+        self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
+        mock_logger_setup, mock_get_migration_config_file
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
@@ -107,17 +101,15 @@ class TestKernelLoad(object):
                 ]
             )
         ]
-        assert mock_info.called
-        assert mock_error.called
 
     @patch.object(Defaults, 'get_migration_config_file')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('shutil.copy')
-    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main(
-        self, mock_get_cmdline, mock_Command_run, mock_info,
-        mock_shutil_copy, mock_get_migration_config_file
+        self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
+        mock_logger_setup, mock_get_migration_config_file
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
@@ -139,16 +131,15 @@ class TestKernelLoad(object):
                 ]
             )
         ]
-        assert mock_info.called
 
     @patch.object(Defaults, 'get_migration_config_file')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('shutil.copy')
-    @patch('suse_migration_services.logger.log.info')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main_hard_reboot(
-        self, mock_get_cmdline, mock_Command_run, mock_info,
-        mock_shutil_copy, mock_get_migration_config_file
+        self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
+        mock_logger_setup, mock_get_migration_config_file
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
@@ -158,4 +149,3 @@ class TestKernelLoad(object):
             '../data/migration-config-reboot.yml'
         main()
         assert mock_Command_run.call_args_list == []
-        assert mock_info.called

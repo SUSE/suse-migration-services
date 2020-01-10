@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import os
 import glob
 from xml.etree.ElementTree import ElementTree
@@ -22,10 +23,11 @@ from xml.etree.ElementTree import ElementTree
 # project
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.command import Command
-from suse_migration_services.logger import log
 from suse_migration_services.exceptions import (
     DistMigrationSUSEBaseProductException
 )
+
+log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 class SUSEBaseProduct:

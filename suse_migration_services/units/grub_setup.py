@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import os
 
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 
 from suse_migration_services.exceptions import (
     DistMigrationGrubConfigException
@@ -35,6 +36,8 @@ def main():
     Uninstall live migration packages such that they are no longer
     part of the now migrated system.
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
     grub_config_file = Defaults.get_grub_config_file()
 

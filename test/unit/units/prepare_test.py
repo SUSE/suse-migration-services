@@ -13,8 +13,7 @@ from suse_migration_services.exceptions import (
 
 
 class TestSetupPrepare(object):
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('os.path.exists')
@@ -22,8 +21,7 @@ class TestSetupPrepare(object):
     @patch('os.listdir')
     def test_main_raises_on_zypp_bind(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run,
-        mock_info, mock_error
+        mock_Fstab, mock_Command_run, mock_logger_setup
     ):
         mock_os_listdir.return_value = None
         mock_os_path_exists.return_value = True
@@ -36,11 +34,8 @@ class TestSetupPrepare(object):
         ]
         with raises(DistMigrationZypperMetaDataException):
             main()
-            assert mock_info.called
-            assert mock_error.called
 
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('os.path.exists')
@@ -48,8 +43,7 @@ class TestSetupPrepare(object):
     @patch('os.listdir')
     def test_main_raises_and_umount_file_system(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run,
-        mock_info, mock_error
+        mock_Fstab, mock_Command_run, mock_logger_setup
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -72,7 +66,7 @@ class TestSetupPrepare(object):
 
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.units.prepare.Path')
@@ -81,7 +75,7 @@ class TestSetupPrepare(object):
     @patch('os.listdir')
     def test_main(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Path, mock_Fstab, mock_Command_run, mock_info,
+        mock_Path, mock_Fstab, mock_Command_run, mock_logger_setup,
         mock_MigrationConfig, mock_is_registered
     ):
         migration_config = Mock()
@@ -161,15 +155,13 @@ class TestSetupPrepare(object):
         fstab.export.assert_called_once_with(
             '/etc/system-root.fstab'
         )
-        assert mock_info.called
         mock_Command_run.assert_any_call(
             ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
         )
 
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
-    @patch('suse_migration_services.logger.log.info')
-    @patch('suse_migration_services.logger.log.error')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.units.prepare.Path')
@@ -178,8 +170,8 @@ class TestSetupPrepare(object):
     @patch('os.listdir')
     def test_main_no_registered_instance(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Path, mock_Fstab, mock_Command_run, mock_log_error,
-        mock_log_info, mock_MigrationConfig, mock_is_registered
+        mock_Path, mock_Fstab, mock_Command_run, mock_logger_setup,
+        mock_MigrationConfig, mock_is_registered
     ):
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = \

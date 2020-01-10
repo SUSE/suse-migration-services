@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import os
 
 # project
@@ -22,7 +23,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.path import Path
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 from suse_migration_services.migration_config import MigrationConfig
 
 from suse_migration_services.exceptions import (
@@ -41,6 +42,8 @@ def main():
     that fstab in order and mounted such that the system rootfs
     is available for a zypper based migration process.
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
     Path.create(root_path)
     log.info('Running mount system service')
@@ -85,17 +88,11 @@ def main():
 
     mount_system(root_path, fstab)
 
-    initialize_logging()
     MigrationConfig().update_migration_config_file()
 
 
-def initialize_logging():
-    log_file = Defaults.get_migration_log_file()
-    with open(log_file, 'w'):
-        log.set_logfile(Defaults.get_migration_log_file())
-
-
 def read_system_fstab(root_path):
+    log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Reading fstab from associated disks')
     lsblk_call = Command.run(
         ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
@@ -125,6 +122,7 @@ def read_system_fstab(root_path):
 
 
 def mount_system(root_path, fstab):
+    log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Mount system in {0}'.format(root_path))
     system_mount = Fstab()
     try:
@@ -186,6 +184,7 @@ def mount_system(root_path, fstab):
 
 
 def is_mounted(mount_point):
+    log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Checking {0} is mounted'.format(mount_point))
     if os.path.exists(mount_point):
         mountpoint_call = Command.run(

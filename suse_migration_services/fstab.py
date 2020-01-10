@@ -15,11 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import os
 from collections import namedtuple
 
 # project
-from suse_migration_services.logger import log
+from suse_migration_services.defaults import Defaults
+
+log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 class Fstab:

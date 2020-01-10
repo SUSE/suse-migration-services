@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import glob
 import shutil
 import os
 
 # project
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 from suse_migration_services.command import Command
 
 
@@ -32,6 +33,8 @@ def main():
     Copy the authoritation key found to the migration user
     directory in order to access through ssh
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     ssh_keys_glob_paths = Defaults.get_ssh_keys_paths()
     migration_ssh_file = Defaults.get_migration_ssh_file()
     system_ssh_host_keys_glob_path = \

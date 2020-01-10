@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import os
 
 # project
 from suse_migration_services.command import Command
-from suse_migration_services.logger import log
+from suse_migration_services.logger import Logger
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.migration_config import MigrationConfig
@@ -41,6 +42,8 @@ def main():
     reboot of the migration host with a potential active mount
     is something we accept
     """
+    Logger.setup()
+    log = logging.getLogger(Defaults.get_migration_log_name())
     try:
         log.info(
             'Systemctl Status Information: {0}{1}'.format(

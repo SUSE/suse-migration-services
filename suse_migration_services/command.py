@@ -15,16 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import logging
 import select
 import os
 import subprocess
 from collections import namedtuple
 
 # project
-from .exceptions import (
+from suse_migration_services.defaults import Defaults
+from suse_migration_services.exceptions import (
     DistMigrationCommandException,
     DistMigrationCommandNotFoundException
 )
+
+log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 class Command:
@@ -83,6 +87,7 @@ class Command:
             else:
                 raise DistMigrationCommandNotFoundException(message)
         try:
+            log.info('Calling: {0}'.format(command))
             process = subprocess.Popen(
                 command,
                 stdout=subprocess.PIPE,
@@ -152,6 +157,7 @@ class Command:
                 'Command "%s" not found in the environment' % command[0]
             )
         try:
+            log.info('Calling: {0}'.format(command))
             process = subprocess.Popen(
                 command,
                 stdout=subprocess.PIPE,

@@ -16,180 +16,22 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import logging
-import sys
-import os
 
 # project
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.exceptions import (
-    DistMigrationLoggingException
-)
 
 
-class LoggerSchedulerFilter(logging.Filter):
-    """Extended standard logging Filter."""
+class Logger:
+    @staticmethod
+    def setup():
+        logger = logging.getLogger(Defaults.get_migration_log_name())
+        logger.setLevel(logging.INFO)
 
-    def filter(self, record):
-        """
-        Messages from apscheduler scheduler instances are filtered out.
+        log_file = logging.FileHandler(Defaults.get_migration_log_file())
+        log_file.setLevel(logging.INFO)
 
-        They conflict with console progress information
-        :param tuple record: logging message record
-        :return: record.name
-        :rtype: str
-        """
-        ignorables = [
-            'apscheduler.scheduler',
-            'apscheduler.executors.default'
-        ]
-        return record.name not in ignorables
+        log_stream = logging.StreamHandler()
+        log_stream.setLevel(logging.INFO)
 
-
-class InfoFilter(logging.Filter):
-    """Extended standard logging Filter."""
-
-    def filter(self, record):
-        """
-        Only messages with record level INFO can pass.
-
-        For messages with another level an extra handler is used
-        :param tuple record: logging message record
-        :return: record.name
-        :rtype: str
-        """
-        if record.levelno == logging.INFO:
-            return True
-
-
-class DebugFilter(logging.Filter):
-    """Extended standard debug logging Filter."""
-
-    def filter(self, record):
-        """
-        Only messages with record level DEBUG can pass.
-
-        For messages with another level an extra handler is used
-        :param tuple record: logging message record
-        :return: record.name
-        :rtype: str
-        """
-        if record.levelno == logging.DEBUG:
-            return True
-
-
-class ErrorFilter(logging.Filter):
-    """Extended standard error logging Filter."""
-
-    def filter(self, record):
-        """
-        Only messages with record level ERROR can pass.
-
-        For messages with another level an extra handler is used
-        :param tuple record: logging message record
-        :return: record.name
-        :rtype: str
-        """
-        if record.levelno == logging.ERROR:
-            return True
-
-
-class WarningFilter(logging.Filter):
-    """Extended standard warning logging Filter."""
-
-    def filter(self, record):
-        """
-        Only messages with record level WARNING can pass.
-
-        For messages with another level an extra handler is used
-        :param tuple record: logging message record
-        :return: record.name
-        :rtype: str
-        """
-        if record.levelno == logging.WARNING:
-            return True
-
-
-class Logger(logging.Logger):
-    """
-    Extended logging facility based on Python logging.
-
-    :param string name: name of the logger
-    """
-
-    def __init__(self, name):
-        logging.Logger.__init__(self, name)
-        self.message_format = '[%(levelname)-8s]: %(asctime)-8s | %(message)s'
-        self.console_handlers = {}
-        self._add_stream_handler(
-            'info',
-            self.message_format,
-            [InfoFilter(), LoggerSchedulerFilter()]
-        )
-        # log WARNING messages to stdout
-        self._add_stream_handler(
-            'warning',
-            self.message_format,
-            [WarningFilter()]
-        )
-        # log DEBUG messages to stdout
-        self._add_stream_handler(
-            'debug',
-            self.message_format,
-            [DebugFilter()]
-        )
-        # log ERROR messages to stderr
-        self._add_stream_handler(
-            'error',
-            self.message_format,
-            [ErrorFilter()],
-            sys.__stderr__
-        )
-
-    def _add_stream_handler(
-        self, handler_type, message_format, message_filter,
-        channel=sys.__stdout__
-    ):
-        handler = logging.StreamHandler(channel)
-        handler.setFormatter(
-            logging.Formatter(message_format, '%H:%M:%S')
-        )
-        for rule in message_filter:
-            handler.addFilter(rule)
-        self.addHandler(handler)
-        self.console_handlers[handler_type] = handler
-
-    def set_logfile(self, filename):
-        """
-        Set logfile handler.
-
-        :param string filename: logfile file path
-        """
-        try:
-            logfile = logging.FileHandler(
-                filename=filename, encoding='utf-8'
-            )
-            logfile.setFormatter(
-                logging.Formatter(
-                    self.message_format, '%H:%M:%S'
-                )
-            )
-            logfile.addFilter(LoggerSchedulerFilter())
-            self.addHandler(logfile)
-        except Exception as issue:
-            raise DistMigrationLoggingException(
-                'Unable to set logging file {0} with'
-                '{1}'.format(filename, issue))
-
-
-def log_init():
-    logging.setLoggerClass(Logger)
-    log = logging.getLogger("suse-migration")
-    log.setLevel(logging.DEBUG)
-
-    log_file = Defaults.get_migration_log_file()
-    if os.path.exists(log_file):
-        log.set_logfile(log_file)
-    return log
-
-
-log = log_init()
+        logger.addHandler(log_stream)
+        logger.addHandler(log_file)

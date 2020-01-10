@@ -18,7 +18,7 @@
 import os
 
 # project
-from .command import Command
+from suse_migration_services.command import Command
 
 
 class Path:

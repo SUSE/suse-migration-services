@@ -1,4 +1,6 @@
 import io
+import logging
+from pytest import fixture
 from unittest.mock import (
     MagicMock, patch, call
 )
@@ -6,23 +8,24 @@ from suse_migration_services.fstab import Fstab
 
 
 class TestFstab(object):
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @patch('os.path.exists')
     def setup(self, mock_os_path_exists):
         mock_os_path_exists.return_value = True
         self.fstab = Fstab()
         self.fstab.read('../data/fstab')
 
-    @patch('suse_migration_services.logger.log.warning')
     @patch('os.path.exists')
-    def test_read_with_skipped_entries(
-        self, mock_os_path_exists, mock_log_warning
-    ):
+    def test_read_with_skipped_entries(self, mock_os_path_exists):
         mock_os_path_exists.return_value = False
         fstab = Fstab()
-        fstab.read('../data/fstab')
-        mock_log_warning.assert_called_once_with(
-            'Device path /dev/mynode not found and skipped'
-        )
+        with self._caplog.at_level(logging.WARNING):
+            fstab.read('../data/fstab')
+            assert 'Device path /dev/mynode not found and skipped' in \
+                self._caplog.text
         assert fstab.get_devices() == [
             self.fstab.fstab_entry_type(
                 fstype='ext4',

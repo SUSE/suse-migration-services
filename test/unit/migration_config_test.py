@@ -56,9 +56,8 @@ class TestMigrationConfig(object):
     @patch.object(Defaults, 'get_os_release')
     @patch.object(SUSEBaseProduct, 'get_tag')
     @patch.object(Defaults, 'get_system_root_path')
-    @patch('suse_migration_services.logger.log.error')
     def test_get_migration_product_targets(
-        self, mock_error, mock_get_system_root_path,
+        self, mock_get_system_root_path,
         mock_get_product_name, mock_get_os_release
     ):
         os_release_tuple = namedtuple(
@@ -80,15 +79,13 @@ class TestMigrationConfig(object):
 
         with raises(DistMigrationProductNotFoundException):
             self.config.get_migration_product()
-            assert mock_error.called
 
     @patch.object(Defaults, 'get_os_release')
     @patch.object(SUSEBaseProduct, 'get_product_name')
     @patch.object(Defaults, 'get_system_root_path')
     @patch.object(MigrationConfig, '_write_config_file')
-    @patch('suse_migration_services.logger.log.info')
     def test_update_migration_config_file_no_autodetect(
-        self, mock_info, mock_write_config_file,
+        self, mock_write_config_file,
         mock_get_system_root_path, mock_get_product_name,
         mock_get_os_release
     ):
@@ -110,7 +107,6 @@ class TestMigrationConfig(object):
         self.config.update_migration_config_file()
         assert self.config.get_migration_product() == 'SLES/15.1/x86_64'
         assert self.config.is_debug_requested() is True
-        assert mock_info.called
 
     def test_is_zypper_migration_plugin_requested(self):
         assert self.config.is_zypper_migration_plugin_requested() is True
@@ -132,13 +128,12 @@ class TestMigrationConfig(object):
             )
 
     @patch.object(MigrationConfig, '_write_config_file')
-    @patch('suse_migration_services.logger.log.info')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     def test_update_migration_config_file_empty(
         self, mock_get_system_migration_config_custom_file,
         mock_get_migration_config_file,
-        mock_info, mock_write_config_file,
+        mock_write_config_file,
     ):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
@@ -146,16 +141,14 @@ class TestMigrationConfig(object):
             '../data/custom-migration-config-empty.yml'
         self.config = MigrationConfig()
         self.config.update_migration_config_file()
-        mock_info.assert_not_called()
 
     @patch.object(MigrationConfig, '_write_config_file')
-    @patch('suse_migration_services.logger.log.info')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     def test_update_migration_config_file_just_comments(
         self, mock_get_system_migration_config_custom_file,
         mock_get_migration_config_file,
-        mock_info, mock_write_config_file,
+        mock_write_config_file,
     ):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
@@ -163,17 +156,13 @@ class TestMigrationConfig(object):
             '../data/custom-migration-config-just-comments.yml'
         self.config = MigrationConfig()
         self.config.update_migration_config_file()
-        mock_info.assert_not_called()
 
     @patch.object(MigrationConfig, '_write_config_file')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     def test_update_migration_config_file_slightly_broken(
         self, mock_get_system_migration_config_custom_file,
-        mock_get_migration_config_file,
-        mock_info, mock_error, mock_write_config_file,
+        mock_get_migration_config_file, mock_write_config_file,
     ):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
@@ -182,18 +171,13 @@ class TestMigrationConfig(object):
         self.config = MigrationConfig()
         with raises(DistMigrationConfigDataException):
             self.config.update_migration_config_file()
-        mock_info.assert_not_called()
-        assert mock_error.called
 
     @patch.object(MigrationConfig, '_write_config_file')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     def test_update_migration_config_file_very_broken(
         self, mock_get_system_migration_config_custom_file,
-        mock_get_migration_config_file,
-        mock_info, mock_error, mock_write_config_file,
+        mock_get_migration_config_file, mock_write_config_file,
     ):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
@@ -202,18 +186,13 @@ class TestMigrationConfig(object):
         self.config = MigrationConfig()
         with raises(DistMigrationConfigDataException):
             self.config.update_migration_config_file()
-        mock_info.assert_not_called()
-        assert mock_error.called
 
     @patch.object(MigrationConfig, '_write_config_file')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     def test_update_migration_config_file_violates_schema(
         self, mock_get_system_migration_config_custom_file,
-        mock_get_migration_config_file,
-        mock_info, mock_error, mock_write_config_file,
+        mock_get_migration_config_file, mock_write_config_file,
     ):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
@@ -222,5 +201,3 @@ class TestMigrationConfig(object):
         self.config = MigrationConfig()
         with raises(DistMigrationConfigDataException):
             self.config.update_migration_config_file()
-        mock_info.assert_not_called()
-        assert mock_error.called

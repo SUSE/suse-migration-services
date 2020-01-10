@@ -16,10 +16,9 @@ class TestMigration(object):
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_zypper_migration_plugin_raises(
-        self, mock_info, mock_error, mock_MigrationConfig, mock_Command_run,
+        self, mock_logger_setup, mock_MigrationConfig, mock_Command_run,
         mock_get_system_root_path
     ):
         migration_config = Mock()
@@ -46,10 +45,9 @@ class TestMigration(object):
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_zypper_dup_raises(
-        self, mock_info, mock_error, mock_MigrationConfig, mock_Command_run,
+        self, mock_logger_setup, mock_MigrationConfig, mock_Command_run,
         mock_get_system_root_path
     ):
         migration_config = Mock()
@@ -86,10 +84,9 @@ class TestMigration(object):
     @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.command.Command.run')
     @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_zypper_migration_plugin(
-        self, mock_info, mock_error, mock_get_migration_config_file,
+        self, mock_logger_setup, mock_get_migration_config_file,
         mock_Command_run, mock_get_system_root_path
     ):
         mock_get_system_root_path.return_value = 'SLES/15/x86_64'
@@ -115,10 +112,9 @@ class TestMigration(object):
 
     @patch('suse_migration_services.command.Command.run')
     @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.log.error')
-    @patch('suse_migration_services.logger.log.info')
+    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_zypper_dup(
-        self, mock_info, mock_error, mock_get_migration_config_file,
+        self, mock_logger_setup, mock_get_migration_config_file,
         mock_Command_run
     ):
         zypper_call = Mock()
