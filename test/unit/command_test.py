@@ -94,30 +94,3 @@ class TestCommand(object):
     def test_run_command_does_not_exist(self):
         with raises(DistMigrationCommandNotFoundException):
             Command.run(['does-not-exist'])
-
-    def test_call_command_does_not_exist(self):
-        with raises(DistMigrationCommandNotFoundException):
-            Command.call(['does-not-exist'], os.environ)
-
-    @patch('suse_migration_services.path.Path.which')
-    @patch('subprocess.Popen')
-    @patch('select.select')
-    def test_call(self, mock_select, mock_popen, mock_which):
-        mock_which.return_value = 'command'
-        mock_select.return_value = [True, False, False]
-        mock_process = Mock()
-        mock_popen.return_value = mock_process
-        call = Command.call(['command', 'args'])
-        assert call.output_available()
-        assert call.error_available()
-        assert call.output == mock_process.stdout
-        assert call.error == mock_process.stderr
-        assert call.process == mock_process
-
-    @patch('suse_migration_services.path.Path.which')
-    @patch('subprocess.Popen')
-    def test_call_failure(self, mock_popen, mock_which):
-        mock_which.return_value = 'command'
-        mock_popen.side_effect = DistMigrationCommandException('Call failure')
-        with raises(DistMigrationCommandException):
-            Command.call(['command', 'args'])

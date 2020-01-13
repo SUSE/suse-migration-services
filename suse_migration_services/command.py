@@ -16,7 +16,6 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import logging
-import select
 import os
 import subprocess
 from collections import namedtuple
@@ -85,7 +84,10 @@ class Command:
                     returncode=-1
                 )
             else:
-                raise DistMigrationCommandNotFoundException(message)
+                log.error(message)
+                raise DistMigrationCommandNotFoundException(
+                    message
+                )
         try:
             log.info('Calling: {0}'.format(command))
             process = subprocess.Popen(
@@ -94,9 +96,9 @@ class Command:
                 stderr=subprocess.PIPE,
                 env=environment
             )
-        except Exception as e:
+        except Exception as issue:
             raise DistMigrationCommandException(
-                '%s: %s: %s' % (command[0], type(e).__name__, format(e))
+                '{0}: {1}: {2}'.format(command[0], type(issue).__name__, issue)
             )
         output, error = process.communicate()
         if process.returncode != 0 and not error:
@@ -104,8 +106,13 @@ class Command:
         if process.returncode != 0 and not output:
             output = bytes(b'(no output on stdout)')
         if process.returncode != 0 and raise_on_error:
+            log.error(
+                'EXEC: Failed with stderr: {0}, stdout: {1}'.format(
+                    error.decode(), output.decode()
+                )
+            )
             raise DistMigrationCommandException(
-                '%s: stderr: %s, stdout: %s' % (
+                '{0}: stderr: {1}, stdout: {2}'.format(
                     command[0], error.decode(), output.decode()
                 )
             )
@@ -113,95 +120,4 @@ class Command:
             output=output.decode(),
             error=error.decode(),
             returncode=process.returncode
-        )
-
-    @staticmethod
-    def call(command, custom_env=None):
-        """
-        Execute a program and return an io file handle pair back.
-        stdout and stderr are both on different channels. The caller
-        must read from the output file handles in order to actually
-        run the command. This can be done using the CommandIterator
-        from command_process
-
-        Example:
-
-        .. code:: python
-
-            process = Command.call(['ls', '-l'])
-
-        :param list command: command and arguments
-        :param list custom_env: custom os.environ
-
-        :return:
-            Contains process results in command type
-
-            .. code:: python
-
-                command(
-                    output='string', output_available=bool,
-                    error='string', error_available=bool,
-                    process=subprocess
-                )
-
-        :rtype: namedtuple
-        """
-        from .path import Path
-        environment = os.environ
-        if custom_env:
-            environment = custom_env
-        if not Path.which(
-            command[0], custom_env=environment, access_mode=os.X_OK
-        ):
-            raise DistMigrationCommandNotFoundException(
-                'Command "%s" not found in the environment' % command[0]
-            )
-        try:
-            log.info('Calling: {0}'.format(command))
-            process = subprocess.Popen(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=environment
-            )
-        except Exception as e:
-            raise DistMigrationCommandException(
-                '%s: %s' % (type(e).__name__, format(e))
-            )
-
-        def output_available():
-            def _select():
-                descriptor_lists = select.select(
-                    [process.stdout], [], [process.stdout], 1e-4
-                )
-                readable = descriptor_lists[0]
-                exceptional = descriptor_lists[2]
-                if readable and not exceptional:
-                    return True
-            return _select
-
-        def error_available():
-            def _select():
-                descriptor_lists = select.select(
-                    [process.stderr], [], [process.stderr], 1e-4
-                )
-                readable = descriptor_lists[0]
-                exceptional = descriptor_lists[2]
-                if readable and not exceptional:
-                    return True
-            return _select
-
-        command = namedtuple(
-            'command', [
-                'output', 'output_available',
-                'error', 'error_available',
-                'process'
-            ]
-        )
-        return command(
-            output=process.stdout,
-            output_available=output_available(),
-            error=process.stderr,
-            error_available=error_available(),
-            process=process
         )

@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import os
 import logging
 
 # project
+from suse_migration_services.path import Path
 from suse_migration_services.defaults import Defaults
 
 
@@ -27,11 +29,14 @@ class Logger:
         logger = logging.getLogger(Defaults.get_migration_log_name())
         logger.setLevel(logging.INFO)
 
-        log_file = logging.FileHandler(Defaults.get_migration_log_file())
-        log_file.setLevel(logging.INFO)
+        log_file = Defaults.get_migration_log_file()
+        Path.create(os.path.dirname(log_file))
 
-        log_stream = logging.StreamHandler()
-        log_stream.setLevel(logging.INFO)
+        log_to_file = logging.FileHandler(log_file)
+        log_to_file.setLevel(logging.INFO)
 
-        logger.addHandler(log_stream)
-        logger.addHandler(log_file)
+        log_to_stream = logging.StreamHandler()
+        log_to_stream.setLevel(logging.INFO)
+
+        logger.addHandler(log_to_stream)
+        logger.addHandler(log_to_file)

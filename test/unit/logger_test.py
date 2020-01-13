@@ -7,11 +7,15 @@ from suse_migration_services.logger import Logger
 
 
 class TestLogger:
-    def test_setup(self):
+    @patch('suse_migration_services.logger.Path.create')
+    def test_setup(self, mock_Path_create):
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             logger = Logger()
             logger.setup()
+            mock_Path_create.assert_called_once_with(
+                '/system-root/var/log'
+            )
             mock_open.assert_called_once_with(
                 '/system-root/var/log/distro_migration.log', 'a', encoding=None
             )
