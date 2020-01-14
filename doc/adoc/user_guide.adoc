@@ -253,7 +253,7 @@ a pointer to the respective log file.
   at the OS level. Encrypting the root device using a cloud framework
   encryption mechanism happens at a different level.
 * Upgrade has been tested for SLES 12 SP4 to SLES 15
-* The system is primarily intended for Public CLoud instance upgrade use. The
+* The system is primarily intended for Public Cloud instance upgrade use. The
   system also works for simple setups in a data center setting on physical
   installations. However, for any more complex configurations the off line
   upgrade path via install ISO file should be used as documented in the
