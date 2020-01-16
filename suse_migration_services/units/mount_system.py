@@ -97,27 +97,41 @@ def read_system_fstab(root_path):
     lsblk_call = Command.run(
         ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
     )
+    considered_block_types = ['part', 'raid', 'lvm']
+    considered_block_devices = []
+    lvm_managed_block_device_found = False
     for entry in lsblk_call.output.split(os.linesep):
         block_record = entry.split()
         if len(block_record) >= 2:
             block_type = block_record[1]
-            if block_type == 'part' or block_type.startswith('raid'):
-                try:
-                    Command.run(
-                        ['mount', block_record[0], root_path],
-                        raise_on_error=False
-                    )
-                    fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
-                    if os.path.exists(fstab_file):
-                        fstab = Fstab()
-                        fstab.read(fstab_file)
-                        return(fstab, lsblk_call.output)
-                finally:
-                    log.info('Umount {0}'.format(root_path))
-                    Command.run(
-                        ['umount', root_path],
-                        raise_on_error=False
-                    )
+            if block_type in considered_block_types:
+                if block_type == 'lvm':
+                    lvm_managed_block_device_found = True
+                considered_block_devices.append(
+                    block_record[0]
+                )
+
+    if lvm_managed_block_device_found:
+        log.info('LVM managed block device(s) found, activating volume groups')
+        Command.run(['vgchange', '-a', 'y'])
+
+    for block_device in considered_block_devices:
+        try:
+            Command.run(
+                ['mount', block_device, root_path],
+                raise_on_error=False
+            )
+            fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
+            if os.path.exists(fstab_file):
+                fstab = Fstab()
+                fstab.read(fstab_file)
+                return(fstab, lsblk_call.output)
+        finally:
+            log.info('Umount {0}'.format(root_path))
+            Command.run(
+                ['umount', root_path],
+                raise_on_error=False
+            )
     return(None, lsblk_call.output)
 
 
