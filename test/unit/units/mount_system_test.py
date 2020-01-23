@@ -109,7 +109,7 @@ class TestMountSystem(object):
         mock_Fstab.return_value = fstab_mock
         command = Mock()
         command.returncode = 1
-        command.output = '/dev/sda1 part'
+        command.output = '/dev/sda1 part\n/dev/mapper/LVRoot lvm'
         mock_Command_run.return_value = command
         mock_get_system_migration_custom_config_file.return_value = \
             '../data/optional-migration-config.yml'
@@ -127,6 +127,9 @@ class TestMountSystem(object):
                 ),
                 call(
                     ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
+                ),
+                call(
+                    ['vgchange', '-a', 'y']
                 ),
                 call(
                     ['mount', '/dev/sda1', '/system-root'], raise_on_error=False

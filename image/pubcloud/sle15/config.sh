@@ -44,6 +44,12 @@ baseSetRunlevel 3
 # infrastructure. We expect that step to be already done
 suseRemoveService guestregister
 
+# disable and mask lvmetad
+systemctl disable lvm2-lvmetad.socket
+systemctl disable lvm2-lvmetad.service
+systemctl mask lvm2-lvmetad.socket
+systemctl mask lvm2-lvmetad.service
+
 #======================================
 # Activate services
 #--------------------------------------
