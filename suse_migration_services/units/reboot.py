@@ -52,6 +52,13 @@ def main():
                 ).output
             )
         )
+        # stop console dialog log. The service holds a busy state
+        # on system-root and stands in our way in case of debug
+        # mode because it grabs the master console in/output
+        Command.run(
+            ['systemctl', 'stop', 'suse-migration-console-log'],
+            raise_on_error=False
+        )
         if MigrationConfig().is_debug_requested():
             log.info('Reboot skipped due to debug flag set')
         else:
