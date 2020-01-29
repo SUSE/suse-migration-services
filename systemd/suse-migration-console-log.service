@@ -9,7 +9,7 @@ Conflicts=emergency.service emergency.target
 [Service]
 ExecStart=/usr/bin/dialog --tailbox /system-root/var/log/distro_migration.log 60 75
 Type=simple
-Restart=always
+Restart=on-failure
 RestartSec=2
 StandardInput=tty-force
 StandardOutput=inherit
