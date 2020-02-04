@@ -26,13 +26,16 @@ class TestKernelReboot(object):
             main()
             assert 'Reboot skipped due to debug flag set' in self._caplog.text
 
+    @patch('suse_migration_services.fstab.Fstab._is_on_root')
+    @patch('suse_migration_services.fstab.Fstab._get_root_disk')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_kexec_reboot(
         self, mock_Fstab, mock_Command_run,
-        mock_logger_setup, mock_get_migration_config_file
+        mock_logger_setup, mock_get_migration_config_file,
+        mock_get_root_disk, mock_is_on_root
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -41,6 +44,8 @@ class TestKernelReboot(object):
         mock_Fstab.return_value = fstab_mock
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
+        mock_get_root_disk.return_value = 'sda3 /'
+        mock_is_on_root.return_value = True
         main()
         assert mock_Command_run.call_args_list == [
             call(
@@ -62,13 +67,15 @@ class TestKernelReboot(object):
             call(['systemctl', 'kexec'])
         ]
 
+    @patch('suse_migration_services.fstab.Fstab._is_on_root')
+    @patch('suse_migration_services.fstab.Fstab._get_root_disk')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_force_reboot(
         self, mock_Fstab, mock_Command_run, mock_logger_setup,
-        mock_get_migration_config_file
+        mock_get_migration_config_file, mock_get_root_disk, mock_is_on_root
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -85,6 +92,8 @@ class TestKernelReboot(object):
         ]
         mock_get_migration_config_file.return_value = \
             '../data/migration-config-hard-reboot.yml'
+        mock_get_root_disk.return_value = 'sda3 /'
+        mock_is_on_root.return_value = True
         with self._caplog.at_level(logging.WARNING):
             main()
             assert mock_Command_run.call_args_list == [

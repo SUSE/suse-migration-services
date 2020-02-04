@@ -21,6 +21,7 @@ from collections import namedtuple
 
 # project
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.command import Command
 
 log = logging.getLogger(Defaults.get_migration_log_name())
 
@@ -32,8 +33,10 @@ class Fstab:
     def __init__(self):
         self.fstab = []
         self.fstab_entry_type = namedtuple(
-            'fstab_entry_type', ['fstype', 'mountpoint', 'device', 'options']
+            'fstab_entry_type', ['fstype', 'mountpoint', 'device',
+                                 'options', 'unix_device']
         )
+        self.root_disk = None
 
     def read(self, filename):
         """
@@ -76,14 +79,18 @@ class Fstab:
                                 )
                             )
                             continue
+                    unix_device = os.path.realpath(device_path)
                     self.fstab.append(
                         self.fstab_entry_type(
                             fstype=fstype,
                             mountpoint=mountpoint,
                             device=device_path,
-                            options=options
+                            options=options,
+                            unix_device=unix_device
                         )
                     )
+
+            self._get_root_disk()
 
     def add_entry(self, device, mountpoint, fstype=None, options=None):
         self.fstab.append(
@@ -91,7 +98,8 @@ class Fstab:
                 fstype=fstype or 'none',
                 mountpoint=mountpoint,
                 device=device,
-                options=options or 'defaults'
+                options=options or 'defaults',
+                unix_device=os.path.realpath(device)
             )
         )
 
@@ -103,13 +111,32 @@ class Fstab:
         """
         with open(filename, 'w') as fstab:
             for entry in self.fstab:
-                fstab.write(
-                    '{0} {1} {2} {3} 0 0{4}'.format(
-                        entry.device, entry.mountpoint,
-                        entry.fstype, entry.options,
-                        os.linesep
+                if self._is_on_root(entry.device):
+                    fstab.write(
+                        '{0} {1} {2} {3} 0 0 {4}{5}'.format(
+                            entry.device, entry.mountpoint,
+                            entry.fstype, entry.options,
+                            entry.unix_device, os.linesep
+                        )
                     )
-                )
 
     def get_devices(self):
-        return self.fstab
+        return [
+            entry for entry in self.fstab if self._is_on_root(entry.device)
+        ]
+
+    def _get_root_disk(self):
+        """Get the disk name for / partition."""
+        for entry in self.fstab:
+            if entry.mountpoint == '/':
+                self.root_disk = Command.run(
+                    ['lsblk', '-no', 'pkname', entry.unix_device]
+                ).output
+                break
+
+    def _is_on_root(self, device_path):
+        """Check that the entry belongs to the root disk."""
+        lsblk_call = Command.run(
+            ['lsblk', '-n', '-o', 'pkname', device_path]
+        )
+        return lsblk_call.output == self.root_disk

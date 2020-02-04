@@ -40,16 +40,21 @@ class TestMountSystem(object):
         with raises(DistMigrationSystemNotFoundException):
             main()
 
+    @patch('suse_migration_services.fstab.Fstab._is_on_root')
+    @patch('suse_migration_services.fstab.Fstab._get_root_disk')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     def test_mount_system_raises(
         self, mock_Command_run, mock_logger_setup,
+        mock_get_root_disk, mock_is_on_root
     ):
         def command_calls(command):
             # mock error on mounting home, testing reverse umount
             if '/system-root/home' in command:
                 raise Exception
 
+        mock_get_root_disk.return_value = 'sda3 /'
+        mock_is_on_root.return_value = True
         mock_Command_run.side_effect = command_calls
         with raises(DistMigrationSystemMountException):
             fstab = Fstab()
@@ -75,6 +80,8 @@ class TestMountSystem(object):
             call(['umount', '/system-root/'])
         ]
 
+    @patch('suse_migration_services.fstab.Fstab._is_on_root')
+    @patch('suse_migration_services.fstab.Fstab._get_root_disk')
     @patch('yaml.safe_load')
     @patch('yaml.dump')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
@@ -93,12 +100,20 @@ class TestMountSystem(object):
         mock_logger_setup, mock_update_migration_config_file,
         mock_get_migration_config_file,
         mock_get_system_migration_custom_config_file, mock_yaml_dump,
-        mock_yaml_safe_load
+        mock_yaml_safe_load, mock_get_root_disk, mock_is_on_root
     ):
         def _is_mounted(path):
             if path == '/run/initramfs/isoscan':
                 return True
             return False
+
+        def is_on_root_entries(entry):
+            skip_uuid = '00d53ca7-11a4-4455-848e-ee52b1173518'
+            if skip_uuid in entry:  # or 'mynode' in command:
+                return False
+            return True
+
+        mock_is_on_root.side_effect = is_on_root_entries
 
         fstab = Fstab()
         fstab_mock = Mock()
@@ -118,9 +133,12 @@ class TestMountSystem(object):
         mock_yaml_safe_load.return_value = {
             'migration_product': 'SLES/15/x86_64'
         }
+        mock_get_root_disk.return_value = 'sda'
+
         with patch('builtins.open', create=True) as mock_open:
             main()
             assert mock_update_migration_config_file.called
+            print(mock_Command_run.call_args_list)
             assert mock_Command_run.call_args_list == [
                 call(
                     ['mount', '-o', 'remount,rw', '/run/initramfs/isoscan']
