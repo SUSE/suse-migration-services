@@ -20,7 +20,12 @@ class TestFstab(object):
 
     @patch('os.path.exists')
     def test_read_with_skipped_entries(self, mock_os_path_exists):
-        mock_os_path_exists.return_value = False
+        def skip_device(device):
+            if '/dev/mynode' in device:
+                return False
+            return True
+
+        mock_os_path_exists.side_effect = skip_device
         fstab = Fstab()
         with self._caplog.at_level(logging.WARNING):
             fstab.read('../data/fstab')

@@ -40,16 +40,23 @@ class TestMountSystem(object):
         with raises(DistMigrationSystemNotFoundException):
             main()
 
+    @patch('os.path.exists')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     def test_mount_system_raises(
-        self, mock_Command_run, mock_logger_setup,
+        self, mock_Command_run, mock_logger_setup, mock_os_path_exists
     ):
+        def skip_device(device):
+            if '/dev/mynode' in device:
+                return False
+            return True
+
         def command_calls(command):
             # mock error on mounting home, testing reverse umount
             if '/system-root/home' in command:
                 raise Exception
 
+        mock_os_path_exists.side_effect = skip_device
         mock_Command_run.side_effect = command_calls
         with raises(DistMigrationSystemMountException):
             fstab = Fstab()

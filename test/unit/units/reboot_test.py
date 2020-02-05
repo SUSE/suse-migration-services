@@ -26,14 +26,22 @@ class TestKernelReboot(object):
             main()
             assert 'Reboot skipped due to debug flag set' in self._caplog.text
 
+    @patch('os.path.exists')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_kexec_reboot(
         self, mock_Fstab, mock_Command_run,
-        mock_logger_setup, mock_get_migration_config_file
+        mock_logger_setup, mock_get_migration_config_file,
+        mock_os_path_exists
     ):
+        def skip_device(device):
+            if '/dev/mynode' in device:
+                return False
+            return True
+
+        mock_os_path_exists.side_effect = skip_device
         fstab = Fstab()
         fstab_mock = Mock()
         fstab_mock.read.return_value = fstab.read('../data/system-root.fstab')
@@ -66,14 +74,21 @@ class TestKernelReboot(object):
             call(['systemctl', 'kexec'])
         ]
 
+    @patch('os.path.exists')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_force_reboot(
         self, mock_Fstab, mock_Command_run, mock_logger_setup,
-        mock_get_migration_config_file
+        mock_get_migration_config_file, mock_os_path_exists
     ):
+        def skip_device(device):
+            if '/dev/mynode' in device:
+                return False
+            return True
+
+        mock_os_path_exists.side_effect = skip_device
         fstab = Fstab()
         fstab_mock = Mock()
         fstab_mock.read.return_value = fstab.read('../data/system-root.fstab')
