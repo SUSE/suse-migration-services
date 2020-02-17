@@ -101,6 +101,25 @@ def main():
     cloud_register_metadata = os.sep.join(
         [root_path, 'var', 'lib', 'cloudregister']
     )
+    zypper_log_file = os.sep.join(
+        [root_path, 'var', 'log', 'zypper.log']
+    )
+    if os.path.exists(zypper_log_file):
+        try:
+            zypper_host_log_file = zypper_log_file.replace(root_path, '')
+            if not os.path.exists(zypper_host_log_file):
+                with open(zypper_host_log_file, 'w'):
+                    # we bind mount the system zypper log file
+                    # but the mount target does not exist.
+                    # Create it as empty file prior bind mounting
+                    pass
+                Command.run(
+                    ['mount', '--bind', zypper_log_file, zypper_host_log_file]
+                )
+        except Exception as issue:
+            log.warning(
+                'Bind mounting zypper log file failed with: {0}'.format(issue)
+            )
     try:
         # log network info as network-online.target is done at this point
         log_network_details()
