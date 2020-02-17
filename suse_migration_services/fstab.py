@@ -69,21 +69,23 @@ class Fstab:
                         )
                     else:
                         device_path = device
-                        if not os.path.exists(device_path):
-                            log.warning(
-                                'Device path {0} not found and skipped'.format(
-                                    device_path
-                                )
+
+                    if os.path.exists(device_path):
+                        self.fstab.append(
+                            self.fstab_entry_type(
+                                fstype=fstype,
+                                mountpoint=mountpoint,
+                                device=device_path,
+                                options=options
                             )
-                            continue
-                    self.fstab.append(
-                        self.fstab_entry_type(
-                            fstype=fstype,
-                            mountpoint=mountpoint,
-                            device=device_path,
-                            options=options
                         )
-                    )
+                    else:
+                        log.warning(
+                            'Device path {0} not found and skipped'.format(
+                                device_path
+                            )
+                        )
+                        continue
 
     def add_entry(self, device, mountpoint, fstype=None, options=None):
         self.fstab.append(
