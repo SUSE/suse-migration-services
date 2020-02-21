@@ -85,9 +85,22 @@ class TestSetupPrepare(object):
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_os_listdir.return_value = ['foo', 'bar']
-        mock_os_path_exists.return_value = True
+        mock_os_path_exists.side_effect = [True, True, True, True,
+                                           True, False, True, True]
         mock_is_registered.return_value = True
-        main()
+        mock_Command_run.side_effect = [
+            MagicMock(),
+            Exception('no zypper log'),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock()
+        ]
+        with patch('builtins.open', create=True):
+            main()
         assert mock_shutil_copy.call_args_list == [
             call('/system-root/etc/SUSEConnect', '/etc/SUSEConnect'),
             call(
@@ -110,6 +123,12 @@ class TestSetupPrepare(object):
         assert mock_Command_run.call_args_list == [
             call(
                 ['update-ca-certificates']
+            ),
+            call(
+                [
+                    'mount', '--bind', '/system-root/var/log/zypper.log',
+                    '/var/log/zypper.log'
+                ]
             ),
             call(
                 ['ip', 'a'], raise_on_error=False
