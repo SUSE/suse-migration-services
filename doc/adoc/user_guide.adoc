@@ -258,6 +258,6 @@ a pointer to the respective log file.
   installations. However, for any more complex configurations the off line
   upgrade path via install ISO file should be used as documented in the
   SUSE Linux Enterprise Server documentation.
-* The distribution migration system is focused on the main system meaning, if
-  there are more systems mounted, the migration will only take those mounted
-  under `root` system into account.
+* The distribution migration system will migrate the system mounted in `/` (main
+  system), in the scenario where other systems are mounted in different paths,
+  those systems will not be taken into account for the migration.
