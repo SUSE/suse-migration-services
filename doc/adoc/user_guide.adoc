@@ -258,3 +258,5 @@ a pointer to the respective log file.
   installations. However, for any more complex configurations the off line
   upgrade path via install ISO file should be used as documented in the
   SUSE Linux Enterprise Server documentation.
+* In systems that contain multiple root file systems on different mount points
+  only the root file system mounted on `/` (primary system) will be migrated.
