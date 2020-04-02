@@ -48,10 +48,10 @@ The migration implementation also supports an upgrade mode that works with
 systems not registered to a repository service. For details,
 see <<Optional Customization of the Upgrade Process>>.
 
-The upgrade to a new major version requires the system to be offline
-during the upgrade to avoid system inconsistencies that may leave the
-system in a state that does not allow recovery. This behavior is implemented
-using a Live Migration Image.
+The upgrade to a new major version requires the system to be migrated to
+be offline during the upgrade to avoid system inconsistencies that may
+leave the system in a state that does not allow recovery. This behavior
+is implemented using a Live Migration Image.
 
 The distribution migration system provides the live image and a startup
 utility named: `run_migration` which reboots the running system into the
@@ -153,24 +153,6 @@ workflow is not used, the setup of the repositories must be performed
 manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
-Specify Migration Product::
-With the SLES15-Migration package an auto detected product is
-already applied. If that detection failed, the setting can be overwritten with one of the
-following product specifications:
-
-* SLES/15/x86_64
-* SLES/15.1/x86_64
-* SLES_SAP/15/x86_64
-* SLES_SAP/15.1/x86_64
-
-[listing]
-migration_product: SLES/15/x86_64
-
-[NOTE]
-If `use_zypper_migration: false` is set, the value for the
-`migration_product` will not be effective because it's used only in
-combination with the Zypper migration workflow.
-
 Preserve System Data::
 Preserve custom data file(s) e.g. udev rules from the system
 to be migrated into the upgrade live system and make sure
@@ -241,14 +223,8 @@ a pointer to the respective log file.
   configuration file will be copied into the same directory with the file
   name extension `.rpmnew`. It is recommended to compare the existing and
   the new configuration files and make manual adjustments when needed.
-* Public Cloud instances from SUSE images have a custom `/etc/motd` file
-  that makes a reference to the distribution version. This needs to be
-  updated manually after the upgrade.
 * Repositories not registered via `SUSEConnect` and added to the system
   manually will remain untouched.
-* For Public Cloud instances the metadata will not change. As far as the
-  cloud framework is concerned, you will still be running a "SLES 12 SP4"
-  instance even if you upgraded to SLES 15. This cannot be changed.
 * Upgrade is only possible for systems that use unencrypted root file systems,
   at the OS level. Encrypting the root device using a cloud framework
   encryption mechanism happens at a different level.
@@ -260,3 +236,20 @@ a pointer to the respective log file.
   SUSE Linux Enterprise Server documentation.
 * In systems that contain multiple root file systems on different mount points
   only the root file system mounted on `/` (primary system) will be migrated.
+
+=== Public and Private Cloud Specific
+* Migration initiation for a cloud instance is only supported via a reboot.
+  The required GRUB changes to make this process are automated and
+  provided with the suse-migration-sle15-activation package. It is recommened
+  to use the provided automation.
+* Public Cloud instances from SUSE images have a custom `/etc/motd` file
+  that makes a reference to the distribution version. This needs to be
+  updated manually after the upgrade.
+* The instance metadata will not change. As far as the
+  cloud framework is concerned, you will still be running an instance
+  of the SLES version you started with. This cannot be changed.
+* The only supported migration path in the Public Cloud is from the
+  final 2 service packs of a distribution to the first service pack of
+  the next distribution. For example from SLES 12 SP4 or SLES 12 SP5 to
+  SLES 15 SP1. The packages delivered by SUSE in the Public Cloud Module
+  implement this behavior by default.
