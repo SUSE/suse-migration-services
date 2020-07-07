@@ -63,6 +63,7 @@ def main():
                 '--initrd', os.sep.join(
                     [kexec_boot_data, os.path.basename(target_initrd)]
                 ),
+                '--kexec-file-syscall',
                 '--command-line', _get_cmdline(os.path.basename(target_kernel))
             ]
         )

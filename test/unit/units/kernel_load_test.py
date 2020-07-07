@@ -97,6 +97,7 @@ class TestKernelLoad(object):
                     'kexec',
                     '--load', '/system-root/boot/vmlinuz',
                     '--initrd', '/var/tmp/kexec/initrd',
+                    '--kexec-file-syscall',
                     '--command-line', cmd_line
                 ]
             )
@@ -127,6 +128,7 @@ class TestKernelLoad(object):
                     'kexec',
                     '--load', '/system-root/boot/vmlinuz',
                     '--initrd', '/var/tmp/kexec/initrd',
+                    '--kexec-file-syscall',
                     '--command-line', cmd_line
                 ]
             )
