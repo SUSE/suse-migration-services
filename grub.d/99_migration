@@ -32,10 +32,16 @@ if grub_file_is_not_garbage "${migration_iso}"; then
     printf "    search --no-floppy --fs-uuid --set=root %s\n" "${root_uuid}"
     printf "    set isofile='%s'\n" \
         "${migration_iso}"
+    printf "    set linux=linux\n"
+    printf "    set initrd=initrd\n"
+    printf "    if [ \"\${grub_platform}\" = \"efi\" ]; then\n"
+    printf "        set linux=linuxefi\n"
+    printf "        set initrd=initrdefi\n"
+    printf "    fi\n"
     printf "    loopback loop (\$root)\$isofile\n"
-    printf "    linux %s iso-scan/filename=\$isofile %s\n" \
+    printf "    \$linux %s iso-scan/filename=\$isofile %s\n" \
         "${kernel}" "${boot_options}"
-    printf "    initrd %s\n" \
+    printf "    \$initrd %s\n" \
         "${initrd}"
     printf "}\n"
 
