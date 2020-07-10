@@ -28,6 +28,11 @@ if grub_file_is_not_garbage "${migration_iso}"; then
     boot_device_id="$(grub_get_device_id "${GRUB_DEVICE_BOOT}")"
     printf "menuentry '%s' %s \${menuentry_id_option} '%s' {\n" \
         "${OS}" "${CLASS}" "Migration-${boot_device_id}"
+    if btrfs subvolume show /boot/grub2/x86_64-efi &>/dev/null;then
+        printf "    btrfs-mount-subvol / /boot/grub2/x86_64-efi %s\n" \
+            "/@/boot/grub2/x86_64-efi"
+        printf "    insmod loopback\n"
+    fi
     printf "    insmod %s\n" "${root_type}"
     printf "    search --no-floppy --fs-uuid --set=root %s\n" "${root_uuid}"
     printf "    set isofile='%s'\n" \
