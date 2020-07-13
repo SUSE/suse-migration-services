@@ -111,5 +111,6 @@ fi
 kexec \
     --load "${boot_dir}/linux" \
     --initrd "${boot_dir}/initrd" \
+    --kexec-file-syscall \
     --command-line "$(get_boot_options "${migration_iso}")"
 kexec --exec
