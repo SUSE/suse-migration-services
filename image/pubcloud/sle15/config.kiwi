@@ -63,7 +63,7 @@
         <package name="cloud-regionsrv-client-generic-config"/>
         <package name="python3-gcemetadata"/>
         <package name="python3-ec2metadata"/>
-        <package name="azuremetadata"/>
+        <package name="python3-azuremetadata"/>
         <package name="haveged"/>
     </packages>
     <packages type="bootstrap">
