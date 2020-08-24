@@ -18,6 +18,7 @@
 import logging
 import os
 import shutil
+from configparser import ConfigParser
 
 # project
 from suse_migration_services.migration_config import MigrationConfig
@@ -69,8 +70,12 @@ def main():
             suse_connect_setup, '/etc/SUSEConnect'
         )
     if os.path.exists(suse_cloud_regionsrv_setup):
+        migration_suse_cloud_regionsrv_setup = '/etc/regionserverclnt.cfg'
         shutil.copy(
-            suse_cloud_regionsrv_setup, '/etc/regionserverclnt.cfg'
+            suse_cloud_regionsrv_setup, migration_suse_cloud_regionsrv_setup
+        )
+        update_regionsrv_setup(
+            root_path, migration_suse_cloud_regionsrv_setup
         )
     if os.path.exists(hosts_setup):
         shutil.copy(
@@ -179,3 +184,52 @@ def main():
                 issue
             )
         )
+
+
+def update_regionsrv_setup(root_path, suse_cloud_regionsrv_setup):
+    """
+    Note: This method is specific to the SUSE Public Cloud Infrastructure
+
+    Update regionserverclnt.cfg config file when running in the Azure
+    Cloud. The method modifies the pre-configured azuremetadata call
+    in a way that it passes the root device as option to skip the
+    automated detection of that device. The implementation in azuremetadata
+    does not work when used inside of the special migration live system.
+    """
+    regionsrv_setup = ConfigParser()
+    regionsrv_setup.read(suse_cloud_regionsrv_setup)
+    dataProvider = regionsrv_setup.get('instance', 'dataProvider')
+    if 'azuremetadata' in dataProvider:
+        root_disk_device = get_root_disk_device(root_path)
+        if root_disk_device:
+            dataProvider += ' --device {0}'.format(root_disk_device)
+            regionsrv_setup.set('instance', 'dataProvider', dataProvider)
+            with open(suse_cloud_regionsrv_setup, 'w') as regionsrv_file:
+                regionsrv_setup.write(regionsrv_file)
+
+
+def get_root_disk_device(root_path):
+    """
+    Find unix disk device which is associated with the
+    root mount point given in root_path
+    """
+    root_device = Command.run(
+        [
+            'findmnt', '--first', '--noheadings',
+            '--output', 'SOURCE', '--mountpoint', root_path
+        ]
+    ).output
+    if root_device:
+        lsblk_call = Command.run(
+            [
+                'lsblk', '-p', '-n', '-r', '-s', '-o',
+                'NAME,TYPE', root_device
+            ]
+        )
+        considered_block_types = ['disk', 'raid']
+        for entry in lsblk_call.output.split(os.linesep):
+            block_record = entry.split()
+            if len(block_record) >= 2:
+                block_type = block_record[1]
+                if block_type in considered_block_types:
+                    return block_record[0]

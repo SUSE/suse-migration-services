@@ -53,6 +53,7 @@
         <package name="timezone"/>
         <package name="dracut-kiwi-live"/>
         <package name="bind-utils"/>
+        <package name="util-linux"/>
         <package name="suse-migration-services"/>
         <package name="zypper-migration-plugin"/>
         <package name="dialog"/>
