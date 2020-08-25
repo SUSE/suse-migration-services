@@ -220,7 +220,7 @@ class TestSetupPrepare(object):
     def test_update_regionsrv_setup(self, mock_Command_run):
         mock_command_return_values = [
             Mock(output='/dev/sda3 part\n/dev/sda disk'),
-            Mock(output='dev/sda3')
+            Mock(output='dev/sda3\n')
         ]
 
         def command_returns(arg):

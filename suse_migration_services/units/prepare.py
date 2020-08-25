@@ -223,7 +223,7 @@ def get_root_disk_device(root_path):
         lsblk_call = Command.run(
             [
                 'lsblk', '-p', '-n', '-r', '-s', '-o',
-                'NAME,TYPE', root_device
+                'NAME,TYPE', root_device.strip()
             ]
         )
         considered_block_types = ['disk', 'raid']
