@@ -159,6 +159,12 @@ def main():
                     '/var/lib/cloudregister'
                 ]
             )
+            update_smt_cache = '/usr/sbin/updatesmtcache'
+            if os.path.isfile(update_smt_cache):
+                log.info('Updating SMT cache')
+                Command.run(
+                    [update_smt_cache]
+                )
         system_mount.export(
             Defaults.get_system_mount_info_file()
         )
