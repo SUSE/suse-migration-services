@@ -74,6 +74,7 @@ class TestSetupPrepare(object):
                 call(['umount', '/system-root/dev'], raise_on_error=False)
             ]
 
+    @patch('os.path.isfile')
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.update_regionsrv_setup')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
@@ -87,7 +88,8 @@ class TestSetupPrepare(object):
     def test_main(
         self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
         mock_Path, mock_Fstab, mock_Command_run, mock_logger_setup,
-        mock_MigrationConfig, mock_update_regionsrv_setup, mock_is_registered
+        mock_MigrationConfig, mock_update_regionsrv_setup, mock_is_registered,
+        mock_is_file
     ):
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = \
@@ -108,8 +110,10 @@ class TestSetupPrepare(object):
             MagicMock(),
             MagicMock(),
             MagicMock(),
+            MagicMock(),
             MagicMock()
         ]
+        mock_is_file.return_value = True
         with patch('builtins.open', create=True):
             main()
         assert mock_shutil_copy.call_args_list == [
@@ -168,6 +172,9 @@ class TestSetupPrepare(object):
                     'mount', '--bind', '/system-root/var/lib/cloudregister',
                     '/var/lib/cloudregister'
                 ]
+            ),
+            call(
+                ['/usr/sbin/updatesmtcache']
             )
         ]
         fstab.read.assert_called_once_with(
