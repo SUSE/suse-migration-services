@@ -39,25 +39,27 @@ def main():
     root_path = Defaults.get_system_root_path()
 
     migration_config = MigrationConfig()
-    system_udev_rules = migration_config.get_preserve_udev_rules_list()
-    if system_udev_rules:
-        for rule_file in system_udev_rules:
-            target_rule_dir = os.path.dirname(rule_file)
-            source_rule_file = os.path.normpath(
-                os.sep.join([root_path, rule_file])
-            )
-            log.info(
-                'Copy udev rule: {0} to: {1}'.format(
-                    source_rule_file, target_rule_dir
+    preserve_info = migration_config.get_preserve_info()
+    if preserve_info:
+        for _, preserve_files in preserve_info.items():
+            for preserve_file in preserve_files:
+                target_dir = os.path.dirname(preserve_file)
+                source_file = os.path.normpath(
+                    os.sep.join([root_path, preserve_file])
                 )
+                log.info(
+                    'Copy file: {0} to: {1}'.format(
+                        source_file, target_dir
+                    )
+                )
+                shutil.copy(source_file, target_dir)
+        if 'rules' in preserve_info.keys():
+            Command.run(
+                ['udevadm', 'control', '--reload']
             )
-            shutil.copy(source_rule_file, target_rule_dir)
-        Command.run(
-            ['udevadm', 'control', '--reload']
-        )
-        Command.run(
-            ['udevadm', 'trigger', '--type=subsystems', '--action=add']
-        )
-        Command.run(
-            ['udevadm', 'trigger', '--type=devices', '--action=add']
-        )
+            Command.run(
+                ['udevadm', 'trigger', '--type=subsystems', '--action=add']
+            )
+            Command.run(
+                ['udevadm', 'trigger', '--type=devices', '--action=add']
+            )

@@ -48,11 +48,6 @@ class TestMigrationConfig(object):
         mock_get_os_release.return_value = os_release_result
         assert self.config.get_migration_product() == 'SLES/15.1/x86_64'
 
-    def test_get_preserve_udev_rules_list(self):
-        assert self.config.get_preserve_udev_rules_list() == [
-            '/etc/udev/rules.d/a.rules', '/etc/udev/rules.d/b.rules'
-        ]
-
     @patch.object(Defaults, 'get_os_release')
     @patch.object(SUSEBaseProduct, 'get_tag')
     @patch.object(Defaults, 'get_system_root_path')

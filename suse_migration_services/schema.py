@@ -12,10 +12,15 @@ schema = {
         'type': 'dict',
         'schema': {
             'rules': {
-                'required': True,
+                'required': False,
                 'type': 'list',
                 'nullable': False
-            }
+            },
+            'static': {
+                'required': False,
+                'type': 'list',
+                'nullable': False
+            },
         }
     },
     'soft_reboot': {
