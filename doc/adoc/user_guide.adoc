@@ -158,11 +158,21 @@ Preserve custom data file(s) e.g. udev rules from the system
 to be migrated into the upgrade live system and make sure
 they will become effective.
 
+Under preserve section, there are two subsections: rules and static.
+The difference between 'rules' and 'static' sections is that files preserved as
+udev rules will also make the DMS to reload udev and its rules to make the new
+rule set effective, while the files in the static section are copied with no
+further action.
+
 [listing]
 preserve:
   rules:
     - /etc/udev/rules.d/a.rules
     - /etc/udev/rules.d/b.rules
+  static:
+    - /etc/sysconfig/proxy
+    - /path/to/be/preserved/file
+
 
 [NOTE]
 udev rules that require custom drivers will not have the desired effect

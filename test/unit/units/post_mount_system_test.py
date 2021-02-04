@@ -22,7 +22,8 @@ class TestPostMountSystem(object):
         main()
         assert mock_shutil_copy.call_args_list == [
             call('../data/etc/udev/rules.d/a.rules', '/etc/udev/rules.d'),
-            call('../data/etc/udev/rules.d/b.rules', '/etc/udev/rules.d')
+            call('../data/etc/udev/rules.d/b.rules', '/etc/udev/rules.d'),
+            call('../data/etc/sysconfig/proxy', '/etc/sysconfig')
         ]
         assert mock_Command_run.call_args_list == [
             call(['udevadm', 'control', '--reload']),

@@ -95,19 +95,17 @@ class MigrationConfig:
 
         return migration_product
 
-    def get_preserve_udev_rules_list(self):
+    def get_preserve_info(self):
         """
-        Returns list of udev rule file(s)
+        Return dictionary of the different list of files to be preserved.
 
-        The returned file list is used to make those rule files
+        The returned lists, in the dictionary, are used to make those files
         available to the migration live system such that the
-        same behavior the rules apply on the system to be
+        same behavior the config applies on the system to be
         upgraded also applies to the live migration system
         while the upgrade runs
         """
-        preserve_data = self.config_data.get('preserve')
-        if preserve_data:
-            return preserve_data.get('rules')
+        return self.config_data.get('preserve', False)
 
     def update_migration_config_file(self):
         """
