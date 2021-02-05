@@ -52,6 +52,10 @@ def main():
                         source_file, target_dir
                     )
                 )
+                if not os.path.exists(target_dir):
+                    Command.run(
+                        ['mkdir', '-p', target_dir]
+                    )
                 shutil.copy(source_file, target_dir)
         if 'rules' in preserve_info.keys():
             Command.run(
