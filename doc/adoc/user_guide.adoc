@@ -6,7 +6,6 @@ Marcus Schäfer; Jesús Velázquez
 :numbered:
 
 :Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
-:Publication_Date: TBD
 :Latest_Version: 1.1.0
 :Contributors:
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
@@ -20,12 +19,9 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-[%hardbreaks]
-Authors: {Authors}
-Contributors: {Contributors}
-Publication Date: {Publication_Date}
-Latest Version: {Latest_Version}
-Code available: {Repo}
+* Contributors: {Contributors}
+* Latest Version: {Latest_Version}
+* Code available: {Repo}
 
 == Concept
 The Distribution Migration System provides an upgrade path for an
