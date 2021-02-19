@@ -51,10 +51,13 @@ def main():
         raise DistMigrationNameResolverException(
             'Could not find {0} on migration host'.format(resolv_conf)
         )
-
-    shutil.copy(
-        resolv_conf, '/etc/resolv.conf'
-    )
+    if has_host_resolv_setup(resolv_conf):
+        log.info('Copying {}'.format(resolv_conf))
+        shutil.copy(
+            resolv_conf, '/etc/resolv.conf'
+        )
+    else:
+        log.info('Empty {}, continuing without copying it'.format(resolv_conf))
 
     sysconfig_network_providers = os.sep.join(
         [root_path, 'etc', 'sysconfig', 'network', 'providers']
@@ -139,3 +142,12 @@ def log_network_details():
                 ).output
             )
         )
+
+
+def has_host_resolv_setup(resolv_conf_path):
+    with open(resolv_conf_path, 'r') as resolv:
+        for line in resolv:
+            # check there is useful information in the remaining lines
+            if line.startswith('search') or line.startswith('nameserver'):
+                return True
+    return False
