@@ -52,7 +52,7 @@ class TestMountSystem(object):
             return True
 
         def command_calls(command):
-            # mock error on mounting home, testing reverse umount
+            # mock error on mounting home
             if '/system-root/home' in command:
                 raise Exception
 
@@ -77,9 +77,7 @@ class TestMountSystem(object):
             call([
                 'mount', '-o', 'defaults',
                 '/dev/disk/by-label/foo', '/system-root/home'
-            ]),
-            call(['umount', '/system-root/boot/efi']),
-            call(['umount', '/system-root/'])
+            ])
         ]
 
     @patch('yaml.safe_load')

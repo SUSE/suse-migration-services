@@ -187,8 +187,6 @@ def mount_system(root_path, fstab):
         log.error(
             'Mounting system for upgrade failed with {0}'.format(issue)
         )
-        for entry in reversed(system_mount.get_devices()):
-            Command.run(['umount', entry.mountpoint])
         raise DistMigrationSystemMountException(
             'Mounting system for upgrade failed with {0}'.format(issue)
         )
