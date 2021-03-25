@@ -60,11 +60,11 @@ class TestKernelReboot(object):
                 raise_on_error=False
             ),
             call(
-                ['umount', '--lazy', '/system-root/home'],
+                ['umount', '--lazy', '/system-root/boot/efi'],
                 raise_on_error=False
             ),
             call(
-                ['umount', '--lazy', '/system-root/boot/efi'],
+                ['umount', '--lazy', '/system-root/home'],
                 raise_on_error=False
             ),
             call(
@@ -117,11 +117,11 @@ class TestKernelReboot(object):
                     raise_on_error=False
                 ),
                 call(
-                    ['umount', '--lazy', '/system-root/home'],
+                    ['umount', '--lazy', '/system-root/boot/efi'],
                     raise_on_error=False
                 ),
                 call(
-                    ['umount', '--lazy', '/system-root/boot/efi'],
+                    ['umount', '--lazy', '/system-root/home'],
                     raise_on_error=False
                 ),
                 call(

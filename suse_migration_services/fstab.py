@@ -17,7 +17,9 @@
 #
 import logging
 import os
-from collections import namedtuple
+from collections import (
+    namedtuple, OrderedDict
+)
 
 # project
 from suse_migration_services.defaults import Defaults
@@ -104,7 +106,7 @@ class Fstab:
         :param string filename: path to file name
         """
         with open(filename, 'w') as fstab:
-            for entry in self.fstab:
+            for entry in self._get_canonical_mount_list():
                 fstab.write(
                     '{0} {1} {2} {3} 0 0{4}'.format(
                         entry.device, entry.mountpoint,
@@ -114,4 +116,53 @@ class Fstab:
                 )
 
     def get_devices(self):
-        return self.fstab
+        return self._get_canonical_mount_list()
+
+    def _get_canonical_mount_list(self):
+        """
+        Implements hierarchical sorting of mount paths
+
+        :return: list of canonical fstab_entry_type elements
+
+        :rtype: list
+        """
+        mount_paths = {}
+        sorted_fstab = []
+        for entry in self.fstab:
+            mount_paths[entry.mountpoint] = entry
+        for mountpath in Fstab._sort_by_hierarchy(sorted(mount_paths.keys())):
+            sorted_fstab.append(mount_paths[mountpath])
+        return sorted_fstab
+
+    @staticmethod
+    def _sort_by_hierarchy(path_list):
+        """
+        Sort given list of path names by their hierachy in the tree
+
+        Example:
+
+        .. code:: python
+
+            result = sort_by_hierarchy(['/var/lib', '/var'])
+
+        :param list path_list: list of path names
+
+        :return: hierachy sorted path_list
+
+        :rtype: list
+        """
+        paths_at_depth = {}
+        for path in path_list:
+            path_elements = path.split('/')
+            path_depth = len(path_elements)
+            if path_depth not in paths_at_depth:
+                paths_at_depth[path_depth] = []
+            paths_at_depth[path_depth].append(path)
+        ordered_paths_at_depth = OrderedDict(
+            sorted(paths_at_depth.items())
+        )
+        ordered_paths = []
+        for path_depth in ordered_paths_at_depth:
+            for path in ordered_paths_at_depth[path_depth]:
+                ordered_paths.append(path)
+        return ordered_paths

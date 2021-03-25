@@ -39,9 +39,9 @@ class TestFstab(object):
                 options='acl,user_xattr'
             ),
             self.fstab.fstab_entry_type(
-                fstype='vfat',
-                mountpoint='/boot/efi',
-                device='/dev/disk/by-uuid/FCF7-B051',
+                fstype='ext4',
+                mountpoint='/bar',
+                device='/dev/disk/by-partuuid/3c8bd108-01',
                 options='defaults'
             ),
             self.fstab.fstab_entry_type(
@@ -51,9 +51,15 @@ class TestFstab(object):
                 options='defaults'
             ),
             self.fstab.fstab_entry_type(
+                fstype='vfat',
+                mountpoint='/boot/efi',
+                device='/dev/disk/by-uuid/FCF7-B051',
+                options='defaults'
+            ),
+            self.fstab.fstab_entry_type(
                 fstype='ext4',
-                mountpoint='/bar',
-                device='/dev/disk/by-partuuid/3c8bd108-01',
+                mountpoint='/home/stack',
+                device='/dev/homeboy',
                 options='defaults'
             )
         ]
@@ -67,18 +73,6 @@ class TestFstab(object):
                 options='acl,user_xattr'
             ),
             self.fstab.fstab_entry_type(
-                fstype='vfat',
-                mountpoint='/boot/efi',
-                device='/dev/disk/by-uuid/FCF7-B051',
-                options='defaults'
-            ),
-            self.fstab.fstab_entry_type(
-                fstype='ext4',
-                mountpoint='/home',
-                device='/dev/disk/by-label/foo',
-                options='defaults'
-            ),
-            self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/bar',
                 device='/dev/disk/by-partuuid/3c8bd108-01',
@@ -88,6 +82,24 @@ class TestFstab(object):
                 fstype='ext4',
                 mountpoint='/foo',
                 device='/dev/mynode',
+                options='defaults'
+            ),
+            self.fstab.fstab_entry_type(
+                fstype='ext4',
+                mountpoint='/home',
+                device='/dev/disk/by-label/foo',
+                options='defaults'
+            ),
+            self.fstab.fstab_entry_type(
+                fstype='vfat',
+                mountpoint='/boot/efi',
+                device='/dev/disk/by-uuid/FCF7-B051',
+                options='defaults'
+            ),
+            self.fstab.fstab_entry_type(
+                fstype='ext4',
+                mountpoint='/home/stack',
+                device='/dev/homeboy',
                 options='defaults'
             )
         ]

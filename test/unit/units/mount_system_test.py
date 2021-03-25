@@ -65,19 +65,25 @@ class TestMountSystem(object):
                 Defaults.get_system_root_path(), fstab
             )
         assert mock_Command_run.call_args_list == [
-            call([
-                'mount', '-o', 'acl,user_xattr',
-                '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                '/system-root/'
-            ]),
-            call([
-                'mount', '-o', 'defaults',
-                '/dev/disk/by-uuid/FCF7-B051', '/system-root/boot/efi'
-            ]),
-            call([
-                'mount', '-o', 'defaults',
-                '/dev/disk/by-label/foo', '/system-root/home'
-            ])
+            call(
+                [
+                    'mount', '-o', 'acl,user_xattr',
+                    '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
+                    '/system-root/'
+                ]
+            ),
+            call(
+                [
+                    'mount', '-o', 'defaults',
+                    '/dev/disk/by-partuuid/3c8bd108-01', '/system-root/bar'
+                ]
+            ),
+            call(
+                [
+                    'mount', '-o', 'defaults',
+                    '/dev/disk/by-label/foo', '/system-root/home'
+                ]
+            )
         ]
 
     @patch('yaml.safe_load')
@@ -140,27 +146,14 @@ class TestMountSystem(object):
                     ['mount', '/dev/sda1', '/system-root'], raise_on_error=False
                 ),
                 call(
-                    ['umount', '/system-root'], raise_on_error=False),
+                    ['umount', '/system-root'], raise_on_error=False
+                ),
                 call(
                     [
                         'mount', '-o', 'acl,user_xattr',
                         '/dev/disk/by-uuid/'
                         'bd604632-663b-4d4c-b5b0-8d8686267ea2',
                         '/system-root/'
-                    ]
-                ),
-                call(
-                    [
-                        'mount', '-o', 'defaults',
-                        '/dev/disk/by-uuid/FCF7-B051',
-                        '/system-root/boot/efi'
-                    ]
-                ),
-                call(
-                    [
-                        'mount', '-o', 'defaults',
-                        '/dev/disk/by-label/foo',
-                        '/system-root/home'
                     ]
                 ),
                 call(
@@ -175,6 +168,27 @@ class TestMountSystem(object):
                         'mount', '-o', 'defaults',
                         '/dev/mynode',
                         '/system-root/foo'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
+                        '/dev/disk/by-label/foo',
+                        '/system-root/home'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
+                        '/dev/disk/by-uuid/FCF7-B051',
+                        '/system-root/boot/efi'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'defaults',
+                        '/dev/homeboy',
+                        '/system-root/home/stack'
                     ]
                 ),
                 call(
@@ -194,16 +208,6 @@ class TestMountSystem(object):
                     'ext4'
                 ),
                 call(
-                    '/dev/disk/by-uuid/FCF7-B051',
-                    '/system-root/boot/efi',
-                    'vfat',
-                ),
-                call(
-                    '/dev/disk/by-label/foo',
-                    '/system-root/home',
-                    'ext4'
-                ),
-                call(
                     '/dev/disk/by-partuuid/3c8bd108-01',
                     '/system-root/bar',
                     'ext4'
@@ -211,6 +215,21 @@ class TestMountSystem(object):
                 call(
                     '/dev/mynode',
                     '/system-root/foo',
+                    'ext4'
+                ),
+                call(
+                    '/dev/disk/by-label/foo',
+                    '/system-root/home',
+                    'ext4'
+                ),
+                call(
+                    '/dev/disk/by-uuid/FCF7-B051',
+                    '/system-root/boot/efi',
+                    'vfat',
+                ),
+                call(
+                    '/dev/homeboy',
+                    '/system-root/home/stack',
                     'ext4'
                 ),
                 call(
