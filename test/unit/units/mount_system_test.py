@@ -236,7 +236,7 @@ class TestMountSystem(object):
                     'devtmpfs', '/system-root/dev'
                 ),
                 call(
-                    '/proc', '/system-root/proc'
+                    'proc', '/system-root/proc'
                 ),
                 call(
                     'sysfs', '/system-root/sys'
