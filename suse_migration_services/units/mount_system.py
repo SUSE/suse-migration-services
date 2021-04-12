@@ -184,10 +184,8 @@ def mount_system(root_path, fstab):
 def is_mounted(mount_point):
     log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Checking {0} is mounted'.format(mount_point))
-    if os.path.exists(mount_point):
-        mountpoint_call = Command.run(
-            ['mountpoint', '-q', mount_point], raise_on_error=False
-        )
-        if mountpoint_call.returncode == 0:
-            return True
-    return False
+    # a bind mount is neither a device nor an inode.
+    # Thus, ismount will return False for those, as
+    # it is very unlikely that a bind mount is used in fstab,
+    # that case is not handled
+    return os.path.ismount(mount_point)

@@ -2,6 +2,7 @@ from unittest.mock import (
     patch, call, Mock
 )
 from pytest import raises
+import logging
 
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.units.mount_system import (
@@ -17,25 +18,26 @@ from suse_migration_services.exceptions import (
 
 class TestMountSystem(object):
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
-    @patch('os.path.exists')
+    @patch('os.path.ismount')
     def test_main_system_already_mounted(
-        self, mock_path_exists, mock_path_create,
-        mock_Command_run, mock_logger_setup
+        self, mock_path_ismount, mock_path_create,
+        mock_logger_setup
     ):
-        mock_path_exists.return_value = True
-        command = Mock()
-        command.returncode = 0
-        mock_Command_run.return_value = command
-        main()
-        mock_path_create.assert_called_once_with('/system-root')
+        mock_path_ismount.return_value = True
+        logger = logging.getLogger(Defaults.get_migration_log_name())
+        with patch.object(logger, 'info') as mock_info:
+            main()
+            mock_path_create.assert_called_once_with('/system-root')
+            assert mock_info.call_args_list == [
+                call('Running mount system service'),
+                call('Checking /system-root is mounted')
+            ]
 
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Path.create')
     def test_main_no_system_found(
-        self, mock_path_create, mock_Command_run, mock_logger_setup
+        self, mock_path_create, mock_logger_setup
     ):
         with raises(DistMigrationSystemNotFoundException):
             main()
