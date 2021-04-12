@@ -50,6 +50,7 @@
         <package name="which"/>
         <package name="shim" arch="x86_64"/>
         <package name="kernel-default"/>
+        <package name="kernel-firmware"/>
         <package name="timezone"/>
         <package name="dracut-kiwi-live"/>
         <package name="bind-utils"/>
