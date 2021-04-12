@@ -139,50 +139,36 @@ def mount_system(root_path, fstab):
     log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Mount system in {0}'.format(root_path))
     system_mount = Fstab()
+    explicit_mount_points = {
+        'devtmpfs': os.sep.join([root_path, 'dev']),
+        'proc': os.sep.join([root_path, 'proc']),
+        'sysfs': os.sep.join([root_path, 'sys'])
+    }
     try:
         for fstab_entry in fstab.get_devices():
             mountpoint = ''.join(
                 [root_path, fstab_entry.mountpoint]
             )
-            log.info('Mounting {0}'.format(mountpoint))
-            Command.run(
-                [
-                    'mount', '-o', fstab_entry.options,
-                    fstab_entry.device, mountpoint
-                ]
-            )
-            system_mount.add_entry(
-                fstab_entry.device, mountpoint, fstab_entry.fstype
-            )
+            if mountpoint not in explicit_mount_points.values():
+                log.info('Mounting {0}'.format(mountpoint))
+                Command.run(
+                    [
+                        'mount', '-o', fstab_entry.options,
+                        fstab_entry.device, mountpoint
+                    ]
+                )
+                system_mount.add_entry(
+                    fstab_entry.device, mountpoint, fstab_entry.fstype
+                )
 
         log.info('Mounting kernel file systems inside {0}'.format(root_path))
-        dev_mount_point = os.sep.join(
-            [root_path, 'dev']
-        )
-        Command.run(
-            ['mount', '-t', 'devtmpfs', 'devtmpfs', dev_mount_point]
-        )
-        system_mount.add_entry(
-            'devtmpfs', dev_mount_point
-        )
-        proc_mount_point = os.sep.join(
-            [root_path, 'proc']
-        )
-        Command.run(
-            ['mount', '-t', 'proc', 'proc', proc_mount_point]
-        )
-        system_mount.add_entry(
-            '/proc', proc_mount_point
-        )
-        sys_mount_point = os.sep.join(
-            [root_path, 'sys']
-        )
-        Command.run(
-            ['mount', '-t', 'sysfs', 'sysfs', sys_mount_point]
-        )
-        system_mount.add_entry(
-            'sysfs', sys_mount_point
-        )
+        for mount_type, mount_point in explicit_mount_points.items():
+            Command.run(
+                ['mount', '-t', mount_type, mount_type, mount_point]
+            )
+            system_mount.add_entry(
+                mount_type, mount_point
+            )
     except Exception as issue:
         log.error(
             'Mounting system for upgrade failed with {0}'.format(issue)
