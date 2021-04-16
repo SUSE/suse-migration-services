@@ -54,10 +54,22 @@ function get_boot_options {
     # Create boot options list for kexec
     # """
     local boot_options
+    local host_boot_option
     boot_options="iso-scan/filename=$1 root=live:CDLABEL=CDROM rd.live.image"
     if mdadm --detail "$(get_system_root_device)" &>/dev/null; then
         boot_options="${boot_options} rd.auto"
     fi
+    for host_boot_option in $(xargs -n1 < /proc/cmdline);do
+        case "${host_boot_option}" in
+            root=*)
+                continue
+            ;;
+            quiet)
+                continue
+            ;;
+        esac
+        boot_options="${boot_options} ${host_boot_option}"
+    done
     echo "${boot_options}"
 }
 

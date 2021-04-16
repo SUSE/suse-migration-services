@@ -41,11 +41,26 @@ if [[ ${image_fs_type} =~ ^ext[[:digit:]] ]] ; then
    image_fs_type="ext2"
 fi
 
+# init boot options needed for live boot
 boot_options="rd.live.image root=live:CDLABEL=CDROM"
 
+# add auto activation of devices in soft raid mode
 if mdadm --detail "${root_device}" &>/dev/null; then
     boot_options="${boot_options} rd.auto"
 fi
+
+# add relevant boot options used on the host to migrate
+for host_boot_option in $(xargs -n1 < /proc/cmdline);do
+    case "${host_boot_option}" in
+        root=*)
+            continue
+        ;;
+        quiet)
+            continue
+        ;;
+    esac
+    boot_options="${boot_options} ${host_boot_option}"
+done
 
 if grub_file_is_not_garbage "${migration_iso}"; then
     kernel="(loop)/boot/x86_64/loader/linux"
