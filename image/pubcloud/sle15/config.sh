@@ -69,7 +69,7 @@ suseInsertService suse-migration-console-log
 suseInsertService suse-migration-grub-setup
 suseInsertService suse-migration-product-setup
 suseInsertService suse-migration-kernel-load
-suseInsertService suse-migration-reboot
+#suseInsertService suse-migration-reboot
 
 # Disable password based login via ssh
 sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
