@@ -36,31 +36,36 @@ class TestFstab(object):
                 fstype='ext4',
                 mountpoint='/',
                 device='/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                options='acl,user_xattr'
+                options='acl,user_xattr',
+                eligible_for_mount=False
             ),
             self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/bar',
                 device='/dev/disk/by-partuuid/3c8bd108-01',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             ),
             self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/home',
                 device='/dev/disk/by-label/foo',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             ),
             self.fstab.fstab_entry_type(
                 fstype='vfat',
                 mountpoint='/boot/efi',
                 device='/dev/disk/by-uuid/FCF7-B051',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             ),
             self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/home/stack',
                 device='/dev/homeboy',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             )
         ]
 
@@ -70,37 +75,43 @@ class TestFstab(object):
                 fstype='ext4',
                 mountpoint='/',
                 device='/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                options='acl,user_xattr'
+                options='acl,user_xattr',
+                eligible_for_mount=False
             ),
             self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/bar',
                 device='/dev/disk/by-partuuid/3c8bd108-01',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             ),
             self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/foo',
                 device='/dev/mynode',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             ),
             self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/home',
                 device='/dev/disk/by-label/foo',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             ),
             self.fstab.fstab_entry_type(
                 fstype='vfat',
                 mountpoint='/boot/efi',
                 device='/dev/disk/by-uuid/FCF7-B051',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             ),
             self.fstab.fstab_entry_type(
                 fstype='ext4',
                 mountpoint='/home/stack',
                 device='/dev/homeboy',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             )
         ]
 
@@ -112,7 +123,8 @@ class TestFstab(object):
                 fstype='none',
                 mountpoint='/foo',
                 device='/dev/sda',
-                options='defaults'
+                options='defaults',
+                eligible_for_mount=True
             )
         ]
 
