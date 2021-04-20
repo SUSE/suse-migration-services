@@ -69,13 +69,6 @@ class TestMountSystem(object):
         assert mock_Command_run.call_args_list == [
             call(
                 [
-                    'mount', '-o', 'acl,user_xattr',
-                    '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                    '/system-root/'
-                ]
-            ),
-            call(
-                [
                     'mount', '-o', 'defaults',
                     '/dev/disk/by-partuuid/3c8bd108-01', '/system-root/bar'
                 ]
@@ -99,9 +92,10 @@ class TestMountSystem(object):
     @patch('suse_migration_services.units.mount_system.Path.wipe')
     @patch('suse_migration_services.units.mount_system.Fstab')
     @patch('suse_migration_services.units.mount_system.is_mounted')
+    @patch('os.path.isfile')
     @patch('os.path.exists')
     def test_main(
-        self, mock_path_exists, mock_is_mounted, mock_Fstab,
+        self, mock_path_exists, mock_path_isfile, mock_is_mounted, mock_Fstab,
         mock_path_wipe, mock_path_create, mock_Command_run,
         mock_logger_setup, mock_update_migration_config_file,
         mock_get_migration_config_file,
@@ -118,7 +112,8 @@ class TestMountSystem(object):
         fstab_mock.read.return_value = fstab.read('../data/fstab')
         fstab_mock.get_devices.return_value = fstab.get_devices()
         mock_is_mounted.side_effect = _is_mounted
-        mock_path_exists.side_effect = [True, True, False]
+        mock_path_exists.return_value = True
+        mock_path_isfile.side_effect = [False, True]
         mock_Fstab.return_value = fstab_mock
         command = Mock()
         command.returncode = 1
@@ -145,18 +140,13 @@ class TestMountSystem(object):
                     ['vgchange', '-a', 'y']
                 ),
                 call(
-                    ['mount', '/dev/sda1', '/system-root'], raise_on_error=False
+                    ['mount', '/dev/sda1', '/system-root']
                 ),
                 call(
                     ['umount', '/system-root'], raise_on_error=False
                 ),
                 call(
-                    [
-                        'mount', '-o', 'acl,user_xattr',
-                        '/dev/disk/by-uuid/'
-                        'bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                        '/system-root/'
-                    ]
+                    ['mount', '/dev/mapper/LVRoot', '/system-root']
                 ),
                 call(
                     [
@@ -207,32 +197,38 @@ class TestMountSystem(object):
                 call(
                     '/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
                     '/system-root/',
-                    'ext4'
+                    'ext4',
+                    False,
                 ),
                 call(
                     '/dev/disk/by-partuuid/3c8bd108-01',
                     '/system-root/bar',
-                    'ext4'
+                    'ext4',
+                    True
                 ),
                 call(
                     '/dev/mynode',
                     '/system-root/foo',
-                    'ext4'
+                    'ext4',
+                    True
                 ),
                 call(
                     '/dev/disk/by-label/foo',
                     '/system-root/home',
-                    'ext4'
+                    'ext4',
+                    True
                 ),
                 call(
                     '/dev/disk/by-uuid/FCF7-B051',
                     '/system-root/boot/efi',
                     'vfat',
+                    True
                 ),
                 call(
                     '/dev/homeboy',
                     '/system-root/home/stack',
-                    'ext4'
+                    'ext4',
+                    True
                 ),
                 call(
                     'devtmpfs', '/system-root/dev'

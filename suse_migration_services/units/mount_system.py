@@ -117,21 +117,23 @@ def read_system_fstab(root_path):
 
     for block_device in considered_block_devices:
         try:
+            log.info(f'Lookup for fstab on {block_device}...')
             Command.run(
-                ['mount', block_device, root_path],
-                raise_on_error=False
+                ['mount', block_device, root_path]
             )
             fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
-            if os.path.exists(fstab_file):
+            if os.path.isfile(fstab_file):
+                log.info(f'Found {fstab_file} on {block_device}')
                 fstab = Fstab()
                 fstab.read(fstab_file)
                 return(fstab, lsblk_call.output)
-        finally:
-            log.info('Umount {0}'.format(root_path))
+            log.info(f'No {fstab_file} found on {block_device}')
+            log.info(f'Umount {root_path}')
             Command.run(
-                ['umount', root_path],
-                raise_on_error=False
+                ['umount', root_path], raise_on_error=False
             )
+        except Exception as issue:
+            log.info(f'Exception on mount of {block_device}: {issue}')
     return(None, lsblk_call.output)
 
 
@@ -150,15 +152,17 @@ def mount_system(root_path, fstab):
                 [root_path, fstab_entry.mountpoint]
             )
             if mountpoint not in explicit_mount_points.values():
-                log.info('Mounting {0}'.format(mountpoint))
-                Command.run(
-                    [
-                        'mount', '-o', fstab_entry.options,
-                        fstab_entry.device, mountpoint
-                    ]
-                )
+                if fstab_entry.eligible_for_mount:
+                    log.info('Mounting {0}'.format(mountpoint))
+                    Command.run(
+                        [
+                            'mount', '-o', fstab_entry.options,
+                            fstab_entry.device, mountpoint
+                        ]
+                    )
                 system_mount.add_entry(
-                    fstab_entry.device, mountpoint, fstab_entry.fstype
+                    fstab_entry.device, mountpoint, fstab_entry.fstype,
+                    fstab_entry.eligible_for_mount
                 )
 
         log.info('Mounting kernel file systems inside {0}'.format(root_path))

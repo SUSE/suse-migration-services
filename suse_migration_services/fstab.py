@@ -34,7 +34,10 @@ class Fstab:
     def __init__(self):
         self.fstab = []
         self.fstab_entry_type = namedtuple(
-            'fstab_entry_type', ['fstype', 'mountpoint', 'device', 'options']
+            'fstab_entry_type', [
+                'fstype', 'mountpoint', 'device', 'options',
+                'eligible_for_mount'
+            ]
         )
 
     def read(self, filename):
@@ -56,7 +59,14 @@ class Fstab:
                 mountpoint = mount_record[1]
                 fstype = mount_record[2]
                 options = mount_record[3]
+                eligible_for_mount = True
                 if fstype != 'swap':
+                    if mountpoint == '/':
+                        # the main rootfs mountpoint is mounted in an
+                        # extra operation and therefore flagged as being
+                        # not eligible for a mount operation when read
+                        # from this fstab instance
+                        eligible_for_mount = False
                     if device.startswith('UUID'):
                         device_path = ''.join(
                             ['/dev/disk/by-uuid/', device.split('=')[1]]
@@ -78,7 +88,8 @@ class Fstab:
                                 fstype=fstype,
                                 mountpoint=mountpoint,
                                 device=device_path,
-                                options=options
+                                options=options,
+                                eligible_for_mount=eligible_for_mount
                             )
                         )
                     else:
@@ -89,13 +100,17 @@ class Fstab:
                         )
                         continue
 
-    def add_entry(self, device, mountpoint, fstype=None, options=None):
+    def add_entry(
+        self, device, mountpoint, fstype=None, options=None,
+        eligible_for_mount=True
+    ):
         self.fstab.append(
             self.fstab_entry_type(
                 fstype=fstype or 'none',
                 mountpoint=mountpoint,
                 device=device,
-                options=options or 'defaults'
+                options=options or 'defaults',
+                eligible_for_mount=eligible_for_mount
             )
         )
 
