@@ -84,13 +84,17 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.units.prepare.Path')
     @patch('os.path.exists')
     @patch('shutil.copy')
+    @patch('shutil.copytree')
     @patch('os.listdir')
+    @patch('os.path.isdir')
     def test_main(
-        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Path, mock_Fstab, mock_Command_run, mock_logger_setup,
-        mock_MigrationConfig, mock_update_regionsrv_setup, mock_is_registered,
-        mock_is_file
+        self, mock_path_isdir, mock_os_listdir, mock_shutil_copy_tree,
+        mock_shutil_copy, mock_os_path_exists, mock_Path,
+        mock_Fstab, mock_Command_run, mock_logger_setup,
+        mock_MigrationConfig, mock_update_regionsrv_setup,
+        mock_is_registered, mock_is_file
     ):
+        mock_path_isdir.return_value = True
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = \
             True
@@ -98,10 +102,12 @@ class TestSetupPrepare(object):
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_os_listdir.return_value = ['foo', 'bar']
-        mock_os_path_exists.side_effect = [True, True, True, True,
-                                           True, False, True, True]
+        mock_os_path_exists.side_effect = [
+            True, True, True, True, False, True, True
+        ]
         mock_is_registered.return_value = True
         mock_Command_run.side_effect = [
+            MagicMock(),
             MagicMock(),
             Exception('no zypper log'),
             MagicMock(),
@@ -122,20 +128,29 @@ class TestSetupPrepare(object):
                 '/system-root/etc/regionserverclnt.cfg',
                 '/etc/regionserverclnt.cfg'
             ),
-            call('/system-root/etc/hosts', '/etc/hosts'),
+            call('/system-root/etc/hosts', '/etc/hosts')
+        ]
+        assert mock_shutil_copy_tree.call_args_list == [
             call(
-                '/system-root/usr/share/pki/trust/anchors/foo',
-                '/usr/share/pki/trust/anchors/'
+                '/system-root/usr/share/pki/trust/anchors',
+                '/usr/share/pki/trust/anchors/',
+                dirs_exist_ok=True
             ),
             call(
-                '/system-root/usr/share/pki/trust/anchors/bar',
-                '/usr/share/pki/trust/anchors/'
+                '/system-root/etc/pki/trust/anchors',
+                '/etc/pki/trust/anchors/',
+                dirs_exist_ok=True
             )
         ]
-        mock_Path.create.assert_called_once_with(
-            '/var/lib/cloudregister'
-        )
+        mock_Path.call_args_list == [
+            call(['/var/lib/cloudregister']),
+            call(['/usr/share/pki/trust/anchors']),
+            call(['/etc/pki/trust/anchors'])
+        ]
         assert mock_Command_run.call_args_list == [
+            call(
+                ['update-ca-certificates']
+            ),
             call(
                 ['update-ca-certificates']
             ),
