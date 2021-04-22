@@ -90,10 +90,12 @@ def main():
             certificates = os.listdir(root_trust_anchor)
             if certificates:
                 Path.create(trust_anchor)
-                log.info(f'Importing certificates: {", ".join(certificates)}')
-                shutil.copytree(
-                    root_trust_anchor, trust_anchor, dirs_exist_ok=True
-                )
+                for cert in certificates:
+                    log.info(f'Importing certificate: {cert}')
+                    shutil.copy(
+                        os.sep.join([root_trust_anchor, cert]),
+                        trust_anchor
+                    )
                 log.info('Update certificate pool')
                 Command.run(
                     ['update-ca-certificates']

@@ -84,11 +84,10 @@ class TestSetupPrepare(object):
     @patch('suse_migration_services.units.prepare.Path')
     @patch('os.path.exists')
     @patch('shutil.copy')
-    @patch('shutil.copytree')
     @patch('os.listdir')
     @patch('os.path.isdir')
     def test_main(
-        self, mock_path_isdir, mock_os_listdir, mock_shutil_copy_tree,
+        self, mock_path_isdir, mock_os_listdir,
         mock_shutil_copy, mock_os_path_exists, mock_Path,
         mock_Fstab, mock_Command_run, mock_logger_setup,
         mock_MigrationConfig, mock_update_regionsrv_setup,
@@ -128,18 +127,22 @@ class TestSetupPrepare(object):
                 '/system-root/etc/regionserverclnt.cfg',
                 '/etc/regionserverclnt.cfg'
             ),
-            call('/system-root/etc/hosts', '/etc/hosts')
-        ]
-        assert mock_shutil_copy_tree.call_args_list == [
+            call('/system-root/etc/hosts', '/etc/hosts'),
             call(
-                '/system-root/usr/share/pki/trust/anchors',
-                '/usr/share/pki/trust/anchors/',
-                dirs_exist_ok=True
+                '/system-root/usr/share/pki/trust/anchors/foo',
+                '/usr/share/pki/trust/anchors/'
             ),
             call(
-                '/system-root/etc/pki/trust/anchors',
-                '/etc/pki/trust/anchors/',
-                dirs_exist_ok=True
+                '/system-root/usr/share/pki/trust/anchors/bar',
+                '/usr/share/pki/trust/anchors/'
+            ),
+            call(
+                '/system-root/etc/pki/trust/anchors/foo',
+                '/etc/pki/trust/anchors/'
+            ),
+            call(
+                '/system-root/etc/pki/trust/anchors/bar',
+                '/etc/pki/trust/anchors/'
             )
         ]
         mock_Path.call_args_list == [
