@@ -92,6 +92,10 @@ def main():
                 Path.create(trust_anchor)
                 for cert in certificates:
                     cert_file = os.sep.join([root_trust_anchor, cert])
+                    if os.path.islink(cert_file):
+                        cert_file = os.sep.join(
+                            [root_path, os.readlink(cert_file)]
+                        )
                     log.info(f'Importing certificate: {cert_file}')
                     try:
                         shutil.copy(cert_file, trust_anchor)

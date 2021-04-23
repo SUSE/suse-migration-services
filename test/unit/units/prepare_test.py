@@ -86,13 +86,17 @@ class TestSetupPrepare(object):
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('os.path.isdir')
+    @patch('os.path.islink')
+    @patch('os.readlink')
     def test_main(
-        self, mock_path_isdir, mock_os_listdir,
+        self, mock_readlink, mock_os_path_islink,
+        mock_path_isdir, mock_os_listdir,
         mock_shutil_copy, mock_os_path_exists, mock_Path,
         mock_Fstab, mock_Command_run, mock_logger_setup,
         mock_MigrationConfig, mock_update_regionsrv_setup,
         mock_is_registered, mock_is_file
     ):
+        mock_readlink.return_value = 'link_target'
         mock_path_isdir.return_value = True
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = \
@@ -101,6 +105,9 @@ class TestSetupPrepare(object):
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_os_listdir.return_value = ['foo', 'bar']
+        mock_os_path_islink.side_effect = [
+            False, False, False, True
+        ]
         mock_os_path_exists.side_effect = [
             True, True, True, True, False, True, True
         ]
@@ -150,7 +157,7 @@ class TestSetupPrepare(object):
                 '/etc/pki/trust/anchors/'
             ),
             call(
-                '/system-root/etc/pki/trust/anchors/bar',
+                '/system-root/link_target',
                 '/etc/pki/trust/anchors/'
             )
         ]
