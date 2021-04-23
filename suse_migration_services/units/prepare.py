@@ -91,11 +91,14 @@ def main():
             if certificates:
                 Path.create(trust_anchor)
                 for cert in certificates:
-                    log.info(f'Importing certificate: {cert}')
-                    shutil.copy(
-                        os.sep.join([root_trust_anchor, cert]),
-                        trust_anchor
-                    )
+                    cert_file = os.sep.join([root_trust_anchor, cert])
+                    log.info(f'Importing certificate: {cert_file}')
+                    try:
+                        shutil.copy(cert_file, trust_anchor)
+                    except FileNotFoundError as issue:
+                        log.warning(
+                            f'Import of {cert_file!r} failed with {issue!r}'
+                        )
                 log.info('Update certificate pool')
                 Command.run(
                     ['update-ca-certificates']

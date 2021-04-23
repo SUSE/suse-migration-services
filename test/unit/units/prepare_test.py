@@ -118,6 +118,15 @@ class TestSetupPrepare(object):
             MagicMock(),
             MagicMock()
         ]
+        mock_shutil_copy.side_effect = [
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            FileNotFoundError('cert copy failed')
+        ]
         mock_is_file.return_value = True
         with patch('builtins.open', create=True):
             main()
