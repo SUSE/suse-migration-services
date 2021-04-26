@@ -1,5 +1,6 @@
 # SUSE Migration activation menu entry based on isofile
 
+# Source grub config library
 . /usr/share/grub2/grub-mkconfig_lib
 
 CLASS="--class memtest86 --class gnu --class tools"
