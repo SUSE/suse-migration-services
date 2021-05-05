@@ -1,0 +1,7 @@
+[no_foo]
+name=No_Foo
+enabled=1
+autorefresh=0
+baseurl=hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2
+path=/
+keeppackages=0

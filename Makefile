@@ -43,7 +43,23 @@ sle15_activation: check
 	cat package/suse-migration-sle15-activation-spec-template \
 		| sed -e s'@%%VERSION@${version}@' \
 		> dist/suse-migration-sle15-activation.spec
-	tar -czf dist/suse-migration-sle15-activation.tar.gz grub.d
+	# include grub.d dir in MANIFEST
+	sed -ie s'@prune grub.d@graft grub.d@' MANIFEST.in
+	mv MANIFEST.ine MANIFEST.in
+	python3 setup.py sdist
+	# create tarball with grub.d + suse-migration-services
+	mv dist/suse_migration_services-*.tar.gz  dist/suse-migration-sle15-activation.tar.gz
+	# restore MANIFEST.ini
+	git checkout MANIFEST.in
+	# check MANIFEST.in has prune grub.d
+	# raise error if not
+	$(eval current_value = $(shell grep "prune grub.d" MANIFEST.in))
+	$(eval expected_value = "prune grub.d")
+
+	@if [ "$(current_value)" != $(expected_value) ]; then\
+	   echo "MANIFEST.in does not have '$(expected_value)'";\
+           exit 1;\
+	fi
 
 .PHONY: test
 test:

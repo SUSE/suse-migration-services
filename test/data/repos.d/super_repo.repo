@@ -1,0 +1,6 @@
+[foo]
+name=Foo
+enabled=1
+autorefresh=0
+baseurl=https://download.foo.com/foo/repo/
+type=rpm-md

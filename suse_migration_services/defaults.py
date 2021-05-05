@@ -38,10 +38,16 @@ class Defaults:
         return 'suse-migration'
 
     @staticmethod
-    def get_migration_log_file():
-        return os.sep.join(
-            [Defaults.get_system_root_path(), 'var/log/distro_migration.log']
-        )
+    def get_migration_log_file(system_root=True):
+        migration_log_file = 'var/log/distro_migration.log'
+
+        if system_root:
+            migration_log_file = os.sep.join(
+                [Defaults.get_system_root_path(), migration_log_file]
+            )
+        else:
+            migration_log_file = os.sep + migration_log_file
+        return migration_log_file
 
     @staticmethod
     def get_system_migration_custom_config_file():
