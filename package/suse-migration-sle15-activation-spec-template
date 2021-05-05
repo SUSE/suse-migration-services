@@ -46,6 +46,7 @@ install -D -m 755 99_migration \
     %{buildroot}/etc/grub.d/99_migration
 
 %post
+suse-migration-pre-checks
 /usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
 
 %postun
