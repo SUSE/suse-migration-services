@@ -45,7 +45,7 @@ def check_remote_repos():
             for section in repo_section.keys():
                 repo_info = dict(config.items(section))
                 if repo_info:
-                    if not repo_info['baseurl'].startswith('http'):
+                    if not repo_info['baseurl'].startswith('http') and not repo_info['baseurl'].startswith('ftp'):
                         if repo_info['baseurl'] not in no_remote_repos:
                             no_remote_repos.append(repo_info['baseurl'])
 
