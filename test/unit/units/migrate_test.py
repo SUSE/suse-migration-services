@@ -133,6 +133,7 @@ class TestMigration(object):
                 '--auto-agree-with-licenses '
                 '--allow-vendor-change '
                 '--replacefiles '
+                '--allow-downgrade '
                 '&>> /system-root/var/log/distro_migration.log'
             ], raise_on_error=False
         )
