@@ -74,6 +74,7 @@ def main():
                     '--auto-agree-with-licenses',
                     '--allow-vendor-change',
                     '--replacefiles',
+                    '--allow-downgrade '
                     '&>>', Defaults.get_migration_log_file()
                 ]
             )
