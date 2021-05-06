@@ -35,6 +35,7 @@ config = {
             'suse-migration-reboot=suse_migration_services.units.reboot:main',
             'suse-migration-product-setup=suse_migration_services.units.product_setup:main',
             'suse-migration-post-mount-system=suse_migration_services.units.post_mount_system:main'
+            'suse-migration-pre-checks=suse_migration_services.prechecks.pre_checks:main'
         ]
     },
     'include_package_data': True,

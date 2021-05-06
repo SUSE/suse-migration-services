@@ -99,6 +99,9 @@ if (( EUID != 0 )); then
     exit 1
 fi
 
+# Run pre checks
+suse-migration-pre-checks
+
 # Set signal handler on EXIT
 trap cleanup EXIT
 
