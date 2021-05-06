@@ -26,7 +26,7 @@ from suse_migration_services.command import Command
 def check_remote_repos():
     repos_path = '/etc/zypp/repos.d'
     no_remote_repos = []
-    print("PEPE")
+
     if os.path.exists(repos_path):
         repos_list = os.listdir(repos_path)
         config = configparser.RawConfigParser()
