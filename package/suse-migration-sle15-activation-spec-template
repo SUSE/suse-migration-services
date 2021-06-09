@@ -45,7 +45,13 @@ next reboot of the machine.
 install -D -m 755 99_migration \
     %{buildroot}/etc/grub.d/99_migration
 
+python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
+mv %{buildroot}/%{_bindir}/suse-migration-pre-checks /tmp/
+rm %{buildroot}/%{_bindir}/*
+mv /tmp/suse-migration-pre-checks %{buildroot}/%{_bindir}/
+
 %post
+suse-migration-pre-checks
 /usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
 
 %postun
@@ -55,5 +61,7 @@ install -D -m 755 99_migration \
 %defattr(-,root,root,-)
 %dir /etc/grub.d
 /etc/grub.d/*
+%{python3_sitelib}/*
+%{_bindir}/suse-migration-pre-checks
 
 %changelog
