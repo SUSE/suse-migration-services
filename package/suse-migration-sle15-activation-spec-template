@@ -27,8 +27,15 @@ Source:           suse-migration-sle15-activation.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildArch:        noarch
 BuildRequires:    grub2
+BuildRequires:    python3-devel
+BuildRequires:    python3-setuptools
+BuildRequires:    python3-Cerberus
+BuildRequires:    python3-PyYAML
 Requires:         SLES15-Migration
 Requires:         grub2
+Requires:         python3-Cerberus
+Requires:         python3-PyYAML
+Requires:         python3-setuptools
 Requires:         product(SLES) >= %{MinSLEVersion}
 
 %description -n suse-migration-sle15-activation
@@ -36,16 +43,17 @@ Script code to activate the SLE15 migration image to be booted at
 next reboot of the machine.
 
 %prep
-%setup -q -n grub.d
+%setup -q -n suse_migration_services-%{version}
 
 %build
-# nothing to do here
+python3 setup.py build
 
 %install
-install -D -m 755 99_migration \
+python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
+
+install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
 
-python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
 mv %{buildroot}/%{_bindir}/suse-migration-pre-checks /tmp/
 rm %{buildroot}/%{_bindir}/*
 mv /tmp/suse-migration-pre-checks %{buildroot}/%{_bindir}/
