@@ -4,6 +4,7 @@ prune grub.d
 
 graft tools
 graft suse_migration_services/units
+graft suse_migration_services/prechecks
 graft package
 graft systemd
 

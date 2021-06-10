@@ -45,10 +45,11 @@ sle15_activation: check
 		> dist/suse-migration-sle15-activation.spec
 	# include grub.d dir in MANIFEST
 	sed -ie s'@prune grub.d@graft grub.d@' MANIFEST.in
-	mv MANIFEST.ine MANIFEST.in
+	rm MANIFEST.ine
 	python3 setup.py sdist
 	# create tarball with grub.d + suse-migration-services
-	mv dist/suse_migration_services-*.tar.gz  dist/suse-migration-sle15-activation.tar.gz
+	mv dist/suse_migration_services-*.tar.gz  \
+		dist/suse-migration-sle15-activation.tar.gz
 	# restore MANIFEST.ini
 	git checkout MANIFEST.in
 	# check MANIFEST.in has prune grub.d
