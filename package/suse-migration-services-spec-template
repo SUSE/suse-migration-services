@@ -25,6 +25,7 @@ License:          GPL-3.0+
 Group:            System/Management
 Source:           suse-migration-services.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
+Conflicts:        suse-migration-sle15-activation
 BuildRequires:    python3-devel
 BuildRequires:    python3-setuptools
 BuildRequires:    systemd-rpm-macros
