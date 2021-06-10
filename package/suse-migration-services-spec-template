@@ -54,6 +54,9 @@ python3 setup.py build
 %install
 python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
 
+# suse-migration-pre-checks is relevant for the activation package only
+rm -f %{buildroot}/%{_bindir}/suse-migration-pre-checks
+
 install -D -m 755 tools/run_migration \
     %{buildroot}%{_sbindir}/run_migration
 
