@@ -246,7 +246,7 @@ a pointer to the respective log file.
 === Public and Private Cloud Specific
 * Migration initiation for a cloud instance is only supported via a reboot.
   The required GRUB changes to make this process are automated and
-  provided with the suse-migration-sle15-activation package. It is recommened
+  provided with the suse-migration-sle15-activation package. We recommend
   to use the provided automation.
 * Public Cloud instances from SUSE images have a custom `/etc/motd` file
   that makes a reference to the distribution version. This needs to be
