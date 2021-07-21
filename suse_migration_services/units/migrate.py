@@ -73,6 +73,7 @@ def main():
                     'dup',
                     '--auto-agree-with-licenses',
                     '--allow-vendor-change',
+                    '--download', 'in-advance',
                     '--replacefiles',
                     '--allow-downgrade '
                     '&>>', Defaults.get_migration_log_file()

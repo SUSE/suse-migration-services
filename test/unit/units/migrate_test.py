@@ -132,6 +132,7 @@ class TestMigration(object):
                 'dup '
                 '--auto-agree-with-licenses '
                 '--allow-vendor-change '
+                '--download in-advance '
                 '--replacefiles '
                 '--allow-downgrade '
                 '&>> /system-root/var/log/distro_migration.log'
