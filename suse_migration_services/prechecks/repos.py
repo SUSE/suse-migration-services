@@ -34,5 +34,5 @@ def remote_repos():
 
     if no_remote_repos:
         log.warning(
-            'These repositories locations may be an issue when migrating: "{}". '
-            'Please check before migration starts'.format(','.join(no_remote_repos)))
+            'These repositories locations may be an issue when migrating:\n{}\n'
+            'Please check before migration starts'.format('\n'.join(no_remote_repos)))
