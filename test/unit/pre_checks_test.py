@@ -1,3 +1,5 @@
+import logging
+from pytest import fixture
 from unittest.mock import (
     patch, Mock
 )
@@ -8,6 +10,10 @@ import suse_migration_services.prechecks.repos as check_repos
 
 
 class TestPreChecks():
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @patch('configparser.RawConfigParser.items')
     @patch('os.listdir')
     @patch('os.path.exists')
@@ -38,7 +44,16 @@ class TestPreChecks():
             [('name', 'Foo'), ('enabled', '1'), ('autorefresh', '0'), ('baseurl', 'https://download.foo.com/foo/repo/'), ('type', 'rpm-md')],
             [('name', 'No_Foo'), ('enabled', '1'), ('autorefresh', '0'), ('baseurl', 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2'), ('path', '/'), ('keeppackages', '0')]
         ]
-        main()
+        warning_message_remote_repos = \
+            'The following repositories may cause the migration to fail, as they ' \
+            'may not be available during the migration'
+        warning_message_show_repos = \
+            'To see all the repositories and their urls, you can run "zypper repos --url"'
+
+        with self._caplog.at_level(logging.WARNING):
+            main()
+            assert warning_message_remote_repos in self._caplog.text
+            assert warning_message_show_repos in self._caplog.text
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.listdir')
