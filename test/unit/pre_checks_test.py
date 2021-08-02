@@ -1,3 +1,5 @@
+import logging
+from pytest import fixture
 from unittest.mock import (
     patch, Mock
 )
@@ -8,6 +10,10 @@ import suse_migration_services.prechecks.repos as check_repos
 
 
 class TestPreChecks():
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @patch('configparser.RawConfigParser.items')
     @patch('os.listdir')
     @patch('os.path.exists')
@@ -33,12 +39,20 @@ class TestPreChecks():
         mock_fstab.return_value = fstab_mock
         mock_command_run.side_effect = luks
         mock_os_exists.return_value = True
-        mock_os_listdir.return_value = ['no_remote.repo', 'super_repo.repo']
+        mock_os_listdir.return_value = ['no_remote.repo', 'super_repo.repo', 'another.repo']
+        repo_no_foo = 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2'
+        repo_no_bar = 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea4'
         mock_configparser_items.side_effect = [
             [('name', 'Foo'), ('enabled', '1'), ('autorefresh', '0'), ('baseurl', 'https://download.foo.com/foo/repo/'), ('type', 'rpm-md')],
-            [('name', 'No_Foo'), ('enabled', '1'), ('autorefresh', '0'), ('baseurl', 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2'), ('path', '/'), ('keeppackages', '0')]
+            [('name', 'No_Foo'), ('enabled', '1'), ('autorefresh', '0'), ('baseurl', f"{repo_no_foo}"), ('path', '/'), ('keeppackages', '0')],
+            [('name', 'No_Bar'), ('enabled', '1'), ('autorefresh', '0'), ('baseurl', f"{repo_no_bar}"), ('path', '/'), ('keeppackages', '0')]
         ]
-        main()
+        warning_message_remote_repos = \
+            'These repositories locations may be an issue when migrating:\n' \
+            f"{repo_no_foo}\n{repo_no_bar}\n"
+        with self._caplog.at_level(logging.WARNING):
+            main()
+            assert warning_message_remote_repos in self._caplog.text
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.listdir')
