@@ -104,6 +104,7 @@ class TestMigration(object):
                 '--allow-vendor-change '
                 '--strict-errors-dist-migration '
                 '--replacefiles '
+                '--no-cd '
                 '--product SLES/15/x86_64 '
                 '--root /system-root '
                 '&>> /system-root/var/log/distro_migration.log'
@@ -135,6 +136,7 @@ class TestMigration(object):
                 '--download in-advance '
                 '--replacefiles '
                 '--allow-downgrade '
+                '--no-cd '
                 '&>> /system-root/var/log/distro_migration.log'
             ], raise_on_error=False
         )
