@@ -36,8 +36,8 @@ def remote_repos():
         zypper_cmd = 'zypper repos --url'
         log.warning(
             'The following repositories may cause the migration to fail, as they '
-            'may not be available during the migration: %s\nPlease, check those '
+            'may not be available during the migration:\n%s\nPlease, check those '
             'before starting the migration\nTo see all the repositories and '
             'their urls, you can run "%s"\n',
-            ','.join(no_remote_repos), zypper_cmd,
+            '\n'.join(no_remote_repos), zypper_cmd,
         )
