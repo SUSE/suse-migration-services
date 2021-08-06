@@ -48,11 +48,15 @@ class TestPreChecks():
             [('name', 'No_Bar'), ('enabled', '1'), ('autorefresh', '0'), ('baseurl', f"{repo_no_bar}"), ('path', '/'), ('keeppackages', '0')]
         ]
         warning_message_remote_repos = \
-            'These repositories locations may be an issue when migrating:\n' \
-            f"{repo_no_foo}\n{repo_no_bar}\n"
+            'The following repositories may cause the migration to fail, as they ' \
+            'may not be available during the migration'
+        warning_message_show_repos = \
+            'To see all the repositories and their urls, you can run "zypper repos --url"'
+
         with self._caplog.at_level(logging.WARNING):
             main()
             assert warning_message_remote_repos in self._caplog.text
+            assert warning_message_show_repos in self._caplog.text
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.listdir')
