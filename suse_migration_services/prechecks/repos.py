@@ -3,11 +3,9 @@ import configparser
 import logging
 
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.logger import Logger
 
 
 def remote_repos():
-    Logger.setup(system_root=False)
     log = logging.getLogger(Defaults.get_migration_log_name())
     repos_path = '/etc/zypp/repos.d'
     no_remote_repos = []
@@ -19,6 +17,7 @@ def remote_repos():
             log.error('No repositories in {}'.format(repos_path))
             return
 
+        remote_prefixes = ('http', 'ftp', 'plugin:/susecloud')
         for repo in repos_list:
             repo_path = os.sep.join(
                 [repos_path, repo]
@@ -28,7 +27,7 @@ def remote_repos():
             for section in repo_section.keys():
                 repo_info = dict(config.items(section))
                 if repo_info:
-                    if not repo_info['baseurl'].startswith('http') and not repo_info['baseurl'].startswith('ftp'):
+                    if not repo_info['baseurl'].startswith(remote_prefixes):
                         if repo_info['baseurl'] not in no_remote_repos:
                             no_remote_repos.append(repo_info['baseurl'])
 
