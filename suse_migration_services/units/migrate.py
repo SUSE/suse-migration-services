@@ -68,6 +68,7 @@ def main():
             bash_command = ' '.join(
                 [
                     'zypper',
+                    '--no-cd',
                     '--non-interactive',
                     '--gpg-auto-import-keys',
                     '--root', root_path,
@@ -77,7 +78,6 @@ def main():
                     '--download', 'in-advance',
                     '--replacefiles',
                     '--allow-downgrade',
-                    '--no-cd '
                     '&>>', Defaults.get_migration_log_file()
                 ]
             )

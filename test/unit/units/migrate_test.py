@@ -127,7 +127,7 @@ class TestMigration(object):
         mock_Command_run.assert_called_once_with(
             [
                 'bash', '-c',
-                'zypper --non-interactive '
+                'zypper --no-cd --non-interactive '
                 '--gpg-auto-import-keys '
                 '--root /system-root '
                 'dup '
@@ -136,7 +136,7 @@ class TestMigration(object):
                 '--download in-advance '
                 '--replacefiles '
                 '--allow-downgrade '
-                '--no-cd '
+
                 '&>> /system-root/var/log/distro_migration.log'
             ], raise_on_error=False
         )
