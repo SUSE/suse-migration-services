@@ -3,11 +3,9 @@ import logging
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.fstab import Fstab
-from suse_migration_services.logger import Logger
 
 
 def encryption():
-    Logger.setup(system_root=False)
     log = logging.getLogger(Defaults.get_migration_log_name())
     fstab = Fstab()
     fstab.read('/etc/fstab')
