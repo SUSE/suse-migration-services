@@ -55,7 +55,6 @@ def main():
                     '--allow-vendor-change',
                     '--strict-errors-dist-migration',
                     '--replacefiles',
-                    '--no-cd',
                     '--product', migration_config.get_migration_product(),
                     '--root', root_path,
                     '&>>', Defaults.get_migration_log_file()
