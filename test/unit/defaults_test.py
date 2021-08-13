@@ -48,3 +48,7 @@ class TestDefaults(object):
                 mock_open_os_release.return_value.__enter__.return_value
             file_handle.read.return_value = os_release_content
             assert self.defaults.get_os_release() == os_release_result
+
+    def test_get_proxy_path(self):
+        assert self.defaults.get_proxy_path() == \
+            '/etc/sysconfig/proxy'

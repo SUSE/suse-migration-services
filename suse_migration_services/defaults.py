@@ -113,3 +113,7 @@ class Defaults:
                 ]
             )
             return namedtuple('OSRelease', keys)(*values)
+
+    @staticmethod
+    def get_proxy_path():
+        return '/etc/sysconfig/proxy'

@@ -1,12 +1,23 @@
+import logging
+import os
+import yaml
+
+from pytest import fixture
 from unittest.mock import (
     patch, call
 )
 
-from suse_migration_services.units.post_mount_system import main
+from suse_migration_services.units.post_mount_system import (
+    main, log_env, update_env
+)
 from suse_migration_services.defaults import Defaults
 
 
 class TestPostMountSystem(object):
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @patch('os.path.exists')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
@@ -34,3 +45,22 @@ class TestPostMountSystem(object):
             call(['udevadm', 'trigger', '--type=subsystems', '--action=add']),
             call(['udevadm', 'trigger', '--type=devices', '--action=add'])
         ]
+
+    @patch.dict(os.environ, {'foo': 'bar', 'a': 'b'}, clear=True)
+    def test_log_env(self):
+        log = logging.getLogger('foo')
+        with self._caplog.at_level(logging.INFO):
+            log_env(log)
+        assert ' Env variables' in self._caplog.text
+        assert ' a: b\nfoo: bar\n\n' in self._caplog.text
+
+    @patch.object(Defaults, 'get_proxy_path')
+    @patch('suse_migration_services.units.post_mount_system.os')
+    def test_update_env(self, mock_os, mock_proxy_path):
+        with open('../data/migration-config-proxy.yml', 'r') as config:
+            config_data = yaml.safe_load(config)
+        mock_os.linesep = '\n'
+        mock_proxy_path.return_value = '../data/etc/sysconfig/proxy'
+
+        update_env(config_data.get('preserve'))
+        mock_os.environ.update.assert_called_once()

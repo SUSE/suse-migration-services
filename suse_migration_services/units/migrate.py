@@ -23,6 +23,9 @@ from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
+from suse_migration_services.units.post_mount_system import (
+    update_env, log_env
+)
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperException,
@@ -44,6 +47,11 @@ def main():
     try:
         log.info('Running migrate service')
         migration_config = MigrationConfig()
+        if migration_config.get_preserve_info():
+            # set potential missing settings in env
+            log.info('Update env variables')
+            update_env(migration_config.get_preserve_info())
+            log_env(log)
         if migration_config.is_zypper_migration_plugin_requested():
             bash_command = ' '.join(
                 [
@@ -55,7 +63,6 @@ def main():
                     '--allow-vendor-change',
                     '--strict-errors-dist-migration',
                     '--replacefiles',
-                    '--no-cd',
                     '--product', migration_config.get_migration_product(),
                     '--root', root_path,
                     '&>>', Defaults.get_migration_log_file()
