@@ -104,7 +104,6 @@ class TestMigration(object):
                 '--allow-vendor-change '
                 '--strict-errors-dist-migration '
                 '--replacefiles '
-                '--no-cd '
                 '--product SLES/15/x86_64 '
                 '--root /system-root '
                 '&>> /system-root/var/log/distro_migration.log'
