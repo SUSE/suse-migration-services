@@ -63,4 +63,4 @@ class TestPostMountSystem(object):
         mock_proxy_path.return_value = '../data/etc/sysconfig/proxy'
 
         update_env(config_data.get('preserve'))
-        mock_os.environ.update.assert_called_once()
+        mock_os.environ.update.assert_called_once_with({'http_foo': 'bar'})

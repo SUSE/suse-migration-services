@@ -1,2 +1,2 @@
 proxy_enabled="yes"
-http_foo="bar"
+HTTP_FOO="bar"

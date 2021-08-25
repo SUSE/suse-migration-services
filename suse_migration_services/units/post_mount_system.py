@@ -76,6 +76,8 @@ def update_env(preserve_info):
             with open(Defaults.get_proxy_path(), 'r') as proxy_file:
                 for line in proxy_file.readlines():
                     if not (line.startswith('#') or line.startswith(os.linesep)):
+                        # DMS currently takes http, https and ftp protocols
+                        # into consideration, so lower case them is ok
                         key_value = line.lower(). \
                             replace(os.linesep, ''). \
                             replace('"', ''). \
