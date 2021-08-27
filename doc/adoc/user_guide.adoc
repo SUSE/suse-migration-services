@@ -36,12 +36,16 @@ installation media to perform the system upgrade.
 
 The upgrade is done via the network using the Zypper migration workflow which
 sends a request to the repository server, asking for an upgrade path.
-SUSE supported repository servers are the SUSE Customer Center (SCC), the
-Repository Management Tool (RMT), and the Subscription Management Tool (SMT).
-The request response contains the list of repositories required to upgrade the
-system. This requires the system to be upgraded to be registered.
-The migration implementation also supports an upgrade mode that works with
-systems not registered to a repository service. For details,
+SUSE supported repository servers are the SUSE Customer Center (SCC) and the
+Repository Management Tool (RMT). The request response contains the list of
+repositories required to upgrade the system. This requires the system to be
+upgraded to be registered. Additionally the server providing the updates must
+have the necessary channels available and those channels must be up to date.
+This requirement is automatically met when a system is registered to the
+SUSE Customer Center (SCC). However administrative work may be required when
+the system to be upgraded is connected to an RMT server. The migration
+implementation also supports an upgrade mode that works with systems not
+registered to a repository service. For details,
 see <<Optional Customization of the Upgrade Process>>.
 
 The upgrade to a new major version requires the system to be migrated to
@@ -73,9 +77,12 @@ Requirement for using the Zypper migration workflow::
 Systems that are to be upgraded need to be registered.
 "Pay as you go"-instances in the Public Cloud are automatically registered
 to the SUSE operated update infrastructure. All other systems must be
-connected to the SUSE Customer Center (SCC), a Subscription Management
-Tool (SMT), or a Repository Management tool (RMT) server. For systems
-managed via SUSE Manager, use the upgrade path provided by SUSE Manager.
+connected to the SUSE Customer Center (SCC) or a
+Repository Management tool (RMT) server. For systems
+managed via SUSE Manager, use the upgrade path provided by SUSE Manager. The
+server that provides the repositories must have the appropriate repositories
+synched and they must be up to date. This requirement is automatically met by
+the SUSE update infrastructure in the Public Cloud and by SCC.
 
 Recommendation for SSH access during upgrade::
 During the upgrade, it is only possible to log in via SSH key-based login.
