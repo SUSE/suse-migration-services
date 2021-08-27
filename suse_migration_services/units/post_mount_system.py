@@ -67,3 +67,33 @@ def main():
             Command.run(
                 ['udevadm', 'trigger', '--type=devices', '--action=add']
             )
+
+
+def update_env(preserve_info):
+    proxy_env = {}
+    for _, preserve_files in preserve_info.items():
+        if Defaults.get_proxy_path() in preserve_files:
+            with open(Defaults.get_proxy_path(), 'r') as proxy_file:
+                for line in proxy_file.readlines():
+                    if not (line.startswith('#') or line.startswith(os.linesep)):
+                        # DMS currently takes http, https and ftp protocols
+                        # into consideration, so lower case them is ok
+                        key_value = line.lower(). \
+                            replace(os.linesep, ''). \
+                            replace('"', ''). \
+                            split('=')
+                        proxy_env.update(dict([key_value]))
+    if proxy_env.get('proxy_enabled') == 'yes':
+        del proxy_env['proxy_enabled']
+        os.environ.update(proxy_env)
+
+
+def log_env(log):
+    """Provide information about the current environment."""
+    log.info('Env variables')
+    env = ''
+    for key, value in sorted(os.environ.items()):
+        env += '{key}: {value}{newline}'.format(
+            key=key, value=value, newline=os.linesep
+        )
+    log.info(env)

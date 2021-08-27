@@ -1,0 +1,6 @@
+preserve:
+  rules:
+     - /etc/udev/rules.d/a.rules
+     - /etc/udev/rules.d/b.rules
+  static:
+    - ../data/etc/sysconfig/proxy

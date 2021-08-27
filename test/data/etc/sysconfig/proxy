@@ -1,0 +1,2 @@
+proxy_enabled="yes"
+HTTP_FOO="bar"
