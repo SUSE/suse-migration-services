@@ -6,8 +6,8 @@ from unittest.mock import (
 from suse_migration_services.logger import Logger
 
 
+@patch('suse_migration_services.logger.Path.create')
 class TestLogger:
-    @patch('suse_migration_services.logger.Path.create')
     def test_setup(self, mock_Path_create):
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
@@ -20,7 +20,6 @@ class TestLogger:
                 '/system-root/var/log/distro_migration.log', 'a', encoding=None
             )
 
-    @patch('suse_migration_services.logger.Path.create')
     def test_setup_no_system_root(self, mock_Path_create):
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
