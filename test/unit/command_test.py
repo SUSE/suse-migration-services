@@ -15,8 +15,8 @@ from suse_migration_services.exceptions import (
 )
 
 
+@patch('suse_migration_services.path.Path.which')
 class TestCommand(object):
-    @patch('suse_migration_services.path.Path.which')
     @patch('subprocess.Popen')
     def test_run_raises_error(self, mock_popen, mock_which):
         mock_which.return_value = 'command'
@@ -29,7 +29,6 @@ class TestCommand(object):
         with raises(DistMigrationCommandException):
             Command.run(['command', 'args'])
 
-    @patch('suse_migration_services.path.Path.which')
     @patch('subprocess.Popen')
     def test_run_failure(self, mock_popen, mock_which):
         mock_which.return_value = 'command'
@@ -37,11 +36,11 @@ class TestCommand(object):
         with raises(DistMigrationCommandException):
             Command.run(['command', 'args'])
 
-    def test_run_invalid_environment(self):
+    def test_run_invalid_environment(self, mock_which):
+        mock_which.return_value = False
         with raises(DistMigrationCommandNotFoundException):
             Command.run(['command', 'args'], {'HOME': '/root'})
 
-    @patch('suse_migration_services.path.Path.which')
     @patch('subprocess.Popen')
     def test_run_does_not_raise_error(self, mock_popen, mock_which):
         mock_which.return_value = 'command'
@@ -61,7 +60,6 @@ class TestCommand(object):
         assert result.error == 'stderr'
         assert result.output == '(no output on stdout)'
 
-    @patch('suse_migration_services.path.Path.which')
     def test_run_does_not_raise_error_if_command_not_found(self, mock_which):
         mock_which.return_value = None
         result = Command.run(['command', 'args'], os.environ, False)
@@ -72,7 +70,7 @@ class TestCommand(object):
     @patch('os.access')
     @patch('os.path.exists')
     @patch('subprocess.Popen')
-    def test_run(self, mock_popen, mock_exists, mock_access):
+    def test_run(self, mock_popen, mock_exists, mock_access, mock_which):
         mock_exists.return_value = True
         command_run = namedtuple(
             'command', ['output', 'error', 'returncode']
@@ -90,7 +88,3 @@ class TestCommand(object):
         mock_popen.return_value = mock_process
         mock_access.return_value = True
         assert Command.run(['command', 'args']) == run_result
-
-    def test_run_command_does_not_exist(self):
-        with raises(DistMigrationCommandNotFoundException):
-            Command.run(['does-not-exist'])
