@@ -7,9 +7,9 @@ from suse_migration_services.units.ssh_keys import main
 from suse_migration_services.defaults import Defaults
 
 
+@patch('suse_migration_services.logger.Logger.setup')
+@patch('glob.glob')
 class TestSSHKeys(object):
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('glob.glob')
     def test_migration_continues_on_error(
         self, mock_glob_glob, mock_logger_setup
     ):
@@ -20,13 +20,11 @@ class TestSSHKeys(object):
     @patch('shutil.copy')
     @patch.object(Defaults, 'get_system_sshd_config_path')
     @patch.object(Defaults, 'get_ssh_keys_paths')
-    @patch('glob.glob')
     @patch.object(Defaults, 'get_migration_ssh_file')
-    @patch('suse_migration_services.logger.Logger.setup')
     def test_main(
-        self, mock_logger_setup, mock_get_migration_ssh_file, mock_glob_glob,
-            mock_get_ssh_key_path, mock_get_system_sshd_config_path,
-            mock_shutil_copy, mock_Command_run
+        self, mock_get_migration_ssh_file, mock_get_ssh_key_path,
+        mock_get_system_sshd_config_path, mock_shutil_copy,
+        mock_Command_run, mock_glob_glob, mock_logger_setup
     ):
         mock_get_ssh_key_path.return_value = ['/path/']
         mock_get_migration_ssh_file.return_value = '../data/authorized_keys'
