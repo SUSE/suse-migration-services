@@ -16,13 +16,12 @@ from suse_migration_services.exceptions import (
 )
 
 
+@patch('suse_migration_services.logger.Logger.setup')
+@patch('suse_migration_services.units.mount_system.Path.create')
 class TestMountSystem(object):
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.units.mount_system.Path.create')
     @patch('os.path.ismount')
     def test_main_system_already_mounted(
-        self, mock_path_ismount, mock_path_create,
-        mock_logger_setup
+        self, mock_path_ismount, mock_path_create, mock_logger_setup
     ):
         mock_path_ismount.return_value = True
         logger = logging.getLogger(Defaults.get_migration_log_name())
@@ -34,8 +33,6 @@ class TestMountSystem(object):
                 call('Checking /system-root is mounted')
             ]
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.units.mount_system.Path.create')
     def test_main_no_system_found(
         self, mock_path_create, mock_logger_setup
     ):
@@ -43,10 +40,10 @@ class TestMountSystem(object):
             main()
 
     @patch('os.path.exists')
-    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     def test_mount_system_raises(
-        self, mock_Command_run, mock_logger_setup, mock_os_path_exists
+        self, mock_Command_run, mock_os_path_exists,
+        mock_path_create, mock_logger_setup
     ):
         def skip_device(device):
             if '/dev/mynode' in device:
@@ -86,9 +83,7 @@ class TestMountSystem(object):
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(MigrationConfig, 'update_migration_config_file')
-    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.mount_system.Path.create')
     @patch('suse_migration_services.units.mount_system.Path.wipe')
     @patch('suse_migration_services.units.mount_system.Fstab')
     @patch('suse_migration_services.units.mount_system.is_mounted')
@@ -96,11 +91,10 @@ class TestMountSystem(object):
     @patch('os.path.exists')
     def test_main(
         self, mock_path_exists, mock_path_isfile, mock_is_mounted, mock_Fstab,
-        mock_path_wipe, mock_path_create, mock_Command_run,
-        mock_logger_setup, mock_update_migration_config_file,
+        mock_path_wipe, mock_Command_run, mock_update_migration_config_file,
         mock_get_migration_config_file,
         mock_get_system_migration_custom_config_file, mock_yaml_dump,
-        mock_yaml_safe_load
+        mock_yaml_safe_load, mock_path_create, mock_logger_setup
     ):
         def _is_mounted(path):
             if path == '/run/initramfs/isoscan':
