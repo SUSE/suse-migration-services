@@ -9,9 +9,9 @@ from suse_migration_services.exceptions import (
 )
 
 
+@patch('suse_migration_services.logger.Logger.setup')
+@patch('suse_migration_services.command.Command.run')
 class TestGrubSetup(object):
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
     def test_main_raises_on_grub_update(
         self, mock_Command_run, mock_logger_setup
     ):
@@ -22,8 +22,6 @@ class TestGrubSetup(object):
         with raises(DistMigrationGrubConfigException):
             main()
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
     def test_main(
         self, mock_Command_run, mock_logger_setup
     ):
