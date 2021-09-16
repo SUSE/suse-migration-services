@@ -13,13 +13,13 @@ from suse_migration_services.exceptions import (
 )
 
 
+@patch('suse_migration_services.defaults.Defaults.get_system_root_path')
+@patch('suse_migration_services.logger.Logger.setup')
 class TestProductSetup(object):
     @fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
-    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
-    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_raises_on_product_setup_flavors(
         self, mock_logger_setup, mock_get_system_root_path
     ):
@@ -27,8 +27,6 @@ class TestProductSetup(object):
         with raises(DistMigrationProductSetupException):
             main()
 
-    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
-    @patch('suse_migration_services.logger.Logger.setup')
     def test_main_raises_on_product_setup_non_flavor(
         self, mock_logger_setup, mock_get_system_root_path
     ):
@@ -40,13 +38,11 @@ class TestProductSetup(object):
             self._caplog.text
 
     @patch('suse_migration_services.suse_product.ElementTree')
-    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
-    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.exists')
     def test_main(
         self, mock_os_path_exists, mock_Command_run,
-        mock_logger_setup, mock_get_system_root_path, mock_ElementTree
+        mock_ElementTree, mock_logger_setup, mock_get_system_root_path
     ):
         xml = ElementTree()
         xml.write = MagicMock()
