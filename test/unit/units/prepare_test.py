@@ -18,17 +18,17 @@ from suse_migration_services.exceptions import (
 )
 
 
+@patch('suse_migration_services.units.prepare.update_regionsrv_setup')
+@patch('suse_migration_services.logger.Logger.setup')
+@patch('suse_migration_services.units.prepare.Fstab')
+@patch('os.path.exists')
+@patch('suse_migration_services.command.Command.run')
 class TestSetupPrepare(object):
-    @patch('suse_migration_services.units.prepare.update_regionsrv_setup')
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.Fstab')
-    @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main_raises_on_zypp_bind(
-        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run, mock_logger_setup,
+        self, mock_os_listdir, mock_shutil_copy, mock_Command_run,
+        mock_os_path_exists, mock_Fstab, mock_logger_setup,
         mock_update_regionsrv_setup
     ):
         mock_os_listdir.return_value = None
@@ -43,17 +43,12 @@ class TestSetupPrepare(object):
         with raises(DistMigrationZypperMetaDataException):
             main()
 
-    @patch('suse_migration_services.units.prepare.update_regionsrv_setup')
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.Fstab')
-    @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main_raises_and_umount_file_system(
-        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run, mock_logger_setup,
-        mock_update_regionsrv_setup
+        self, mock_os_listdir, mock_shutil_copy, mock_Command_run,
+        mock_os_path_exists, mock_Fstab,
+        mock_logger_setup, mock_update_regionsrv_setup
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -76,13 +71,8 @@ class TestSetupPrepare(object):
 
     @patch('os.path.isfile')
     @patch.object(SUSEConnect, 'is_registered')
-    @patch('suse_migration_services.units.prepare.update_regionsrv_setup')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.units.prepare.Path')
-    @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('os.path.isdir')
@@ -91,10 +81,10 @@ class TestSetupPrepare(object):
     def test_main(
         self, mock_readlink, mock_os_path_islink,
         mock_path_isdir, mock_os_listdir,
-        mock_shutil_copy, mock_os_path_exists, mock_Path,
-        mock_Fstab, mock_Command_run, mock_logger_setup,
-        mock_MigrationConfig, mock_update_regionsrv_setup,
-        mock_is_registered, mock_is_file
+        mock_shutil_copy, mock_Path, mock_MigrationConfig,
+        mock_is_registered, mock_is_file, mock_Command_run,
+        mock_os_path_exists, mock_Fstab, mock_logger_setup,
+        mock_update_regionsrv_setup
     ):
         mock_readlink.return_value = 'link_target'
         mock_path_isdir.return_value = True
@@ -231,19 +221,15 @@ class TestSetupPrepare(object):
         )
 
     @patch.object(SUSEConnect, 'is_registered')
-    @patch('suse_migration_services.units.prepare.update_regionsrv_setup')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.units.prepare.Path')
-    @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main_no_registered_instance(
-        self, mock_os_listdir, mock_shutil_copy, mock_os_path_exists,
-        mock_Path, mock_Fstab, mock_Command_run, mock_logger_setup,
-        mock_MigrationConfig, mock_update_regionsrv_setup, mock_is_registered
+        self, mock_os_listdir, mock_shutil_copy,
+        mock_Path, mock_MigrationConfig, mock_is_registered,
+        mock_Command_run, mock_os_path_exists, mock_Fstab,
+        mock_logger_setup, mock_update_regionsrv_setup
     ):
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = \
@@ -257,8 +243,10 @@ class TestSetupPrepare(object):
         with raises(DistMigrationZypperMetaDataException):
             main()
 
-    @patch('suse_migration_services.command.Command.run')
-    def test_update_regionsrv_setup(self, mock_Command_run):
+    def test_update_regionsrv_setup(
+        self, mock_Command_run, mock_os_path_exists,
+        mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup
+    ):
         mock_command_return_values = [
             Mock(output='/dev/sda3 part\n/dev/sda disk'),
             Mock(output='dev/sda3\n')
