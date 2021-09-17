@@ -7,6 +7,7 @@ from suse_migration_services.units.reboot import main
 from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 
+
 @patch('os.path.exists')
 @patch('suse_migration_services.command.Command.run')
 @patch('suse_migration_services.logger.Logger.setup')
