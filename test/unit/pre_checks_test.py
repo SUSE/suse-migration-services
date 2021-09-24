@@ -9,20 +9,20 @@ from suse_migration_services.fstab import Fstab
 import suse_migration_services.prechecks.repos as check_repos
 
 
+@patch('suse_migration_services.logger.Logger.setup')
+@patch('os.listdir')
+@patch('os.path.exists')
 class TestPreChecks():
     @fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
     @patch('configparser.RawConfigParser.items')
-    @patch('os.listdir')
-    @patch('os.path.exists')
-    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.prechecks.fs.Fstab')
     def test_main(
-        self, mock_fstab, mock_command_run, mock_logger_setup, mock_os_exists,
-        mock_os_listdir, mock_configparser_items
+        self, mock_fstab, mock_command_run, mock_configparser_items,
+        mock_os_exists, mock_os_listdir, mock_log
     ):
         def luks(device):
             command = Mock()
@@ -58,9 +58,6 @@ class TestPreChecks():
             assert warning_message_remote_repos in self._caplog.text
             assert warning_message_show_repos in self._caplog.text
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('os.listdir')
-    @patch('os.path.exists')
     def test_empty_repos(self, mock_os_exists, mock_os_listdir, mock_log):
         mock_os_exists.return_value = True
         mock_os_listdir.return_value = []

@@ -4,22 +4,20 @@ import os
 from suse_migration_services.path import Path
 
 
+@patch('suse_migration_services.command.Command.run')
 class TestPath(object):
-    @patch('suse_migration_services.command.Command.run')
     def test_create(self, mock_command):
         Path.create('foo')
         mock_command.assert_called_once_with(
             ['mkdir', '-p', 'foo']
         )
 
-    @patch('suse_migration_services.command.Command.run')
     def test_wipe(self, mock_command):
         Path.wipe('foo')
         mock_command.assert_called_once_with(
             ['rm', '-r', '-f', 'foo']
         )
 
-    @patch('suse_migration_services.command.Command.run')
     def test_remove(self, mock_command):
         Path.remove('foo')
         mock_command.assert_called_once_with(
@@ -29,7 +27,7 @@ class TestPath(object):
     @patch('os.access')
     @patch('os.environ.get')
     @patch('os.path.exists')
-    def test_which(self, mock_exists, mock_env, mock_access):
+    def test_which(self, mock_exists, mock_env, mock_access, mock_Command):
         mock_env.return_value = '/usr/local/bin:/usr/bin:/bin'
         mock_exists.return_value = True
         assert Path.which('some-file') == '/usr/local/bin/some-file'
@@ -52,7 +50,7 @@ class TestPath(object):
     @patch('os.environ.get')
     @patch('os.path.exists')
     def test_which_not_found(
-        self, mock_exists, mock_env, mock_access
+        self, mock_exists, mock_env, mock_access, mock_Command
     ):
         mock_env.return_value = '/usr/local/bin:/usr/bin:/bin'
         mock_exists.return_value = False
@@ -62,7 +60,7 @@ class TestPath(object):
     @patch('os.environ.get')
     @patch('os.path.exists')
     def test_which_not_found_for_mode(
-        self, mock_exists, mock_env, mock_access
+        self, mock_exists, mock_env, mock_access, mock_Command
     ):
         mock_env.return_value = '/usr/local/bin:/usr/bin:/bin'
         mock_exists.return_value = True

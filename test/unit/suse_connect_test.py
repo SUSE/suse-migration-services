@@ -8,12 +8,12 @@ from unittest.mock import (
 from suse_migration_services.suse_connect import SUSEConnect
 
 
+@patch('suse_migration_services.command.Command.run')
 class TestSUSEConnect(object):
     @fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
-    @patch('suse_migration_services.command.Command.run')
     def test_is_registered(
         self, mock_Command_run
     ):
@@ -28,7 +28,6 @@ class TestSUSEConnect(object):
             ], raise_on_error=False
         )
 
-    @patch('suse_migration_services.command.Command.run')
     def test_is_not_registered(self, mock_Command_run):
         command = Mock()
         command.returncode = 1

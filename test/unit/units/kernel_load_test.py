@@ -16,13 +16,13 @@ from suse_migration_services.exceptions import (
 )
 
 
+@patch('suse_migration_services.logger.Logger.setup')
+@patch('os.path.exists')
 class TestKernelLoad(object):
     @fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('os.path.exists')
     def test_get_cmd_line_grub_cfg_not_present(
         self, mock_os_path_exists, mock_logger_setup
     ):
@@ -31,8 +31,6 @@ class TestKernelLoad(object):
             with raises(DistMigrationKernelRebootException):
                 _get_cmdline(Defaults.get_grub_config_file())
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('os.path.exists')
     def test_get_cmd_line(self, mock_path_exists, mock_logger_setup):
         mock_path_exists.return_value = True
         with open('../data/fake_grub.cfg') as fake_grub:
@@ -52,8 +50,6 @@ class TestKernelLoad(object):
             )
             assert result == grub_cmd_content
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('os.path.exists')
     def test_get_cmd_line_linuxefi(self, mock_path_exists, mock_logger_setup):
         mock_path_exists.return_value = True
         with open('../data/fake_grub_linuxefi.cfg') as fake_grub:
@@ -73,8 +69,6 @@ class TestKernelLoad(object):
             )
             assert result == grub_cmd_content
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('os.path.exists')
     def test_get_cmd_line_linux_variable(
         self, mock_path_exists, mock_logger_setup
     ):
@@ -96,8 +90,6 @@ class TestKernelLoad(object):
             )
             assert result == grub_cmd_content
 
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('os.path.exists')
     def test_get_cmd_line_extra_boot_partition(
         self, mock_path_exists, mock_logger_setup
     ):
@@ -120,13 +112,12 @@ class TestKernelLoad(object):
             assert result == grub_cmd_content
 
     @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.Logger.setup')
     @patch('shutil.copy')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main_raises_on_kernel_load(
         self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
-        mock_logger_setup, mock_get_migration_config_file
+        mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
@@ -157,13 +148,12 @@ class TestKernelLoad(object):
         ]
 
     @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.Logger.setup')
     @patch('shutil.copy')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main(
         self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
-        mock_logger_setup, mock_get_migration_config_file
+        mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
@@ -188,13 +178,12 @@ class TestKernelLoad(object):
         ]
 
     @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.Logger.setup')
     @patch('shutil.copy')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load._get_cmdline')
     def test_main_hard_reboot(
         self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
-        mock_logger_setup, mock_get_migration_config_file
+        mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
     ):
         cmd_line = \
             'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
