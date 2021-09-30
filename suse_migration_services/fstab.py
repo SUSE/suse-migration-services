@@ -58,7 +58,10 @@ class Fstab:
                 device = mount_record[0]
                 mountpoint = mount_record[1]
                 fstype = mount_record[2]
-                options = mount_record[3]
+                try:
+                    options = mount_record[3]
+                except IndexError:
+                    options = ''
                 eligible_for_mount = True
                 if fstype != 'swap':
                     if mountpoint == '/':
