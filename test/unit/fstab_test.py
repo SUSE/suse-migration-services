@@ -36,7 +36,7 @@ class TestFstab(object):
                 fstype='ext4',
                 mountpoint='/',
                 device='/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                options='acl,user_xattr',
+                options='',
                 eligible_for_mount=False
             ),
             self.fstab.fstab_entry_type(
@@ -75,7 +75,7 @@ class TestFstab(object):
                 fstype='ext4',
                 mountpoint='/',
                 device='/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2',
-                options='acl,user_xattr',
+                options='',
                 eligible_for_mount=False
             ),
             self.fstab.fstab_entry_type(
