@@ -10,7 +10,7 @@
         </specification>
     </description>
     <preferences>
-        <type image="iso" primary="true" flags="overlay" firmware="efi" boottimeout="1"/>
+        <type image="iso" primary="true" flags="overlay" firmware="uefi" boottimeout="1"/>
         <version>2.0.32</version>
         <packagemanager>zypper</packagemanager>
         <locale>en_US</locale>
