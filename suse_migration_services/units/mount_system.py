@@ -88,7 +88,13 @@ def main():
 
     mount_system(root_path, fstab)
 
-    MigrationConfig().update_migration_config_file()
+    migration_config = MigrationConfig()
+    migration_config.update_migration_config_file()
+    log.info(
+        'Config file content:\n{content}\n'. format(
+            content=migration_config.get_migration_config_file_content()
+        )
+    )
 
 
 def read_system_fstab(root_path):
