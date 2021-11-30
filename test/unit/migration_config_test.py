@@ -196,3 +196,10 @@ class TestMigrationConfig(object):
         self.config = MigrationConfig()
         with raises(DistMigrationConfigDataException):
             self.config.update_migration_config_file()
+
+    @patch('yaml.dump')
+    def test_get_migration_config_file_content(self, mock_yaml_dump):
+        self.config.get_migration_config_file_content()
+        mock_yaml_dump.assert_called_once_with(
+            self.config.config_data, default_flow_style=False
+        )
