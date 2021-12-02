@@ -156,6 +156,17 @@ workflow is not used, the setup of the repositories must be performed
 manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
+Migration product target::
+If set, the migration will use that product as a target.
+The product must be specified with the triplet PROD_NAME/VERSION/ARCH, for example:
+
+[listing]
+migration_product: 'SLES/15/x86_64'
+
+[NOTE]
+The default target, if `migration_product` is not set, is the version
+available in the migration path from zypper-migration.
+
 Preserve System Data::
 Preserve custom data file(s) e.g. udev rules from the system
 to be migrated into the upgrade live system and make sure
