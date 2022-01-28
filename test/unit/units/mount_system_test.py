@@ -2,6 +2,7 @@ from unittest.mock import (
     patch, call, Mock
 )
 from pytest import raises
+from collections import namedtuple
 import logging
 
 from suse_migration_services.defaults import Defaults
@@ -33,9 +34,24 @@ class TestMountSystem(object):
                 call('Checking /system-root is mounted')
             ]
 
+    @patch('suse_migration_services.command.Command.run')
     def test_main_no_system_found(
-        self, mock_path_create, mock_logger_setup
+        self, mock_Command_run, mock_path_create, mock_logger_setup
     ):
+        command_run = namedtuple(
+            'command', ['output', 'error', 'returncode']
+        )
+
+        def command_calls(command):
+            if 'lsblk' in command:
+                return command_run(
+                    output='/dev/sda4 part',
+                    error='',
+                    returncode=0
+                )
+
+        mock_Command_run.side_effect = command_calls
+
         with raises(DistMigrationSystemNotFoundException):
             main()
 
