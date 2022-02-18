@@ -17,8 +17,8 @@ from suse_migration_services.exceptions import (
 class TestMigrationConfig(object):
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
-    def setup(
-        self, mock_get_system_migration_config_custom_file,
+    def setup_method(
+        self, method, mock_get_system_migration_config_custom_file,
         mock_get_migration_config_file
     ):
         mock_get_migration_config_file.return_value = \
