@@ -31,7 +31,7 @@ schema = {
         'required': False,
         'type': 'boolean'
     },
-    'verbosity_migration': {
+    'verbose_migration': {
         'required': False,
         'type': 'boolean'
     }

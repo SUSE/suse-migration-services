@@ -214,7 +214,7 @@ Enable verbosity for zypper migration::
 If enabled, it will run the zypper migration plugin with increased verbosity.
 
 [listing]
-verbosity_migration: true|false
+verbose_migration: true|false
 
 == Run the Migration
 After the install of the `SLES15-Migration` package, start the migration

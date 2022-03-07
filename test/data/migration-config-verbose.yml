@@ -1,4 +1,4 @@
-verbosity_migration: true
+verbose_migration: true
 preserve:
   rules:
      - /etc/udev/rules.d/a.rules
