@@ -30,5 +30,9 @@ schema = {
     'use_zypper_migration': {
         'required': False,
         'type': 'boolean'
+    },
+    'verbose_migration': {
+        'required': False,
+        'type': 'boolean'
     }
 }

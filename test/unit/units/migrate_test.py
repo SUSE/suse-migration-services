@@ -95,6 +95,35 @@ class TestMigration(object):
             [
                 'bash', '-c',
                 'zypper migration '
+                '--no-verbose '
+                '--non-interactive '
+                '--gpg-auto-import-keys '
+                '--no-selfupdate '
+                '--auto-agree-with-licenses '
+                '--allow-vendor-change '
+                '--strict-errors-dist-migration '
+                '--replacefiles '
+                '--product SLES/15/x86_64 '
+                '--root /system-root '
+                '&>> /system-root/var/log/distro_migration.log'
+            ]
+        )
+
+    @patch.object(MigrationConfig, 'get_migration_product')
+    @patch.object(Defaults, 'get_migration_config_file')
+    def test_main_zypper_migration_plugin_verbose(
+        self, mock_get_migration_config_file, mock_get_system_root_path,
+        mock_update_env, mock_log_env, mock_Command_run, mock_logger_setup
+    ):
+        mock_get_system_root_path.return_value = 'SLES/15/x86_64'
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config-verbose.yml'
+        main()
+        mock_Command_run.assert_called_once_with(
+            [
+                'bash', '-c',
+                'zypper migration '
+                '--verbose '
                 '--non-interactive '
                 '--gpg-auto-import-keys '
                 '--no-selfupdate '

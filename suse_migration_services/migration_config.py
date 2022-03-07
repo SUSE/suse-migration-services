@@ -139,6 +139,9 @@ class MigrationConfig:
     def get_migration_config_file_content(self):
         return yaml.dump(self.config_data, default_flow_style=False)
 
+    def is_verbosity_requested(self):
+        return self.config_data.get('verbose_migration', False)
+
     def _write_config_file(self):
         with open(self.migration_config_file, 'w') as config:
             yaml.dump(self.config_data, config, default_flow_style=False)
