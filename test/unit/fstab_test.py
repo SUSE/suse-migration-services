@@ -13,7 +13,7 @@ class TestFstab(object):
         self._caplog = caplog
 
     @patch('os.path.exists')
-    def setup(self, mock_os_path_exists):
+    def setup_method(self, method, mock_os_path_exists):
         mock_os_path_exists.return_value = True
         self.fstab = Fstab()
         self.fstab.read('../data/fstab')

@@ -13,8 +13,8 @@ from suse_migration_services.exceptions import (
 @patch('suse_migration_services.suse_product.ElementTree')
 class TestSUSEProduct(object):
     @patch.object(Defaults, 'get_system_root_path')
-    def setup(
-        self, mock_get_system_root_path
+    def setup_method(
+        self, method, mock_get_system_root_path
     ):
         mock_get_system_root_path.return_value = '../data/'
         self.suse_product = SUSEBaseProduct()
