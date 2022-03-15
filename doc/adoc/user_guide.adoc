@@ -157,11 +157,22 @@ manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
 Migration product target::
-If set, the migration will use that product as a target.
-The product must be specified with the triplet PROD_NAME/VERSION/ARCH, for example:
+The default product target will be the 15-SP1 release corresponding to the
+current product. The migration_product setting can be used to change the
+product target. 
+
+[NOTE]
+Changing the product target from the 15-SP1 release is not officially
+supported
+
+If migration_product is set, the migration will use that product as a target.
+The product must be specified with the triplet name/version/arch found
+in '/etc/products.d/baseproduct' of the target product, for example:
 
 [listing]
-migration_product: 'SLES/15/x86_64'
+migration_product: 'SLES/15.1/x86_64'
+
+would set the product target to SLES-15-SP1
 
 [NOTE]
 The default target, if `migration_product` is not set, is the version
