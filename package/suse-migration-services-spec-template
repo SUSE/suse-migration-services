@@ -38,6 +38,7 @@ Requires:         ca-certificates
 Requires:         dialog
 Requires:         rsync
 Requires:         SUSEConnect >= 0.3.20
+Requires:         suse-migration-pre-checks
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
@@ -54,7 +55,7 @@ python3 setup.py build
 %install
 python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
 
-# suse-migration-pre-checks is relevant for the activation package only
+# suse-migration-pre-checks is relevant for the pre-checks package only
 rm -f %{buildroot}/%{_bindir}/suse-migration-pre-checks
 
 install -D -m 755 tools/run_migration \
