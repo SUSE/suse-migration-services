@@ -227,6 +227,17 @@ If enabled, it will run the zypper migration plugin with increased verbosity.
 [listing]
 verbose_migration: true|false
 
+Configure Make initrd Method::
+The live system may not contain all necessary tools to create an initrd that
+meets the need of the system being upgraded. Building a host independent
+initrd will create an initrd in a way that contains the tools and
+modules available on the system being upgraded. If this is needed, a host
+independent initrd can be created by setting
+`build_host_independent_initrd: True`.
+
+[listing]
+build_host_independent_initrd: true|false
+
 == Run the Migration
 After the install of the `SLES15-Migration` package, start the migration
 by calling the following command:

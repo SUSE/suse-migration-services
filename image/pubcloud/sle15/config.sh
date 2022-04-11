@@ -68,6 +68,7 @@ suseInsertService suse-migration
 suseInsertService suse-migration-console-log
 suseInsertService suse-migration-grub-setup
 suseInsertService suse-migration-product-setup
+suseInsertService suse-migration-regenerate-initrd
 suseInsertService suse-migration-kernel-load
 suseInsertService suse-migration-reboot
 

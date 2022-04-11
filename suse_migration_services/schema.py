@@ -34,5 +34,9 @@ schema = {
     'verbose_migration': {
         'required': False,
         'type': 'boolean'
+    },
+    'build_host_independent_initrd': {
+        'required': False,
+        'type': 'boolean'
     }
 }

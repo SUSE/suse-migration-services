@@ -136,6 +136,9 @@ class MigrationConfig:
     def is_soft_reboot_requested(self):
         return self.config_data.get('soft_reboot', True)
 
+    def is_host_independent_initd_requested(self):
+        return self.config_data.get('build_host_independent_initrd', False)
+
     def get_migration_config_file_content(self):
         return yaml.dump(self.config_data, default_flow_style=False)
 

@@ -81,6 +81,9 @@ install -D -m 644 systemd/suse-migration-grub-setup.service \
 install -D -m 644 systemd/suse-migration-product-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-product-setup.service
 
+install -D -m 644 systemd/suse-migration-regenerate-initrd.service \
+    %{buildroot}%{_unitdir}/suse-migration-regenerate-initrd.service
+
 install -D -m 644 systemd/suse-migration-kernel-load.service \
     %{buildroot}%{_unitdir}/suse-migration-kernel-load.service
 
@@ -130,6 +133,9 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 
 %{_bindir}/suse-migration-product-setup
 %{_unitdir}/suse-migration-product-setup.service
+
+%{_bindir}/suse-migration-regenerate-initrd
+%{_unitdir}/suse-migration-regenerate-initrd.service
 
 %{_bindir}/suse-migration-kernel-load
 %{_unitdir}/suse-migration-kernel-load.service

@@ -109,6 +109,9 @@ class TestMigrationConfig(object):
     def test_is_debug_requested(self):
         assert self.config.is_debug_requested() is False
 
+    def test_is_host_independent_initd_requested(self):
+        assert self.config.is_host_independent_initd_requested() is False
+
     @patch('yaml.dump')
     def test_write_config_file(self, mock_yaml_dump):
         with patch('builtins.open', create=True) as mock_open:

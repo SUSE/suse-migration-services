@@ -1,6 +1,6 @@
 [Unit]
 Description=Load the migrated system kernel/initrd
-After=suse-migration-grub-setup.service
+After=suse-migration-regenerate-initrd.service
 
 [Service]
 Type=oneshot

@@ -1,0 +1,10 @@
+[Unit]
+Description=Regenerate the initrd to add multipath
+After=suse-migration-grub-setup.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-regenerate-initrd
+
+[Install]
+WantedBy=multi-user.target
