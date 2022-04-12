@@ -90,6 +90,20 @@ If your system is not configured for it, it is recommended that at least
 one of the users on the system has a `~/.ssh/authorized_keys` file with a
 private key accessible by the person executing the system upgrade.
 
+== Upgrade Pre-Checks
+The suse-migration-pre-checks package contains the `suse-migration-pre-checks`
+script that checks for possible incompatibilities when doing a migration.
+
+These incompatibilities include:
+
+1. Encrypted file systems
+2. Invalid repository types
+
+This script is run during the install of SLES15-Migration. It can
+also be run anytime using
+
+ /usr/bin/suse-migration-pre-checks
+
 == Installation
 The distribution migration system is available from the Public Cloud module.
 Therefore this module has to be enabled on the system prior to upgrade.
