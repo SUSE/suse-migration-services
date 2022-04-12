@@ -98,6 +98,7 @@ These incompatibilities include:
 
 1. Encrypted file systems
 2. Invalid repository types
+3. multiversion.kernels enabled and multiple kernels installed
 
 This script is run during the install of SLES15-Migration. It can
 also be run anytime using
