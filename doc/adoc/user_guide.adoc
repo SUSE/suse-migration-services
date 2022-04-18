@@ -302,6 +302,9 @@ a pointer to the respective log file.
   SUSE Linux Enterprise Server documentation.
 * In systems that contain multiple root file systems on different mount points
   only the root file system mounted on `/` (primary system) will be migrated.
+* Upgrade is not supported for systems having the SLE 12 HPC module installed.
+  In SLE 15, HPC is no longer a module but rather a product. With this change,
+  there is not a migration path from SLE 12 (with the HPC module) to SLE 15 HPC.
 
 === Public and Private Cloud Specific
 * Migration initiation for a cloud instance is only supported via a reboot.
