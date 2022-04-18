@@ -92,7 +92,6 @@ def run_dracut(root_path):
                 'chroot',
                 root_path,
                 'dracut',
-                '--no-kernel',
                 '--no-host-only',
                 '--no-hostonly-cmdline',
                 '--regenerate-all',
