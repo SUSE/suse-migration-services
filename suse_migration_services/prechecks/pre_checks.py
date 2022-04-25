@@ -1,4 +1,4 @@
-# Copyright (c) 2021 SUSE Linux LLC.  All rights reserved.
+# Copyright (c) 2022 SUSE Linux LLC.  All rights reserved.
 #
 # This file is part of suse-migration-services.
 #
@@ -23,6 +23,7 @@ from suse_migration_services.logger import Logger
 # project
 import suse_migration_services.prechecks.repos as check_repos
 import suse_migration_services.prechecks.fs as check_fs
+import suse_migration_services.prechecks.kernels as check_multi_kernels
 
 
 def main():
@@ -32,9 +33,12 @@ def main():
     Checks whether
       - repositories' locations are not remote
       - filesystems in fstab are using LUKS encryption
+      - Multiple kernels are installed on the system and multiversion.kernels
+        in /etc/zypp/zypp.conf is not set to 'running, latest'
     """
     Logger.setup(system_root=False)
     log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Running pre migration checks')
     check_repos.remote_repos()
     check_fs.encryption()
+    check_multi_kernels.multiversion_and_multiple_kernels()

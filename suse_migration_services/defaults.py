@@ -1,4 +1,4 @@
-# Copyright (c) 2018 SUSE Linux LLC.  All rights reserved.
+# Copyright (c) 2022 SUSE Linux LLC.  All rights reserved.
 #
 # This file is part of suse-migration-services.
 #
@@ -117,3 +117,7 @@ class Defaults:
     @staticmethod
     def get_proxy_path():
         return '/etc/sysconfig/proxy'
+
+    @staticmethod
+    def get_zypp_config_path():
+        return '/etc/zypp/zypp.conf'
