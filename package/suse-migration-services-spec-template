@@ -46,6 +46,16 @@ BuildArch:        noarch
 %description
 Systemd services to prepare and run a distribution migration process.
 
+%package          -n suse-migration-pre-checks
+Summary:          The pre-checks code used with suse-migration-services
+Group:            System/Management
+BuildRoot:        %{_tmppath}/%{name}-%{version}-build
+Requires:         python3-Cerberus
+Conflicts:        suse-migration-sle15-activation < 2.0.33
+
+%description -n suse-migration-pre-checks
+Checks to be performed before starting a distribution migration process
+
 %prep
 %setup -q -n suse_migration_services-%{version}
 
@@ -54,9 +64,6 @@ python3 setup.py build
 
 %install
 python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
-
-# suse-migration-pre-checks is relevant for the pre-checks package only
-rm -f %{buildroot}/%{_bindir}/suse-migration-pre-checks
 
 install -D -m 755 tools/run_migration \
     %{buildroot}%{_sbindir}/run_migration
@@ -106,7 +113,16 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 
 %files
 %defattr(-,root,root,-)
-%{python3_sitelib}/*
+%{python3_sitelib}/suse_migration_services/migration_config.py
+%{python3_sitelib}/suse_migration_services/schema.py
+%{python3_sitelib}/suse_migration_services/suse_connect.py
+%{python3_sitelib}/suse_migration_services/suse_product.py
+%{python3_sitelib}/suse_migration_services/units
+%{python3_sitelib}/suse_migration_services/__pycache__/migration_config.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/path.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/schema.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/suse_connect.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/suse_product.cpython-*.pyc
 
 %{_sbindir}/run_migration
 
@@ -143,5 +159,29 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 
 %{_bindir}/suse-migration-reboot
 %{_unitdir}/suse-migration-reboot.service
+
+%files -n suse-migration-pre-checks
+%defattr(-,root,root,-)
+%{python3_sitelib}/suse_migration_services/command.py
+%{python3_sitelib}/suse_migration_services/defaults.py
+%{python3_sitelib}/suse_migration_services/exceptions.py
+%{python3_sitelib}/suse_migration_services/fstab.py
+%{python3_sitelib}/suse_migration_services/logger.py
+%{python3_sitelib}/suse_migration_services/path.py
+%{python3_sitelib}/suse_migration_services/version.py
+%{python3_sitelib}/suse_migration_services/__init__.py
+%{python3_sitelib}/suse_migration_services/prechecks
+%{_bindir}/suse-migration-pre-checks
+%{python3_sitelib}/suse_migration_services-*
+%{python3_sitelib}/suse_migration_services/__pycache__/__init__.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/command.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/defaults.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/exceptions.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/fstab.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/logger.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services/__pycache__/version.cpython-*.pyc
+%{python3_sitelib}/suse_migration_services-*/
+%dir %{python3_sitelib}/suse_migration_services
+%dir %{python3_sitelib}/suse_migration_services/__pycache__
 
 %changelog

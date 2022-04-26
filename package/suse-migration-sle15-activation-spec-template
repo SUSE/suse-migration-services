@@ -28,7 +28,6 @@ BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildArch:        noarch
 Conflicts:        suse-migration-services
 BuildRequires:    grub2
-BuildRequires:    python3-devel
 Requires:         SLES15-Migration
 
 Requires:         grub2
@@ -40,9 +39,6 @@ next reboot of the machine.
 
 %prep
 %setup -q -n suse_migration_services-%{version}
-
-%build
-python3 setup.py build
 
 %install
 

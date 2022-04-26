@@ -123,23 +123,23 @@ def read_system_fstab(root_path):
 
     for block_device in considered_block_devices:
         try:
-            log.info(f'Lookup for fstab on {block_device}...')
+            log.info('Lookup for fstab on %s ...', block_device)
             Command.run(
                 ['mount', block_device, root_path]
             )
             fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
             if os.path.isfile(fstab_file):
-                log.info(f'Found {fstab_file} on {block_device}')
+                log.info('Found %s on %s ', fstab_file, block_device)
                 fstab = Fstab()
                 fstab.read(fstab_file)
                 return(fstab, lsblk_call.output)
-            log.info(f'No {fstab_file} found on {block_device}')
-            log.info(f'Umount {root_path}')
+            log.info('No %s found on ', block_device)
+            log.info('Umount %s', root_path)
             Command.run(
                 ['umount', root_path], raise_on_error=False
             )
         except Exception as issue:
-            log.info(f'Exception on mount of {block_device}: {issue}')
+            log.info('Exception on mount of %s: %s', block_device, issue)
     return(None, lsblk_call.output)
 
 

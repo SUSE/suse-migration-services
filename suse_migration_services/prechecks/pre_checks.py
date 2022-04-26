@@ -52,8 +52,16 @@ def main():
         action='store_true',
         help="Remove additional kernels and set 'multiversion.kernels = running,latest'"
     )
+    cli_parser.add_argument(
+        '-t',
+        '--target',
+        action='store_true',
+        help="Specify if the kernel prechecks are run using chroot on the mounted "
+             "target filesystem. This is used when the prechecks are launched as a "
+             "systemd processes during the migration"
+    )
     args = cli_parser.parse_args()
 
     check_repos.remote_repos()
     check_fs.encryption()
-    check_multi_kernels.multiversion_and_multiple_kernels(args.fix)
+    check_multi_kernels.multiversion_and_multiple_kernels(args.fix, args.target)
