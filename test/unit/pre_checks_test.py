@@ -168,7 +168,8 @@ class TestPreChecks():
 
         mock_command_run.side_effect = [uname_command, rpm_command]
 
-        mock_configparser_get.side_effect = ['kernel', 'latest,running,latest-1']
+        mock_configparser_get.side_effect = \
+            ['provides:multiversion(kernel)', 'latest,running,latest-1']
 
         warning_message_multipe_kernels = \
             'The config option multiversion.kernels is not set correctly'
@@ -193,7 +194,8 @@ class TestPreChecks():
 
         mock_command_run.side_effect = [uname_command, rpm_command]
 
-        mock_configparser_get.side_effect = ['kernel', None]
+        mock_configparser_get.side_effect = \
+            ['provides:multiversion(kernel)', None]
 
         warning_message_multipe_kernels = \
             'Missing multiversion.kernels setting in zypp.conf'
@@ -220,7 +222,7 @@ class TestPreChecks():
 
         mock_command_run.side_effect = [DistMigrationCommandException('Run failure'), uname_command, rpm_command, ]
 
-        mock_configparser_get.side_effect = ['kernel', 'latest,running,latest-1']
+        mock_configparser_get.side_effect = ['provides:multiversion(kernel)', 'latest,running,latest-1']
 
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels(True)
@@ -248,3 +250,4 @@ class TestPreChecks():
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels(True)
             assert 'ERROR: Unable to remove old kernel(s)' in self._caplog.text
+

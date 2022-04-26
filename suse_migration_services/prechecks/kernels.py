@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-"""Pre-Checks multiversion kernels
+"""Checks the multiversion.kernels setting and the presence of multiple kernels
 
 Check to see if multiversion.kernels are enabled in /etc/zypp/zypp.conf and
-if there is more than one kernel currently installed. If detected a warning is reported
+if there is more than one kernel currently installed. If detected, a warning is reported
 as multiversion.kernels needs to be disabled and old kernels cleaned up before
-migrationg."""
+a migration can be started."""
 
 import configparser
 import logging
@@ -66,7 +66,7 @@ def multiversion_and_multiple_kernels(fix=False):
                 correction = 'multiversion.kernels = latest,running'
                 sed_arg = 's/' + existing + '/' + correction + '/'
                 try:
-                    print(Command.run(["sed", "-i", sed_arg, Defaults.get_zypp_config_path()]).returncode)
+                    Command.run(["sed", "-i", sed_arg, Defaults.get_zypp_config_path()])
                 except DistMigrationCommandException:
                     log.error("ERROR: Unable to update /etc/zypp/zypp.conf")
 
@@ -103,3 +103,4 @@ def multiversion_and_multiple_kernels(fix=False):
         else:
             log.warning('Please remove all kernels other than the currrent running kernel, '
                         '%s\n', running_kernel)
+ 

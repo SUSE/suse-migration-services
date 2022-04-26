@@ -22,7 +22,6 @@ import logging
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 
-# project
 import suse_migration_services.prechecks.repos as check_repos  # type: ignore
 import suse_migration_services.prechecks.fs as check_fs  # type: ignore
 import suse_migration_services.prechecks.kernels as check_multi_kernels  # type: ignore
@@ -58,3 +57,4 @@ def main():
     check_repos.remote_repos()
     check_fs.encryption()
     check_multi_kernels.multiversion_and_multiple_kernels(args.fix)
+    
