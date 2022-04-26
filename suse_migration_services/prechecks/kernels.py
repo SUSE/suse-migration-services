@@ -103,4 +103,3 @@ def multiversion_and_multiple_kernels(fix=False):
         else:
             log.warning('Please remove all kernels other than the currrent running kernel, '
                         '%s\n', running_kernel)
- 
