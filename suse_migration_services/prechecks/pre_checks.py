@@ -57,4 +57,3 @@ def main():
     check_repos.remote_repos()
     check_fs.encryption()
     check_multi_kernels.multiversion_and_multiple_kernels(args.fix)
-    
