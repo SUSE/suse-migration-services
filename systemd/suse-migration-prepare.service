@@ -5,6 +5,7 @@ Requires=suse-migration-mount-system.service suse-migration-setup-host-network.s
 
 [Service]
 Type=oneshot
+EnvironmentFile=-/etc/sysconfig/proxy
 ExecStart=/usr/bin/suse-migration-prepare
 
 [Install]
