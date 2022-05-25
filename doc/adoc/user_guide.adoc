@@ -107,15 +107,10 @@ also be run anytime using
 
 The script must be run as root.
 
-A `-f/--fix` option that will set multiversion.kernels to the correct value
-and remove all old (not currently running) kernels can be used when calling
-suse-migration-pre-checks.
+A `-f/--fix` option that will remediate the following issues:
 
-A `-t/--target` option is used to run the pre_checks once the migration
-has been started and the system is running from the migration iso image.
-With this option, the pre-checks are performed using the pre-migration
-file system when determining the zypper configuration, installed kernels,
-and active kernel of the system that is being migrated.
+1. Set multiversion.kernels to the correct value and remove all
+old (not currently running) kernels.
 
 == Installation
 The distribution migration system is available from the Public Cloud module.
@@ -253,6 +248,13 @@ If enabled, it will run the zypper migration plugin with increased verbosity.
 
 [listing]
 verbose_migration: true|false
+
+Enable the fix option for pre_checks::
+If enabled (default), the run_pre_checks systemd process will use the `--fix`
+option to automatically remediate applicable issues before the migration is started. 
+
+[listing]
+pre_checks_fix: true|false
 
 Configure Make initrd Method::
 The live system may not contain all necessary tools to create an initrd that

@@ -1,3 +1,22 @@
+# Copyright (c) 2022
+#
+# SUSE Linux LLC.  All rights reserved.
+#
+# This file is part of suse-migration-services.
+#
+# suse-migration-services is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# suse-migration-services is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
+"""Module for checking repos that are not supported when migrating"""
 import os
 import configparser
 import logging
@@ -5,9 +24,12 @@ import logging
 from suse_migration_services.defaults import Defaults
 
 
-def remote_repos():
+def remote_repos(migration_system=False):
+    """Function to check for repos that are not supported when migrating"""
     log = logging.getLogger(Defaults.get_migration_log_name())
     repos_path = '/etc/zypp/repos.d'
+    if migration_system:
+        repos_path = Defaults.get_system_root_path() + repos_path
     no_remote_repos = []
 
     if os.path.exists(repos_path):

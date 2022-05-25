@@ -1,0 +1,12 @@
+[Unit]
+Description=Run suse-migration-pre-checks before starting the migration
+After=suse-migration-mount-system.service suse-migration-ssh-keys.service
+Requires=suse-migration-mount-system.service suse-migration-ssh-keys.service
+
+[Service]
+Type=oneshot
+Environment="SUSE_MIGRATION_PRE_CHECKS_MODE=migration_system_iso_image"
+ExecStart=/usr/bin/suse-migration-pre-checks --fix
+
+[Install]
+WantedBy=multi-user.target

@@ -38,5 +38,9 @@ schema = {
     'build_host_independent_initrd': {
         'required': False,
         'type': 'boolean'
+    },
+    'pre_checks_fix': {
+        'required': False,
+        'type': 'boolean'
     }
 }
