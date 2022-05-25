@@ -29,7 +29,6 @@ Conflicts:        suse-migration-sle15-activation
 BuildRequires:    python3-devel
 BuildRequires:    python3-setuptools
 BuildRequires:    systemd-rpm-macros
-Requires:         suse-migration-pre-checks
 Requires:         python3-Cerberus
 Requires:         python3-PyYAML
 Requires:         python3-setuptools
@@ -39,6 +38,7 @@ Requires:         ca-certificates
 Requires:         dialog
 Requires:         rsync
 Requires:         SUSEConnect >= 0.3.20
+Requires:         suse-migration-pre-checks
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
@@ -70,6 +70,9 @@ install -D -m 755 tools/run_migration \
 
 install -D -m 644 systemd/suse-migration-mount-system.service \
     %{buildroot}%{_unitdir}/suse-migration-mount-system.service
+
+install -D -m 644 systemd/suse-migration-run-pre-checks.service \
+    %{buildroot}%{_unitdir}/suse-migration-run-pre-checks.service
 
 install -D -m 644 systemd/suse-migration-post-mount-system.service \
     %{buildroot}%{_unitdir}/suse-migration-post-mount-system.service
@@ -131,6 +134,9 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 
 %{_bindir}/suse-migration-mount-system
 %{_unitdir}/suse-migration-mount-system.service
+
+%{_bindir}/suse-migration-pre-checks-system
+%{_unitdir}/suse-migration-pre-checks.service
 
 %{_bindir}/suse-migration-post-mount-system
 %{_unitdir}/suse-migration-post-mount-system.service

@@ -32,6 +32,7 @@ config = {
             'suse-migration=suse_migration_services.units.migrate:main',
             'suse-migration-grub-setup=suse_migration_services.units.grub_setup:main',
             'suse-migration-regenerate-initrd=suse_migration_services.units.regenerate_initrd:main',
+            'suse-migration-run-pre-checks=suse_migration_services.units.run_pre_checks:main',
             'suse-migration-kernel-load=suse_migration_services.units.kernel_load:main',
             'suse-migration-reboot=suse_migration_services.units.reboot:main',
             'suse-migration-product-setup=suse_migration_services.units.product_setup:main',

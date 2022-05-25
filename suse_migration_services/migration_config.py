@@ -139,6 +139,9 @@ class MigrationConfig:
     def is_host_independent_initd_requested(self):
         return self.config_data.get('build_host_independent_initrd', False)
 
+    def is_pre_checks_fix_requested(self):
+        return self.config_data.get('pre_checks_fix', True)
+
     def get_migration_config_file_content(self):
         return yaml.dump(self.config_data, default_flow_style=False)
 

@@ -1,4 +1,5 @@
 suse-migration-mount-system -> [
+    suse-migration-run-pre-checks,
     suse-migration-ssh-keys,
     suse-migration-post-mount-system.service -> suse-migration-setup-host-network -> suse-migration-prepare -> [
         suse-migration-console-log,
