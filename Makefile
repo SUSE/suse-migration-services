@@ -62,26 +62,6 @@ sle15_activation: check
            exit 1;\
 	fi
 
-pre_checks: check
-	rm -f dist/*
-	# update rpm changelog using reference file
-	helper/update_changelog.py \
-		--since package/suse-migration-pre-checks.changes.ref \
-	 	--from package/suse-migration-pre-checks-spec-template \
-	    --utc > \
-	 	dist/suse-migration-pre-checks.changes
-	helper/update_changelog.py \
-		--file package/suse-migration-pre-checks.changes >> \
-		dist/suse-migration-pre-checks.changes
-	# update package version in spec file
-	cat package/suse-migration-pre-checks-spec-template \
-		| sed -e s'@%%VERSION@${version}@' \
-		> dist/suse-migration-pre-checks.spec
-		python3 setup.py sdist
-	# create tarball with suse-migration-services
-	mv dist/suse_migration_services-*.tar.gz  \
-		dist/suse-migration-pre-checks.tar.gz
-
 .PHONY: test
 test:
 	tox -e unit_py3

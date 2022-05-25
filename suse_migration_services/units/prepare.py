@@ -96,12 +96,13 @@ def main():
                         cert_file = os.sep.join(
                             [root_path, os.readlink(cert_file)]
                         )
-                    log.info(f'Importing certificate: {cert_file}')
+                    log.info('Importing certificate: %s', cert_file)
                     try:
                         shutil.copy(cert_file, trust_anchor)
                     except FileNotFoundError as issue:
                         log.warning(
-                            f'Import of {cert_file!r} failed with {issue!r}'
+                            'Import of %s failed with %s', repr(cert_file),
+                            repr(issue)
                         )
                 log.info('Update certificate pool')
                 Command.run(

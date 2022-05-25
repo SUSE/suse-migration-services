@@ -15,15 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+"""Run various pre-checks"""
+import argparse
 import logging
 
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 
-# project
-import suse_migration_services.prechecks.repos as check_repos
-import suse_migration_services.prechecks.fs as check_fs
-import suse_migration_services.prechecks.kernels as check_multi_kernels
+import suse_migration_services.prechecks.repos as check_repos  # type: ignore
+import suse_migration_services.prechecks.fs as check_fs  # type: ignore
+import suse_migration_services.prechecks.kernels as check_multi_kernels  # type: ignore
 
 
 def main():
@@ -39,6 +40,28 @@ def main():
     Logger.setup(system_root=False)
     log = logging.getLogger(Defaults.get_migration_log_name())
     log.info('Running pre migration checks')
+
+    cli_parser = argparse.ArgumentParser(
+        prog='suse-migration-pre-checks',
+        description='Check for existing conditions that will cause a migration to fail'
+    )
+
+    cli_parser.add_argument(
+        '-f',
+        '--fix',
+        action='store_true',
+        help="Remove additional kernels and set 'multiversion.kernels = running,latest'"
+    )
+    cli_parser.add_argument(
+        '-t',
+        '--target',
+        action='store_true',
+        help="Specify if the kernel prechecks are run using chroot on the mounted "
+             "target filesystem. This is used when the prechecks are launched as a "
+             "systemd processes during the migration"
+    )
+    args = cli_parser.parse_args()
+
     check_repos.remote_repos()
     check_fs.encryption()
-    check_multi_kernels.multiversion_and_multiple_kernels()
+    check_multi_kernels.multiversion_and_multiple_kernels(args.fix, args.target)

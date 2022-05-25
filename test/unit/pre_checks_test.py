@@ -1,13 +1,14 @@
 import logging
 from pytest import fixture
 from unittest.mock import (
-    patch, Mock
+    patch, call, Mock
 )
 
 from suse_migration_services.fstab import Fstab
 import suse_migration_services.prechecks.repos as check_repos
 import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_kernels
+from suse_migration_services.exceptions import DistMigrationCommandException
 
 
 @patch('suse_migration_services.logger.Logger.setup')
@@ -69,52 +70,51 @@ class TestPreChecks():
 
     @patch('configparser.ConfigParser.get')
     @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
     def test_multiple_kernels_default(
-        self, mock_command_run, mock_configparser_items, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_items, mock_log
     ):
         """ Test for multiple kernel-default packages installed"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-122.113-default'
+
         rpm_command = Mock()
         rpm_command.returncode = 0
         rpm_command.output = \
             'kernel-default-4.12.14-122.106.1.x86_64\nkernel-default-4.12.14-122.113.1.x86_64'
 
-        uname_command = Mock()
-        uname_command.returncode = 0
-        uname_command.output = '4.12.14-122.113-default'
-
-        mock_command_run.side_effect = [uname_command, rpm_command]
+        mock_command_run.side_effect = [rpm_command]
 
         mock_configparser_items.side_effect = ('multiversion.kernels', 'latest,running')
 
         warning_message_multipe_kernels = \
             'Multiple kernels have been detected on the system:'
 
-        with self._caplog.at_level(logging.WARNING):
+        with self._caplog.at_level(logging.INFO):
             check_kernels.multiversion_and_multiple_kernels()
             assert warning_message_multipe_kernels in self._caplog.text
 
     @patch('configparser.ConfigParser.get')
     @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
     def test_multiple_kernels_azure(
-        self, mock_command_run, mock_configparser_items, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_items, mock_log
     ):
         """ Test for multiple kernel-azure packages installed"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-16.91-azure'
 
         rpm_command = Mock()
         rpm_command.returncode = 0
         rpm_command.output = \
             'kernel-azure-4.12.14-16.85.1.x86_64\nkernel-azure-4.12.14-16.91.1.x86_64'
 
-        uname_command = Mock()
-        uname_command.returncode = 0
-        uname_command.output = '4.12.14-16.85-azure'
-
-        mock_command_run.side_effect = [uname_command, rpm_command]
+        mock_command_run.side_effect = [rpm_command]
 
         mock_configparser_items.side_effect = ('multiversion.kernels', 'latest,running')
 
         warning_message_multipe_kernels = \
-            'Multiple kernels have been detected on the system:'
+            'Please remove all kernels other than the currrent running kernel:'
 
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels()
@@ -122,20 +122,48 @@ class TestPreChecks():
 
     @patch('configparser.ConfigParser.get')
     @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
+    def test_multiple_kernels_azure_with_fix(
+        self, mock_os_readlink, mock_command_run, mock_configparser_items, mock_log
+    ):
+        """ Test for multiple kernel-azure packages installed"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-16.91-azure'
+
+        rpm_command = Mock()
+        rpm_command.returncode = 0
+        rpm_command.output = \
+            'kernel-azure-4.12.14-16.85.1.x86_64\nkernel-azure-4.12.14-16.91.1.x86_64'
+
+        command = Mock()
+        command.returncode = 0
+
+        mock_command_run.side_effect = [rpm_command, command]
+
+        mock_configparser_items.return_value = 'latest,running'
+
+        warning_message_multipe_kernels = \
+            "The '--fix' option was provided, removing old kernels"
+
+        with self._caplog.at_level(logging.INFO):
+            check_kernels.multiversion_and_multiple_kernels(True)
+            assert warning_message_multipe_kernels in self._caplog.text
+
+    @patch('configparser.ConfigParser.get')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
     def test_incorrect_multiversion_kernels_in_zypp_config(
-        self, mock_command_run, mock_configparser_get, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_log
     ):
         """ Test for incorrect setting in /etc/zypp/zypp.conf"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-122.113-default'
 
         rpm_command = Mock()
         rpm_command.returncode = 0
         rpm_command.output = 'kernel-default-4.12.14-122.113.1.x86_64'
 
-        uname_command = Mock()
-        uname_command.returncode = 0
-        uname_command.output = '4.12.14-122.113-default'
-
-        mock_command_run.side_effect = [uname_command, rpm_command]
+        mock_command_run.side_effect = [rpm_command]
 
         mock_configparser_get.side_effect = \
             ['provides:multiversion(kernel)', 'latest,running,latest-1']
@@ -149,19 +177,19 @@ class TestPreChecks():
 
     @patch('configparser.ConfigParser.get')
     @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
     def test_missing_multiversion_kernels_in_zypp_config(
-        self, mock_command_run, mock_configparser_get, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_log
     ):
         """ Test for missing setting in /etc/zypp/zypp.conf"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-122.113-default'
+
         rpm_command = Mock()
         rpm_command.returncode = 0
         rpm_command.output = 'kernel-default-4.12.14-122.113.1.x86_64'
 
-        uname_command = Mock()
-        uname_command.returncode = 0
-        uname_command.output = '4.12.14-122.113-default'
-
-        mock_command_run.side_effect = [uname_command, rpm_command]
+        mock_command_run.side_effect = [rpm_command]
 
         mock_configparser_get.side_effect = \
             ['provides:multiversion(kernel)', None]
@@ -172,3 +200,113 @@ class TestPreChecks():
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels()
             assert warning_message_multipe_kernels in self._caplog.text
+
+    @patch('configparser.ConfigParser.get')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
+    def test_update_zypp_conf_exception_raised(
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_log
+    ):
+        """ Test for error updating /etc/zypp/zypp.conf"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-122.113-default'
+
+        rpm_command = Mock()
+        rpm_command.returncode = 0
+        rpm_command.output = \
+            'kernel-default-4.12.14-122.113.1.x86_64'
+
+        mock_command_run.side_effect = [DistMigrationCommandException('Run failure'), rpm_command, ]
+
+        mock_configparser_get.side_effect = ['provides:multiversion(kernel)', 'latest,running,latest-1']
+
+        with self._caplog.at_level(logging.WARNING):
+            check_kernels.multiversion_and_multiple_kernels(True)
+            assert 'ERROR: Unable to update /etc/zypp/zypp.conf' in self._caplog.text
+
+    @patch('configparser.ConfigParser.get')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
+    def test_rpm_remove_exception_raised(
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_log
+    ):
+        """ Test for missing setting in /etc/zypp/zypp.conf"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-122.113-default'
+
+        rpm_command = Mock()
+        rpm_command.returncode = 0
+        rpm_command.output = \
+            'kernel-default-4.12.14-122.106.1.x86_64\nkernel-default-4.12.14-122.113.1.x86_64'
+
+        mock_command_run.side_effect = [rpm_command, DistMigrationCommandException('Run failure')]
+
+        mock_configparser_get.return_value = 'foo'
+
+        with self._caplog.at_level(logging.WARNING):
+            check_kernels.multiversion_and_multiple_kernels(True)
+            assert 'ERROR: Unable to remove old kernel(s)' in self._caplog.text
+
+    @patch('configparser.ConfigParser.get')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
+    def test_correct_rpm_command_when_using_target(
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_log
+    ):
+        """ Test for missing setting in /etc/zypp/zypp.conf"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-122.113-default'
+
+        rpm_command = Mock()
+        rpm_command.returncode = 0
+        rpm_command.output = \
+            'kernel-default-4.12.14-122.113.1.x86_64'
+
+        mock_command_run.side_effect = [rpm_command]
+
+        mock_configparser_get.return_value = 'foo'
+
+        check_kernels.multiversion_and_multiple_kernels(True, True)
+        assert mock_command_run.call_args_list == [
+            call(
+                [
+                    'chroot',
+                    '/system-root',
+                    'rpm',
+                    '-qa',
+                    'kernel-default'
+                ]
+            ),
+        ]
+
+    @patch('configparser.ConfigParser.get')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
+    def test_correct_rpm_command_when_using_target_with_azure(
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_log
+    ):
+        """ Test for missing setting in /etc/zypp/zypp.conf"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-16.91-azure'
+
+        rpm_command = Mock()
+        rpm_command.returncode = 0
+        rpm_command.output = \
+            'kernel-azure-4.12.14-16.91.1.x86_64'
+
+        mock_command_run.side_effect = [rpm_command]
+
+        mock_configparser_get.return_value = 'foo'
+
+        check_kernels.multiversion_and_multiple_kernels(True, True)
+        assert mock_command_run.call_args_list == [
+            call(
+                [
+                    'chroot',
+                    '/system-root',
+                    'rpm',
+                    '-qa',
+                    'kernel-azure'
+                ]
+            ),
+        ]

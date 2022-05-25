@@ -20,3 +20,6 @@ Session.vim
 # temporary
 .netrwhist
 *i~
+
+### VSCode ##
+.vscode

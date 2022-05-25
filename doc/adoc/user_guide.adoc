@@ -105,6 +105,18 @@ also be run anytime using
 
  /usr/bin/suse-migration-pre-checks
 
+The script must be run as root.
+
+A `-f/--fix` option that will set multiversion.kernels to the correct value
+and remove all old (not currently running) kernels can be used when calling
+suse-migration-pre-checks.
+
+A `-t/--target` option is used to run the pre_checks once the migration
+has been started and the system is running from the migration iso image.
+With this option, the pre-checks are performed using the pre-migration
+file system when determining the zypper configuration, installed kernels,
+and active kernel of the system that is being migrated.
+
 == Installation
 The distribution migration system is available from the Public Cloud module.
 Therefore this module has to be enabled on the system prior to upgrade.
