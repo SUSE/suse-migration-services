@@ -34,21 +34,21 @@ from suse_migration_services.command import Command
 from suse_migration_services.exceptions import DistMigrationCommandException
 
 
-def multiversion_and_multiple_kernels(fix=False, target=False):
+def multiversion_and_multiple_kernels(fix=False, migration_system=False):
     """Check for the number of installed kernels"""
 
     log = logging.getLogger(Defaults.get_migration_log_name())
 
-    multiversion_settings(fix, target, log)
-    multiple_kernels_installed(fix, target, log)
+    multiversion_settings(fix, migration_system, log)
+    multiple_kernels_installed(fix, migration_system, log)
 
 
-def multiversion_settings(fix, target, log):
+def multiversion_settings(fix, migration_system, log):
     """Check the settings in etc/zypp/zypp.conf"""
 
     config = configparser.ConfigParser()
     _config_path = Defaults.get_zypp_config_path()
-    if target:
+    if migration_system:
         _config_path = Defaults.get_system_root_path() + Defaults.get_zypp_config_path()
 
     config.read(_config_path)
@@ -60,7 +60,7 @@ def multiversion_settings(fix, target, log):
 
         log.info("The config option 'multiversion' in /etc/zypp/zypp.conf "
                  "includes the keyword 'kernel.' The current value is set "
-                 "as \n'multiversion = %s'. \nChecking the config option "
+                 "as \n'multiversion = %s'.\nChecking the config option "
                  "'multiversion.kernels' to see if multiple kernels are "
                  "also enabled", kernel_multi_version_enabled)
 
@@ -82,26 +82,27 @@ def multiversion_settings(fix, target, log):
             else:
                 log.warning("The config option multiversion.kernels is not set "
                             "correctly in /etc/zypp/zypp.conf. It is currrently "
-                            "set as:\n'multiversion.kernels = %s'.\n"
-                            "Please ensure it is set as:\n"
-                            "'multiversion.kernels = latest,running'",
+                            "set as:\n\n'multiversion.kernels = %s'.\n\n"
+                            "Please ensure it is set as:\n\n"
+                            "'multiversion.kernels = latest,running'\n",
                             kernel_multi_version_settings)
 
 
-def multiple_kernels_installed(fix, target, log):
+def multiple_kernels_installed(fix, migration_system, log):
     """Check for multiple kernels installed"""
 
     kernel_type = 'kernel-default'
     running_kernel_path = os.sep + Defaults.get_target_kernel()
+    if migration_system:
+        running_kernel_path = Defaults.get_system_root_path() + running_kernel_path
     running_kernel = os.readlink(running_kernel_path)
 
     if 'azure' in running_kernel:
         kernel_type = 'kernel-azure'
 
-    rpm_command = ["rpm", "-qa", kernel_type]
-    if target:
-        running_kernel_path = Defaults.get_system_root_path() + running_kernel_path
-        rpm_command = \
+    rpm_query_command = ["rpm", "-qa", kernel_type]
+    if migration_system:
+        rpm_query_command = \
             [
                 "chroot",
                 Defaults.get_system_root_path(),
@@ -110,20 +111,30 @@ def multiple_kernels_installed(fix, target, log):
                 kernel_type
             ]
 
-    installed_kernels = Command.run(rpm_command).output.splitlines()
+    installed_kernels = Command.run(rpm_query_command).output.splitlines()
 
     if len(installed_kernels) > 1:
-        log.info('Multiple kernels have been detected on the system:\n'
-                 '%s', '\n'.join(installed_kernels))
+        log.info('Multiple kernels have been detected on the system:\n\n'
+                 '%s\n', '\n'.join(installed_kernels))
         if fix:
             log.info("The '--fix' option was provided, removing old kernels")
             running_kernel_version = kernel_type + \
                 re.search(r'([0-9.-]*(?=[-][a-zA-Z]))', running_kernel).group()
+            rpm_erase_command = ["rpm", "-e"]
+            if migration_system:
+                rpm_erase_command = \
+                    [
+                        "chroot",
+                        Defaults.get_system_root_path(),
+                        "rpm",
+                        "-e"
+                    ]
             for _ in installed_kernels:
                 if running_kernel_version not in _:
-                    log.info('Removing kernel, %s', _)
+                    log.info('Removing: %s', _)
                     try:
-                        Command.run(["rpm", "-e", _])
+                        rpm_erase_command.append(_)
+                        Command.run(rpm_erase_command)
                     except DistMigrationCommandException:
                         log.error("ERROR: Unable to remove old kernel(s)")
         else:

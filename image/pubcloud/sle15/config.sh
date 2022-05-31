@@ -62,6 +62,7 @@ suseInsertService haveged
 suseInsertService suse-migration-mount-system
 suseInsertService suse-migration-post-mount-system
 suseInsertService suse-migration-ssh-keys
+suseInsertService suse-migration-pre-checks
 suseInsertService suse-migration-setup-host-network
 suseInsertService suse-migration-prepare
 suseInsertService suse-migration
