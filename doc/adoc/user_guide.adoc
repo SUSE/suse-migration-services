@@ -1,12 +1,12 @@
 = Using the SUSE Distribution Migration System
-Marcus Schäfer; Jesús Velázquez
+Marcus Schäfer; Jesús Velázquez; Keith Berger
 
 :toc:
 :icons: font
 :numbered:
 
-:Authors: Marcus Schäfer and Jesús Bermúdez Velázquez
-:Latest_Version: 1.1.0
+:Authors: Marcus Schäfer, Jesús Bermúdez Velázquez, Keith Berger
+:Latest_Version: 1.2.0
 :Contributors:
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
