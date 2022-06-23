@@ -49,7 +49,6 @@ Systemd services to prepare and run a distribution migration process.
 %package          -n suse-migration-pre-checks
 Summary:          The pre-checks code used with suse-migration-services
 Group:            System/Management
-BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 Requires:         python3-Cerberus
 Conflicts:        suse-migration-sle15-activation < 2.0.33
 
