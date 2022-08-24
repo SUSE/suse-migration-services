@@ -132,7 +132,7 @@ def read_system_fstab(root_path):
                 log.info('Found %s on %s ', fstab_file, block_device)
                 fstab = Fstab()
                 fstab.read(fstab_file)
-                return(fstab, lsblk_call.output)
+                return (fstab, lsblk_call.output)
             log.info('No %s found on ', block_device)
             log.info('Umount %s', root_path)
             Command.run(
@@ -140,7 +140,7 @@ def read_system_fstab(root_path):
             )
         except Exception as issue:
             log.info('Exception on mount of %s: %s', block_device, issue)
-    return(None, lsblk_call.output)
+    return (None, lsblk_call.output)
 
 
 def mount_system(root_path, fstab):

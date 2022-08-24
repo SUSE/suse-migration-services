@@ -34,7 +34,7 @@ from suse_migration_services.units.setup_host_network import (
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperMetaDataException,
-    DistMigrationSystemNotRegisteredException
+    DistMigrationSystemNotRegisteredException,
 )
 
 
@@ -92,6 +92,7 @@ def main():
                 Path.create(trust_anchor)
                 for cert in certificates:
                     cert_file = os.sep.join([root_trust_anchor, cert])
+                    print(cert_file)
                     if os.path.islink(cert_file):
                         cert_file = os.sep.join(
                             [root_path, os.readlink(cert_file)]
@@ -115,9 +116,19 @@ def main():
     zypp_plugins_services = os.sep.join(
         [root_path, 'usr', 'lib', 'zypp', 'plugins', 'services']
     )
-    cloud_register_metadata = os.sep.join(
-        [root_path, 'var', 'lib', 'cloudregister']
-    )
+
+    try:
+        cloud_register_metadata = \
+            get_regionsrv_client_file_location(root_path)
+    except DistMigrationZypperMetaDataException as issue:
+        log.error('Failed locating regionsrv-client cache files: {0}'.format(
+            issue)
+        )
+        raise
+
+    # cloud_register_metadata = os.sep.join(
+    #     [root_path, 'var', 'lib', 'cloudregister']
+    # )
     zypper_log_file = os.sep.join(
         [root_path, 'var', 'log', 'zypper.log']
     )
@@ -163,12 +174,12 @@ def main():
             zypp_plugins_services, '/usr/lib/zypp/plugins/services'
         )
         if os.path.exists(cloud_register_metadata):
-            log.info('Bind mounting /var/lib/cloudregister')
-            Path.create('/var/lib/cloudregister')
+            log.info('Bind mounting /var/cache/cloudregister')
+            Path.create('/var/cache/cloudregister')
             Command.run(
                 [
                     'mount', '--bind', cloud_register_metadata,
-                    '/var/lib/cloudregister'
+                    '/var/cache/cloudregister'
                 ]
             )
             update_smt_cache = '/usr/sbin/updatesmtcache'
@@ -251,3 +262,29 @@ def get_root_disk_device(root_path):
                 block_type = block_record[1]
                 if block_type in considered_block_types:
                     return block_record[0]
+
+
+def get_regionsrv_client_file_location(root_path):
+    """
+    Find the correct path for the cloud-regionsrv-client cache files
+    as the location moves from /var/lib/cloudregister
+    (pre cloud-regionsrv-client-10.0.4) to /var/cache/cloudregister
+    (post cloud-regionsrv-client-10.0.4)
+    """
+    old_cloud_register_path = os.sep.join(
+        [root_path, 'var', 'lib', 'cloudregister']
+    )
+    new_cloud_register_path = os.sep.join(
+        [root_path, 'var', 'cache', 'cloudregister']
+    )
+    if os.path.isdir(new_cloud_register_path) and \
+            any('SMT' in x for x in os.listdir(new_cloud_register_path)):
+        return new_cloud_register_path
+    if os.path.isdir(old_cloud_register_path) and \
+            any('SMT' in x for x in os.listdir(old_cloud_register_path)):
+        return old_cloud_register_path
+    raise DistMigrationZypperMetaDataException(
+        'No cloud-regionsrv-client cache files found in {0} or {1}'.format(
+            new_cloud_register_path, old_cloud_register_path
+        )
+    )

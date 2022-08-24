@@ -8,7 +8,7 @@ from unittest.mock import (
 from pytest import raises
 
 from suse_migration_services.units.prepare import (
-    main, update_regionsrv_setup
+    main, update_regionsrv_setup, get_regionsrv_client_file_location
 )
 
 from suse_migration_services.suse_connect import SUSEConnect
@@ -24,12 +24,14 @@ from suse_migration_services.exceptions import (
 @patch('os.path.exists')
 @patch('suse_migration_services.command.Command.run')
 class TestSetupPrepare(object):
+    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main_raises_on_zypp_bind(
-        self, mock_os_listdir, mock_shutil_copy, mock_Command_run,
+        self, mock_os_listdir, mock_shutil_copy,
+        mock_get_regionsrv_client_file_location, mock_Command_run,
         mock_os_path_exists, mock_Fstab, mock_logger_setup,
-        mock_update_regionsrv_setup
+        mock_update_regionsrv_setup,
     ):
         mock_os_listdir.return_value = None
         mock_os_path_exists.return_value = True
@@ -43,12 +45,37 @@ class TestSetupPrepare(object):
         with raises(DistMigrationZypperMetaDataException):
             main()
 
+    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
+    @patch('shutil.copy')
+    @patch('os.listdir')
+    def test_main_raises_on_get_regionsrv_client_file_location(
+        self, mock_os_listdir, mock_shutil_copy,
+        mock_get_regionsrv_client_file_location, mock_Command_run,
+        mock_os_path_exists, mock_Fstab, mock_logger_setup,
+        mock_update_regionsrv_setup,
+    ):
+        mock_os_listdir.return_value = None
+        mock_get_regionsrv_client_file_location.side_effect = \
+            [DistMigrationZypperMetaDataException('foo')]
+        mock_os_path_exists.return_value = True
+        mock_Command_run.side_effect = [
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            Exception
+        ]
+        with raises(DistMigrationZypperMetaDataException):
+            main()
+
+    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main_raises_and_umount_file_system(
-        self, mock_os_listdir, mock_shutil_copy, mock_Command_run,
+        self, mock_os_listdir, mock_shutil_copy,
+        mock_get_regionsrv_client_file_location, mock_Command_run,
         mock_os_path_exists, mock_Fstab,
-        mock_logger_setup, mock_update_regionsrv_setup
+        mock_logger_setup, mock_update_regionsrv_setup,
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -84,17 +111,23 @@ class TestSetupPrepare(object):
         mock_shutil_copy, mock_Path, mock_MigrationConfig,
         mock_is_registered, mock_is_file, mock_Command_run,
         mock_os_path_exists, mock_Fstab, mock_logger_setup,
-        mock_update_regionsrv_setup
+        mock_update_regionsrv_setup,
     ):
+
         mock_readlink.return_value = 'link_target'
-        mock_path_isdir.return_value = True
+        mock_path_isdir.side_effect = [True, True, True, True]
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = \
             True
         mock_MigrationConfig.return_value = migration_config
         fstab = Mock()
         mock_Fstab.return_value = fstab
-        mock_os_listdir.return_value = ['foo', 'bar']
+        mock_os_listdir.side_effect = [
+            ['foo', 'bar'],
+            ['foo', 'bar'],
+            ['fooSMT']
+        ]
+        # mock_os_listdir.return_value = ['foo', 'bar']
         mock_os_path_islink.side_effect = [
             False, False, False, True
         ]
@@ -152,7 +185,7 @@ class TestSetupPrepare(object):
             )
         ]
         mock_Path.call_args_list == [
-            call(['/var/lib/cloudregister']),
+            call(['/var/cache/cloudregister']),
             call(['/usr/share/pki/trust/anchors']),
             call(['/etc/pki/trust/anchors'])
         ]
@@ -193,8 +226,8 @@ class TestSetupPrepare(object):
             ),
             call(
                 [
-                    'mount', '--bind', '/system-root/var/lib/cloudregister',
-                    '/var/lib/cloudregister'
+                    'mount', '--bind', '/system-root/var/cache/cloudregister',
+                    '/var/cache/cloudregister'
                 ]
             ),
             call(
@@ -220,6 +253,7 @@ class TestSetupPrepare(object):
             ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
         )
 
+    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
     @patch('suse_migration_services.units.prepare.Path')
@@ -228,8 +262,9 @@ class TestSetupPrepare(object):
     def test_main_no_registered_instance(
         self, mock_os_listdir, mock_shutil_copy,
         mock_Path, mock_MigrationConfig, mock_is_registered,
-        mock_Command_run, mock_os_path_exists, mock_Fstab,
-        mock_logger_setup, mock_update_regionsrv_setup
+        mock_get_regionsrv_client_file_location, mock_Command_run,
+        mock_os_path_exists, mock_Fstab,
+        mock_logger_setup, mock_update_regionsrv_setup,
     ):
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = \
@@ -243,9 +278,11 @@ class TestSetupPrepare(object):
         with raises(DistMigrationZypperMetaDataException):
             main()
 
+    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
     def test_update_regionsrv_setup(
-        self, mock_Command_run, mock_os_path_exists,
-        mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup
+        self, mock_get_regionsrv_client_file_location,
+        mock_Command_run, mock_os_path_exists,
+        mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup,
     ):
         mock_command_return_values = [
             Mock(output='/dev/sda3 part\n/dev/sda disk'),
@@ -283,3 +320,25 @@ class TestSetupPrepare(object):
         assert regionsrv_setup.get('instance', 'dataProvider') == \
             '/usr/bin/azuremetadata --api latest --subscriptionId --billingTag ' \
             '--attestedData --signature --xml --device /dev/sda'
+
+    @patch('os.listdir')
+    @patch('os.path.isdir')
+    def test_old_regionsrv_client_file_location(
+        self, mock_path_isdir, mock_os_listdir,
+        mock_Command_run, mock_os_path_exists,
+        mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup,
+    ):
+        mock_path_isdir.side_effect = [False, True]
+        mock_os_listdir.return_value = ['fooSMT']
+        assert get_regionsrv_client_file_location('/foo') == \
+            '/foo/var/lib/cloudregister'
+
+    @patch('os.path.isdir')
+    def test_get_regionsrv_client_file_location_raises(
+        self, mock_path_isdir,
+        mock_Command_run, mock_os_path_exists,
+        mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup,
+    ):
+        mock_path_isdir.side_effect = [False, False]
+        with raises(DistMigrationZypperMetaDataException):
+            get_regionsrv_client_file_location('/foo')
