@@ -66,6 +66,9 @@ def main():
         '/usr/share/pki/trust/anchors/',
         '/etc/pki/trust/anchors/'
     ]
+    cache_cloudregister_path = '/var/cache/cloudregister'
+    cloud_register_metadata = ""
+
     if os.path.exists(suse_connect_setup):
         shutil.copy(
             suse_connect_setup, '/etc/SUSEConnect'
@@ -92,7 +95,6 @@ def main():
                 Path.create(trust_anchor)
                 for cert in certificates:
                     cert_file = os.sep.join([root_trust_anchor, cert])
-                    print(cert_file)
                     if os.path.islink(cert_file):
                         cert_file = os.sep.join(
                             [root_path, os.readlink(cert_file)]
@@ -117,18 +119,19 @@ def main():
         [root_path, 'usr', 'lib', 'zypp', 'plugins', 'services']
     )
 
-    try:
-        cloud_register_metadata = \
-            get_regionsrv_client_file_location(root_path)
-    except DistMigrationZypperMetaDataException as issue:
-        log.error('Failed locating regionsrv-client cache files: {0}'.format(
-            issue)
-        )
-        raise
+    with open(hosts_setup, 'r', encoding="utf-8") as fp:
+        if 'susecloud.net' in fp.read():
+            try:
+                cloud_register_metadata = \
+                    get_regionsrv_client_file_location(root_path)
+            except DistMigrationZypperMetaDataException as issue:
+                log.error(
+                    'Failed locating regionsrv-client cache files: {0}'.format(
+                        issue
+                    )
+                )
+                raise
 
-    # cloud_register_metadata = os.sep.join(
-    #     [root_path, 'var', 'lib', 'cloudregister']
-    # )
     zypper_log_file = os.sep.join(
         [root_path, 'var', 'log', 'zypper.log']
     )
@@ -174,12 +177,16 @@ def main():
             zypp_plugins_services, '/usr/lib/zypp/plugins/services'
         )
         if os.path.exists(cloud_register_metadata):
-            log.info('Bind mounting /var/cache/cloudregister')
-            Path.create('/var/cache/cloudregister')
+            log.info(
+                'Bind mounting {0} from {1}'.format(
+                    cache_cloudregister_path, cloud_register_metadata
+                )
+            )
+            Path.create(cache_cloudregister_path)
             Command.run(
                 [
                     'mount', '--bind', cloud_register_metadata,
-                    '/var/cache/cloudregister'
+                    cache_cloudregister_path
                 ]
             )
             update_smt_cache = '/usr/sbin/updatesmtcache'
@@ -271,20 +278,14 @@ def get_regionsrv_client_file_location(root_path):
     (pre cloud-regionsrv-client-10.0.4) to /var/cache/cloudregister
     (post cloud-regionsrv-client-10.0.4)
     """
-    old_cloud_register_path = os.sep.join(
-        [root_path, 'var', 'lib', 'cloudregister']
-    )
-    new_cloud_register_path = os.sep.join(
-        [root_path, 'var', 'cache', 'cloudregister']
-    )
-    if os.path.isdir(new_cloud_register_path) and \
-            any('SMT' in x for x in os.listdir(new_cloud_register_path)):
-        return new_cloud_register_path
-    if os.path.isdir(old_cloud_register_path) and \
-            any('SMT' in x for x in os.listdir(old_cloud_register_path)):
-        return old_cloud_register_path
+    for cloud_register_path in [
+        os.sep.join([root_path, 'var', 'cache', 'cloudregister']),
+        os.sep.join([root_path, 'var', 'lib', 'cloudregister'])
+    ]:
+        if os.path.isdir(cloud_register_path) and \
+                any('SMT' in x for x in os.listdir(cloud_register_path)):
+            return cloud_register_path
     raise DistMigrationZypperMetaDataException(
-        'No cloud-regionsrv-client cache files found in {0} or {1}'.format(
-            new_cloud_register_path, old_cloud_register_path
-        )
+        'No cloud-regionsrv-client cache files found in '
+        '/var/cache/cloudregister or /var/lib/cloudregister'
     )
