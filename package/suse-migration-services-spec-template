@@ -50,6 +50,7 @@ Systemd services to prepare and run a distribution migration process.
 Summary:          The pre-checks code used with suse-migration-services
 Group:            System/Management
 Requires:         python3-Cerberus
+Requires:         python3-PyYAML
 Conflicts:        suse-migration-sle15-activation < 2.0.33
 
 %description -n suse-migration-pre-checks
