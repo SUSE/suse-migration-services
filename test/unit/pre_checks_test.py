@@ -295,6 +295,35 @@ class TestPreChecks():
     @patch('configparser.ConfigParser.get')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
+    def test_missing_multiversion_in_zypp_config(
+        self, mock_os_readlink, mock_command_run,
+        mock_configparser_get, mock_log
+    ):
+        """ Test for missing setting in /etc/zypp/zypp.conf"""
+
+        mock_os_readlink.return_value = 'vmlinuz-4.12.14-122.113-default'
+
+        rpm_command = Mock()
+        rpm_command.returncode = 0
+        rpm_command.output = 'kernel-default-4.12.14-122.113.1.x86_64'
+
+        mock_command_run.side_effect = [rpm_command]
+
+        mock_configparser_get.side_effect = \
+            [None]
+
+        warning_message_multipe_kernels = \
+            "Could not find the config option 'multiversion' in " \
+            "/etc/zypp/zypp.conf. Skipping check for " \
+            "'multiversion.kernels'"
+
+        with self._caplog.at_level(logging.INFO):
+            check_kernels.multiversion_and_multiple_kernels()
+            assert warning_message_multipe_kernels in self._caplog.text
+
+    @patch('configparser.ConfigParser.get')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.readlink')
     def test_update_zypp_conf_exception_raised(
         self, mock_os_readlink, mock_command_run,
         mock_configparser_get, mock_log

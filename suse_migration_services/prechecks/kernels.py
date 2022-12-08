@@ -55,7 +55,11 @@ def multiversion_settings(fix, migration_system, log):
 
     kernel_multi_version_enabled = config.get('main', 'multiversion', fallback=None)
 
-    if 'kernel' in kernel_multi_version_enabled:
+    if not kernel_multi_version_enabled:
+        log.info("Could not find the config option 'multiversion' in "
+                 "/etc/zypp/zypp.conf. Skipping check for "
+                 "'multiversion.kernels'")
+    elif 'kernel' in kernel_multi_version_enabled:
         kernel_multi_version_settings = config.get('main', 'multiversion.kernels', fallback=None)
 
         log.info("The config option 'multiversion' in /etc/zypp/zypp.conf "
@@ -63,7 +67,6 @@ def multiversion_settings(fix, migration_system, log):
                  "as \n'multiversion = %s'.\nChecking the config option "
                  "'multiversion.kernels' to see if multiple kernels are "
                  "also enabled", kernel_multi_version_enabled)
-
         if not kernel_multi_version_settings:
             log.warning('Missing multiversion.kernels setting in zypp.conf. '
                         'Please ensure it is set as:\n'
