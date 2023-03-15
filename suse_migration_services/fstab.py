@@ -53,7 +53,8 @@ class Fstab:
         with open(filename) as fstab:
             for line in fstab.readlines():
                 mount_record = line.split()
-                if not mount_record or mount_record[0].startswith('#'):
+                if not mount_record or mount_record[0].startswith('#') or \
+                        mount_record[2].lower() == 'none':
                     continue
                 device = mount_record[0]
                 mountpoint = mount_record[1]
