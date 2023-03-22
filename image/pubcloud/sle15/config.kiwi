@@ -63,6 +63,10 @@
         <!-- support for migration of suse public cloud on demand images -->
         <package name="cloud-regionsrv-client"/>
         <package name="cloud-regionsrv-client-generic-config"/>
+        <package name="cloud-regionsrv-client-addon-azure"/>
+        <package name="cloud-regionsrv-client-plugin-azure"/>
+        <package name="cloud-regionsrv-client-plugin-ec2"/>
+        <package name="cloud-regionsrv-client-plugin-gce"/>
         <package name="python3-gcemetadata"/>
         <package name="python3-ec2metadata"/>
         <package name="python3-azuremetadata"/>

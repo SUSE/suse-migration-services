@@ -160,13 +160,14 @@ class TestSetupPrepare(object):
             False, False, False, True
         ]
         mock_os_path_exists.side_effect = [
-            True, True, True, True, False, True, True
+            True, True, True, True, False, True, True, True
         ]
         mock_is_registered.return_value = True
         mock_Command_run.side_effect = [
             MagicMock(),
             MagicMock(),
             Exception('no zypper log'),
+            MagicMock(),
             MagicMock(),
             MagicMock(),
             MagicMock(),
@@ -256,6 +257,12 @@ class TestSetupPrepare(object):
                 [
                     'mount', '--bind', '/system-root/var/cache/cloudregister',
                     '/var/cache/cloudregister'
+                ]
+            ),
+            call(
+                [
+                    'mount', '--bind', '/system-root/var/lib/regionService/certs',
+                    '/var/lib/regionService/certs'
                 ]
             ),
             call(
