@@ -67,6 +67,10 @@ def main():
         '/etc/pki/trust/anchors/'
     ]
     cache_cloudregister_path = '/var/cache/cloudregister'
+    cloud_register_certs_path = '/var/lib/regionService/certs'
+    cloud_register_certs_bind_mount_path = \
+        root_path + cloud_register_certs_path
+
     cloud_register_metadata = ""
 
     if os.path.exists(suse_connect_setup):
@@ -187,6 +191,20 @@ def main():
                 [
                     'mount', '--bind', cloud_register_metadata,
                     cache_cloudregister_path
+                ]
+            )
+        if os.path.exists(cloud_register_certs_bind_mount_path):
+            log.info(
+                'Bind mounting {0} from {1}'.format(
+                    cloud_register_certs_path,
+                    cloud_register_certs_bind_mount_path
+                )
+            )
+            Path.create(cloud_register_certs_path)
+            Command.run(
+                [
+                    'mount', '--bind', cloud_register_certs_bind_mount_path,
+                    cloud_register_certs_path
                 ]
             )
             update_smt_cache = '/usr/sbin/updatesmtcache'
