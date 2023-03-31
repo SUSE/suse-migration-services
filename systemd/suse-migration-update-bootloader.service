@@ -1,0 +1,10 @@
+[Unit]
+Description=Update the bootloader
+After=suse-migration-update-bootloader.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-update-bootloader
+
+[Install]
+WantedBy=multi-user.target

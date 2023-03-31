@@ -124,7 +124,10 @@ def main():
     )
 
     with open(hosts_setup, 'r', encoding="utf-8") as fp:
-        if 'susecloud.net' in fp.read():
+        contents = fp.read()
+        log.info('Dumping Hosts file:\n %s', contents)
+        if 'susecloud.net' in contents:
+            log.info('Found an entry for "susecloud.net" in %s', hosts_setup)
             try:
                 cloud_register_metadata = \
                     get_regionsrv_client_file_location(root_path)
@@ -296,12 +299,15 @@ def get_regionsrv_client_file_location(root_path):
     (pre cloud-regionsrv-client-10.0.4) to /var/cache/cloudregister
     (post cloud-regionsrv-client-10.0.4)
     """
+    temp_log = logging.getLogger(Defaults.get_migration_log_name())
     for cloud_register_path in [
         os.sep.join([root_path, 'var', 'cache', 'cloudregister']),
         os.sep.join([root_path, 'var', 'lib', 'cloudregister'])
     ]:
+        temp_log.info('Looking for cache files in %s:\n', cloud_register_path)
         if os.path.isdir(cloud_register_path) and \
                 any('SMT' in x for x in os.listdir(cloud_register_path)):
+            temp_log.info('Cache dir exists and contains %s:\n', os.listdir(cloud_register_path))
             return cloud_register_path
     raise DistMigrationZypperMetaDataException(
         'No cloud-regionsrv-client cache files found in '

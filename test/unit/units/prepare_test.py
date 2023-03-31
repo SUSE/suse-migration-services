@@ -154,6 +154,7 @@ class TestSetupPrepare(object):
         mock_os_listdir.side_effect = [
             ['foo', 'bar'],
             ['foo', 'bar'],
+            ['fooSMT'],
             ['fooSMT']
         ]
         mock_os_path_islink.side_effect = [

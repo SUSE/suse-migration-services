@@ -3,6 +3,6 @@ suse-migration-mount-system -> [
     suse-migration-pre-checks,
     suse-migration-post-mount-system.service -> suse-migration-setup-host-network -> suse-migration-prepare -> [
         suse-migration-console-log,
-        suse-migration-product-setup -> suse-migration -> suse-migration-grub-setup -> suse-migration-regenerate-initrd -> suse-migration-kernel-load ->suse-migration-reboot
+        suse-migration-product-setup -> suse-migration -> suse-migration-grub-setup -> suse-migration-update-bootloader -> suse-migration-regenerate-initrd -> suse-migration-kernel-load -> suse-migration-reboot
     ]
 ]
