@@ -1,0 +1,6 @@
+<dm:docmanager xmlns:dm="urn:x-suse:ns:docmanager">
+    <dm:bugtracker>
+        <dm:url>https://github.com/SUSE/suse-migration-services/issues/new</dm:url>
+	<dm:editurl>https://github.com/SUSE/suse-migration-services/edit/master/doc/adoc/user_guide.adoc</dm:editurl>
+    </dm:bugtracker>
+</dm:docmanager>
