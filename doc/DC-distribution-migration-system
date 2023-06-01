@@ -10,4 +10,5 @@ ADOC_POST=yes
 ADOC_TYPE=article
 #ADOC_IMG_DIR=adoc/images
 
-STYLEROOT="/usr/share/xml/docbook/stylesheet/suse2021-ns"
+DOCBOOK5_RNG_URI="http://docbook.org/xml/5.2/rng/docbookxi.rnc"
+STYLEROOT="/usr/share/xml/docbook/stylesheet/suse2022-ns"

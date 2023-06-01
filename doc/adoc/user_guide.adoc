@@ -1,3 +1,5 @@
+:docinfo:
+
 = Using the SUSE Distribution Migration System
 Marcus Schäfer; Jesús Velázquez; Keith Berger
 
