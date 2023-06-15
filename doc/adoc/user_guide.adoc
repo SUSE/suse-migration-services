@@ -92,6 +92,13 @@ If your system is not configured for it, it is recommended that at least
 one of the users on the system has a `~/.ssh/authorized_keys` file with a
 private key accessible by the person executing the system upgrade.
 
+Requirement for root filesystem::
+Root "/" and all core OS functional folders such as /var, /etc, /usr must
+be on a single partition. Multiple partition support, such as LVM, is limited
+to configurations where the separated partitions do not contain OS critical
+data or processes. For example, DMS will function if /home is its own
+partition, but not if /var is on a separate partition from root.
+
 == Upgrade Pre-Checks
 The suse-migration-pre-checks package contains the `suse-migration-pre-checks`
 script that checks for possible incompatibilities when doing a migration.
