@@ -89,6 +89,9 @@ install -D -m 644 systemd/suse-migration.service \
 install -D -m 644 systemd/suse-migration-grub-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
 
+install -D -m 644 systemd/suse-migration-update-bootloader.service \
+    %{buildroot}%{_unitdir}/suse-migration-update-bootloader.service
+
 install -D -m 644 systemd/suse-migration-product-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-product-setup.service
 
