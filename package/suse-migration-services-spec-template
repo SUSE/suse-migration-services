@@ -155,6 +155,9 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 %{_bindir}/suse-migration-grub-setup
 %{_unitdir}/suse-migration-grub-setup.service
 
+%{_bindir}/suse-migration-update-bootloader
+%{_unitdir}/suse-migration-update-bootloader.service
+
 %{_bindir}/suse-migration-product-setup
 %{_unitdir}/suse-migration-product-setup.service
 
