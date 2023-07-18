@@ -124,6 +124,7 @@ old (not currently running) kernels.
 Example output from running suse-migration-pre-checks:
 
 [listing]
+----
 Running suse-migration-pre-checks with options: fix: False
 Calling: ['blkid', '-s', 'TYPE', '-o', 'value', '/dev/disk/by-uuid/e35ee7fd-7985-4e86-ae79-32c8077e2006']
 Calling: ['blkid', '-s', 'TYPE', '-o', 'value', '/dev/disk/by-uuid/8da89821-e427-4375-8c9b-f142903e2ff8']
@@ -133,7 +134,7 @@ The config option 'multiversion' in /etc/zypp/zypp.conf includes the keyword 'ke
 'multiversion = provides:multiversion(kernel)'.
 Checking the config option 'multiversion.kernels' to see if multiple kernels are also enabled
 Calling: ['rpm', '-qa', 'kernel-default']
-
+----
 
 == Installation
 The distribution migration system is available from the Public Cloud module.
@@ -154,7 +155,9 @@ package.
 Option 1 - Trigger via run_migration::
 +
 [listing]
+----
 tux > sudo zypper in SLES15-Migration
+----
 +
 The `run_migration` uses `kexec` to boot into the kernel delivered with the
 upgrade image delivered by the SLES15-Migration package. Once this system
@@ -169,12 +172,16 @@ https://www.suse.com/support/kb/doc/?id=000019733
 And set the "soft_reboot" customization option:
 +
 [listing]
+----
 echo "soft_reboot: false" >> /etc/sle-migration-service.yml
+----
 
 Option 2 - Trigger via reboot::
 +
 [listing]
+----
 tux > sudo zypper in SLES15-Migration suse-migration-sle15-activation
+----
 +
 Starting the migration via reboot after installing the
 suse-migration-sle15-activation package covers the Xen use case but does
@@ -193,7 +200,9 @@ upgrade process. Prior to the start of the upgrade process, create the
 following file if a change of the default behavior is needed:
 
 [listing]
+----
 tux > ssh INSTANCE_USER@IP_OF_INSTANCE 'touch /etc/sle-migration-service.yml'
+----
 
 The custom config file supports the following settings:
 
@@ -203,7 +212,9 @@ or for which the repository server has no upgrade path, it's required to
 switch off the use of the migration workflow.
 +
 [listing]
+----
 use_zypper_migration: true|false
+----
 +
 [NOTE]
 The use of the migration workflow is the default behavior. If the migration
@@ -225,7 +236,9 @@ The product must be specified with the triplet name/version/arch found
 in '/etc/products.d/baseproduct' of the target product, for example:
 +
 [listing]
+----
 migration_product: 'SLES/15.1/x86_64'
+----
 +
 would set the product target to SLES-15-SP1
 +
@@ -245,6 +258,7 @@ rule set effective, while the files in the static section are copied with no
 further action.
 +
 [listing]
+----
 preserve:
   rules:
     - /etc/udev/rules.d/a.rules
@@ -252,6 +266,7 @@ preserve:
   static:
     - /etc/sysconfig/proxy
     - /path/to/be/preserved/file
+----
 +
 [NOTE]
 udev rules that require custom drivers will not have the desired effect
@@ -265,7 +280,9 @@ steps and rebooting due to a failed upgrade, allowing the issue to
 be debugged.
 +
 [listing]
+----
 debug: true|false
+----
 
 Configure Reboot Method::
 By default, the migration system uses `kexec` to boot back into the host
@@ -273,20 +290,26 @@ system once migration is complete.  If this is in any way problematic,
 a regular `reboot` can be requested by setting `soft_reboot: false`.
 +
 [listing]
+----
 soft_reboot: true|false
+----
 
 Enable verbosity for zypper migration::
 If enabled, it will run the zypper migration plugin with increased verbosity.
 +
 [listing]
+----
 verbose_migration: true|false
+----
 
 Enable the fix option for pre_checks::
 If enabled (default), the run_pre_checks systemd process will use the `--fix`
 option to automatically remediate applicable issues before the migration is started. 
 +
 [listing]
+----
 pre_checks_fix: true|false
+----
 
 Configure Make initrd Method::
 The live system may not contain all necessary tools to create an initrd that
@@ -297,7 +320,9 @@ independent initrd can be created by setting
 `build_host_independent_initrd: True`.
 +
 [listing]
+----
 build_host_independent_initrd: true|false
+----
 
 == Run the Migration
 Migration can be triggered either via run_migration or via reboot.
@@ -307,7 +332,9 @@ After the install of the `SLES15-Migration` package, start the migration
 process by calling the following command:
 +
 [listing]
+----
 tux > sudo run_migration
+----
 
 Option 2 - Running Migration via reboot::
 +
@@ -315,7 +342,9 @@ Option 2 - Running Migration via reboot::
 If using the `reboot` method to start migration, reboot the system:
 +
 [listing]
+----
 tux > sudo reboot
+----
 
 After Migration has been triggered via either method::
 +
@@ -324,7 +353,9 @@ After the upgrade has started, the only way to access the system during the
 upgrade process is via ssh with a user called `migration`:
 +
 [listing]
+----
 tux > sudo ssh migration@IP_OF_INSTANCE
+----
 +
 [NOTE]
 There is no need to provide any other information or key. The known SSH
