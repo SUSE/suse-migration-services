@@ -145,19 +145,16 @@ For data center customers it is recommended to continue to use the
 documented offline distribution upgrade using the next distribution
 version installation media.
 
-To install the distribution migration system run:
-
-[listing]
-tux > sudo zypper in SLES15-Migration
-
 The distribution migration process can be invoked using different methods.
 One method of activating the migration is the `run_migration` included with
 the SLES15-Migration package. The second method to invoking the migration
 process is via reboot after installing the suse-migration-sle15-activation
 package.
 
+Option 1 - Trigger via run_migration::
+
 [listing]
-tux > sudo zypper in suse-migration-sle15-activation
+tux > sudo zypper in SLES15-Migration
 
 The `run_migration` uses `kexec` to boot into the kernel delivered with the
 upgrade image delivered by the SLES15-Migration package. Once this system
@@ -165,6 +162,19 @@ is live after the `kexec` the distribution migration process is automatically
 started. However, `kexec` is not supported and does not function in certain
 conditions. The `run_migration` utility does not work in Xen based
 environments.
+
+If kexec causes a kernel panic this can cause the system to hang and the 
+distribution migration to fail. In that case refer to this TID:
+https://www.suse.com/support/kb/doc/?id=000019733
+And set the "soft_reboot" customization option:
+
+[listing]
+echo "soft_reboot: false" >> /etc/sle-migration-service.yml
+
+Option 2 - Trigger via reboot::
+
+[listing]
+tux > sudo zypper in SLES15-Migration suse-migration-sle15-activation
 
 Starting the migration via reboot after installing the
 suse-migration-sle15-activation package covers the Xen use case but does
@@ -291,19 +301,24 @@ independent initrd can be created by setting
 build_host_independent_initrd: true|false
 
 == Run the Migration
+Migration can be triggered either via run_migration or via reboot.
+
+Option 1 - Running Migration via run_migration::
 After the install of the `SLES15-Migration` package, start the migration
-by calling the following command:
+process by calling the following command:
 
 [listing]
 tux > sudo run_migration
 
+Option 2 - Running Migration via reboot::
 [NOTE]
-If the `suse-migration-sle15-activation` package was installed,
-start the migration by a reboot of the system as follows:
+If using the `reboot` method to start migration, reboot the system:
 
 [listing]
 tux > sudo reboot
 
+After Migration has been triggered via either method::
+[NOTE]
 After the upgrade has started, the only way to access the system during the
 upgrade process is via ssh with a user called `migration`:
 
@@ -320,6 +335,13 @@ Whether the upgrade succeeded or not, a log file is available in
 `/var/log/distro_migration.log` and it will contain information about the
 upgrade process. If the upgrade failed, the file `/etc/issue` will contain
 a pointer to the respective log file.
+
+In addition, the distribution migration RPM packages `SLES15-Migration`
+and `suse-migration-sle15-activation` will be removed.
+This is to prevent the migration from being run multiple times and causing
+a failure loop.
+To start the migration again, the RPMs will need to be reinstalled following
+the commands from the Installation Section of this document.
 
 == Caveats and Unsupported Conditions
 * Configuration files that have been modified in the original system will
