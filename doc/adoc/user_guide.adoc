@@ -99,6 +99,11 @@ to configurations where the separated partitions do not contain OS critical
 data or processes. For example, DMS will function if /home is its own
 partition, but not if /var is on a separate partition from root.
 
+SLES Version Support::
+Upgrade is supported from SLES12 SP4 or SLES12 SP5 to SLES 15 SP1. It is
+possible to configure other versions of SLES as the migration target,
+but doing so is not a tested or supported use case.
+
 == Upgrade Pre-Checks
 The suse-migration-pre-checks package contains the `suse-migration-pre-checks`
 script that checks for possible incompatibilities when doing a migration.
@@ -386,7 +391,8 @@ the commands from the Installation Section of this document.
 * Upgrade is only possible for systems that use unencrypted root file systems,
   at the OS level. Encrypting the root device using a cloud framework
   encryption mechanism happens at a different level.
-* Upgrade has been tested for SLES 12 SP4 to SLES 15
+* Upgrade has been tested for SLES 12 SP4 to SLES 15 SP1
+* Upgrade has been tested for SLES 12 SP5 to SLES 15 SP1
 * The system is primarily intended for Public Cloud instance upgrade use. The
   system also works for simple setups in a data center setting on physical
   installations. However, for any more complex configurations the off line
