@@ -23,8 +23,17 @@
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/root" name="root" groups="root"/>
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/home/migration" name="migration" groups="users"/>
     </users>
-    <repository type="rpm-md" >
-        <source path='obsrepositories:/'/>
+    <repository type="rpm-md">
+        <source path="obs://SUSE:SLE-15-SP1:Update/standard"/>
+    </repository>
+    <repository type="rpm-md">
+        <source path="obs://SUSE:SLE-15-SP1:GA/standard"/>
+    </repository>
+    <repository type="rpm-md">
+        <source path="obs://SUSE:SLE-15:Update/standard"/>
+    </repository>
+    <repository type="rpm-md">
+        <source path="obs://SUSE:SLE-15:GA/standard"/>
     </repository>
     <packages type="image">
         <package name="patterns-base-minimal_base"/>
