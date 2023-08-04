@@ -3,9 +3,10 @@
 # FILE          : config.sh
 #----------------
 # PROJECT       : KIWI - Image System
-# COPYRIGHT     : (c) 2020 SUSE Software Solutions Germany GmbH
+# COPYRIGHT     : (c) 2023 SUSE Software Solutions Germany GmbH
 #               :
-# AUTHOR        : Marcus Schaefer <ms@suse.de>
+# AUTHORS       : Marcus Schaefer <ms@suse.de>
+#               : Keith Berger <kberger@suse.com>
 #               :
 # BELONGS TO    : Operating System images
 #               :
