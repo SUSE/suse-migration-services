@@ -104,6 +104,9 @@ Upgrade is supported from SLES12 SP4 or SLES12 SP5 to SLES 15 SP1. It is
 possible to configure other versions of SLES as the migration target,
 but doing so is not a tested or supported use case.
 
+Support for SLES12 SP4 will end December 31 2023. From 2024 onward
+SLES12 SP5 is the only supported migration starting point.
+
 == Upgrade Pre-Checks
 The suse-migration-pre-checks package contains the `suse-migration-pre-checks`
 script that checks for possible incompatibilities when doing a migration.
@@ -226,30 +229,6 @@ The use of the migration workflow is the default behavior. If the migration
 workflow is not used, the setup of the repositories must be performed
 manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
-
-Migration product target::
-The default product target will be the 15-SP1 release corresponding to the
-current product. The migration_product setting can be used to change the
-product target. 
-+
-[NOTE]
-Changing the product target from the 15-SP1 release is not officially
-supported
-+
-If migration_product is set, the migration will use that product as a target.
-The product must be specified with the triplet name/version/arch found
-in '/etc/products.d/baseproduct' of the target product, for example:
-+
-[listing]
-----
-migration_product: 'SLES/15.1/x86_64'
-----
-+
-would set the product target to SLES-15-SP1
-+
-[NOTE]
-The default target, if `migration_product` is not set, is the version
-available in the migration path from zypper-migration.
 
 Preserve System Data::
 Preserve custom data file(s) e.g. udev rules from the system
