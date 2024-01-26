@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import glob
 import logging
 import os
 import shutil
@@ -67,9 +68,7 @@ def main():
         '/etc/pki/trust/anchors/'
     ]
     cache_cloudregister_path = '/var/cache/cloudregister'
-    cloud_register_certs_path = '/var/lib/regionService/certs'
-    cloud_register_certs_bind_mount_path = \
-        root_path + cloud_register_certs_path
+    cloud_register_certs_path_fallback = '/usr/lib/regionService/certs'
 
     cloud_register_metadata = ""
 
@@ -84,6 +83,13 @@ def main():
         )
         update_regionsrv_setup(
             root_path, migration_suse_cloud_regionsrv_setup
+        )
+        cloud_register_certs_path = get_regionsrv_certs_path(
+            suse_cloud_regionsrv_setup,
+            cloud_register_certs_path_fallback
+        )
+        report_if_regionsrv_certs_not_found(
+            root_path + cloud_register_certs_path, log
         )
     if os.path.exists(hosts_setup):
         shutil.copy(
@@ -196,6 +202,8 @@ def main():
                     cache_cloudregister_path
                 ]
             )
+        cloud_register_certs_bind_mount_path = \
+            root_path + cloud_register_certs_path
         if os.path.exists(cloud_register_certs_bind_mount_path):
             log.info(
                 'Bind mounting {0} from {1}'.format(
@@ -209,6 +217,9 @@ def main():
                     'mount', '--bind', cloud_register_certs_bind_mount_path,
                     cloud_register_certs_path
                 ]
+            )
+            report_if_regionsrv_certs_not_found(
+                cloud_register_certs_path, log
             )
             update_smt_cache = '/usr/sbin/updatesmtcache'
             if os.path.isfile(update_smt_cache):
@@ -241,6 +252,30 @@ def main():
                 issue
             )
         )
+
+
+def get_regionsrv_certs_path(suse_cloud_regionsrv_setup, fallback):
+    """
+    Note: This method is specific to the SUSE Public Cloud Infrastructure
+
+    Retrieve the certlocation from the specified suse_cloud_regionsrv_setup
+    config's server.certlocation setting, defaulting to fallback value if not
+    found.
+    """
+    regionsrv_setup = ConfigParser()
+    regionsrv_setup.read(suse_cloud_regionsrv_setup)
+
+    return regionsrv_setup.get('server', 'certlocation', fallback=fallback)
+
+
+def report_if_regionsrv_certs_not_found(certs_path, log):
+    """
+    Log a message if no PEM files are found at the specified certs path
+    in the system being migrated.
+    """
+    if not glob.glob(os.path.join(certs_path, '*.pem')):
+        log.info("No certs found under specified certs path: %s",
+                 repr(certs_path))
 
 
 def update_regionsrv_setup(root_path, suse_cloud_regionsrv_setup):
