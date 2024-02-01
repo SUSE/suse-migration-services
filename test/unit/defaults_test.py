@@ -8,7 +8,7 @@ from suse_migration_services.defaults import Defaults
 
 
 class TestDefaults(object):
-    def setup(self):
+    def setup_method(self):
         self.defaults = Defaults()
 
     def test_get_migration_config_file(self):
