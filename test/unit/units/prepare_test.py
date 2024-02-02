@@ -1,5 +1,9 @@
+import os
 import shutil
-from tempfile import NamedTemporaryFile
+from tempfile import (
+    NamedTemporaryFile,
+    mkdtemp
+)
 from configparser import ConfigParser
 from unittest.mock import (
     patch, call, Mock, MagicMock, mock_open
@@ -8,7 +12,8 @@ from unittest.mock import (
 from pytest import raises
 
 from suse_migration_services.units.prepare import (
-    main, update_regionsrv_setup, get_regionsrv_client_file_location
+    main, update_regionsrv_setup, get_regionsrv_client_file_location,
+    get_regionsrv_certs_path, report_if_regionsrv_certs_not_found
 )
 
 from suse_migration_services.suse_connect import SUSEConnect
@@ -46,17 +51,24 @@ class TestSetupPrepare(object):
         with raises(DistMigrationZypperMetaDataException):
             main()
 
+    @patch('suse_migration_services.units.prepare.get_regionsrv_certs_path')
     @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('os.path.exists')
     def test_main_raises_on_get_regionsrv_client_file_location(
         self, mock_os_path_exists, mock_os_listdir, mock_shutil_copy,
-        mock_get_regionsrv_client_file_location, mock_Command_run,
+        mock_get_regionsrv_client_file_location,
+        mock_get_regionsrv_certs_path,
+        mock_Command_run,
         mock_Fstab, mock_logger_setup,
         mock_update_regionsrv_setup
     ):
         mock_os_listdir.return_value = None
+        # need to override the get_regionsrv_certs_path() call to avoid
+        # introducing a additional open()
+        mock_get_regionsrv_certs_path.return_value = \
+            '/var/lib/regionService/certs'
         mock_get_regionsrv_client_file_location.side_effect = \
             [DistMigrationZypperMetaDataException('foo')]
         mock_os_path_exists.return_value = True
@@ -124,6 +136,7 @@ class TestSetupPrepare(object):
                 call(['umount', '/system-root/dev'], raise_on_error=False)
             ]
 
+    @patch('suse_migration_services.units.prepare.get_regionsrv_certs_path')
     @patch('os.path.isfile')
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
@@ -138,7 +151,9 @@ class TestSetupPrepare(object):
         self, mock_os_path_exists, mock_readlink, mock_os_path_islink,
         mock_path_isdir, mock_os_listdir,
         mock_shutil_copy, mock_Path, mock_MigrationConfig,
-        mock_is_registered, mock_is_file, mock_Command_run,
+        mock_is_registered, mock_is_file,
+        mock_get_regionsrv_certs_path,
+        mock_Command_run,
         mock_Fstab, mock_logger_setup,
         mock_update_regionsrv_setup
     ):
@@ -188,6 +203,10 @@ class TestSetupPrepare(object):
             FileNotFoundError('cert copy failed')
         ]
         mock_is_file.return_value = True
+        # need to override the get_regionsrv_certs_path() call to avoid
+        # introducing a additional open() call
+        mock_get_regionsrv_certs_path.return_value = \
+            '/var/lib/regionService/certs'
         with patch('builtins.open', mock_open(read_data='foo.susecloud.net')):
             main()
         assert mock_shutil_copy.call_args_list == [
@@ -289,6 +308,7 @@ class TestSetupPrepare(object):
             ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
         )
 
+    @patch('suse_migration_services.units.prepare.get_regionsrv_certs_path')
     @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
@@ -299,7 +319,8 @@ class TestSetupPrepare(object):
     def test_main_no_registered_instance(
         self, mock_os_path_exists, mock_os_listdir, mock_shutil_copy,
         mock_Path, mock_MigrationConfig, mock_is_registered,
-        mock_get_regionsrv_client_file_location, mock_Command_run,
+        mock_get_regionsrv_client_file_location,
+        mock_get_regionsrv_certs_path, mock_Command_run,
         mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup
     ):
         migration_config = Mock()
@@ -308,6 +329,10 @@ class TestSetupPrepare(object):
         mock_MigrationConfig.return_value = migration_config
         fstab = Mock()
         mock_Fstab.return_value = fstab
+        # need to override the get_regionsrv_certs_path() call to avoid
+        # introducing a additional open() call
+        mock_get_regionsrv_certs_path.return_value = \
+            '/var/lib/regionService/certs'
         mock_os_listdir.return_value = ['foo', 'bar']
         mock_os_path_exists.return_value = True
         mock_is_registered.return_value = False
@@ -382,3 +407,84 @@ class TestSetupPrepare(object):
         mock_path_isdir.side_effect = [False, False]
         with raises(DistMigrationZypperMetaDataException):
             get_regionsrv_client_file_location('/foo')
+
+    def test_get_regionsrv_certs_path_certlocation(
+        self,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup,
+    ):
+        tmp_regionserverclnt = NamedTemporaryFile()
+
+        # assert fallback path returned if client config is missing
+        assert get_regionsrv_certs_path(
+            '/some/file/that/does/not/exist',
+            'foo'
+        ) == 'foo'
+
+        # assert fallback path returned if client config is empty
+        assert get_regionsrv_certs_path(
+            tmp_regionserverclnt.name,
+            'foo'
+        ) == 'foo'
+
+        # test we get the fallback certlocation when none specified in config
+        shutil.copy(
+            '../data/regionserverclnt-nocertlocation.cfg',
+            tmp_regionserverclnt.name
+        )
+
+        assert get_regionsrv_certs_path(
+            tmp_regionserverclnt.name,
+            'foo'
+        ) == 'foo'
+
+        # test we get the standard certlocation from the config
+        shutil.copy(
+            '../data/regionserverclnt-certlocation.cfg',
+            tmp_regionserverclnt.name
+        )
+
+        assert get_regionsrv_certs_path(
+            tmp_regionserverclnt.name,
+            'foo'
+        ) == '/usr/lib/regionService/certs'
+
+        # test we get the old certlocation from an old config
+        shutil.copy(
+            '../data/regionserverclnt-oldcertlocation.cfg',
+            tmp_regionserverclnt.name
+        )
+
+        assert get_regionsrv_certs_path(
+            tmp_regionserverclnt.name,
+            'foo'
+        ) == '/var/lib/regionService/certs'
+
+    def test_report_if_regionsrv_certs_not_found(
+        self,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup
+    ):
+        tmp_certs_dir = mkdtemp()
+
+        log = Mock(spec=['info'])
+
+        # verify that log.info() is called when dir has no pem files
+        report_if_regionsrv_certs_not_found(tmp_certs_dir, log)
+        assert len(log.info.call_args_list) == 1
+
+        # reset the log mock object
+        log.reset_mock()
+
+        # verify that log.info() is not called when dir has pem files
+        tmp_pem_path = os.path.join(tmp_certs_dir, 'dummy_cert.pem')
+        open(tmp_pem_path, 'w').close()
+        report_if_regionsrv_certs_not_found(tmp_certs_dir, log)
+        assert len(log.info.call_args_list) == 0
+
+        # cleanup tmp_certs_dir
+        shutil.rmtree(tmp_certs_dir, ignore_errors=True)
