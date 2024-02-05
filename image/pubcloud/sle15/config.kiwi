@@ -24,6 +24,9 @@
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/home/migration" name="migration" groups="users"/>
     </users>
     <repository type="rpm-md">
+        <source path="obs://home:fmccarthy:branches:Devel:PubCloud:CrossCloud/SLE_15_SP1"/>
+    </repository>
+    <repository type="rpm-md">
         <source path="obs://SUSE:SLE-15-SP1:Update/standard"/>
     </repository>
     <repository type="rpm-md">
@@ -37,6 +40,7 @@
     </repository>
     <packages type="image">
         <package name="patterns-base-minimal_base"/>
+        <package name="suseconnect-ng"/>
         <package name="ifplugd"/>
         <package name="iputils"/>
         <package name="vim"/>
@@ -65,7 +69,6 @@
         <package name="bind-utils"/>
         <package name="util-linux"/>
         <package name="suse-migration-services"/>
-        <package name="zypper-migration-plugin"/>
         <package name="dialog"/>
         <package name="sudo"/>
         <package name="mdadm"/>
