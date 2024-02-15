@@ -39,14 +39,14 @@ class TestMigrationConfig(object):
             ]
         )
         os_release_result = os_release_tuple(
-            name='SLES', version='15-SP1', version_id='15.1',
-            pretty_name='SUSE Linux Enterprise Server 15 SP1',
+            name='SLES', version='15-SP3', version_id='15.3',
+            pretty_name='SUSE Linux Enterprise Server 15 SP3',
             id='sles', id_like='suse', ansi_color='0;32',
-            cpe_name='cpe:/o:suse:sles:15:sp1'
+            cpe_name='cpe:/o:suse:sles:15:sp3'
         )
         mock_get_system_root_path.return_value = '../data'
         mock_get_os_release.return_value = os_release_result
-        assert self.config.get_migration_product() == 'SLES/15.1/x86_64'
+        assert self.config.get_migration_product() == 'SLES/15.3/x86_64'
 
     @patch.object(Defaults, 'get_os_release')
     @patch.object(SUSEBaseProduct, 'get_tag')
@@ -62,10 +62,10 @@ class TestMigrationConfig(object):
             ]
         )
         os_release_result = os_release_tuple(
-            name='SLES', version='15-SP1', version_id='15.1',
-            pretty_name='SUSE Linux Enterprise Server 15 SP1',
+            name='SLES', version='15-SP3', version_id='15.3',
+            pretty_name='SUSE Linux Enterprise Server 15 SP3',
             id='sles', id_like='suse', ansi_color='0;32',
-            cpe_name='cpe:/o:suse:sles:15:sp1'
+            cpe_name='cpe:/o:suse:sles:15:sp3'
         )
         mock_get_system_root_path.return_value = '../data'
         mock_get_os_release.return_value = os_release_result
@@ -91,16 +91,16 @@ class TestMigrationConfig(object):
             ]
         )
         os_release_result = os_release_tuple(
-            name='SLES', version='15-SP1', version_id='15.1',
-            pretty_name='SUSE Linux Enterprise Server 15 SP1',
+            name='SLES', version='15-SP3', version_id='15.3',
+            pretty_name='SUSE Linux Enterprise Server 15 SP3',
             id='sles', id_like='suse', ansi_color='0;32',
-            cpe_name='cpe:/o:suse:sles:15:sp1'
+            cpe_name='cpe:/o:suse:sles:15:sp3'
         )
         mock_get_os_release.return_value = os_release_result
         mock_get_system_root_path.return_value = '../data'
         mock_get_product_name.return_value = None
         self.config.update_migration_config_file()
-        assert self.config.get_migration_product() == 'SLES/15.1/x86_64'
+        assert self.config.get_migration_product() == 'SLES/15.3/x86_64'
         assert self.config.is_debug_requested() is True
 
     def test_is_zypper_migration_plugin_requested(self):
