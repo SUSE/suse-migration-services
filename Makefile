@@ -64,7 +64,7 @@ sle15_activation: check
 
 .PHONY: test
 test:
-	tox -e unit_py3 
+	tox -e unit_py3
 
 check:
 	tox -e check
