@@ -1,2 +1,2 @@
 debug: true
-migration_product: 'SLES/15.1/x86_64'
+migration_product: 'SLES/15.5/x86_64'

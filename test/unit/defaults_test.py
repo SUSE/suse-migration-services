@@ -23,19 +23,19 @@ class TestDefaults(object):
             ]
         )
         os_release_result = os_release_tuple(
-            name='SLES', version='15-SP1', version_id='15.1',
-            pretty_name='SUSE Linux Enterprise Server 15 SP1',
+            name='SLES', version='15-SP5', version_id='15.5',
+            pretty_name='SUSE Linux Enterprise Server 15 SP5',
             id='sles', id_like='suse', ansi_color='0;32',
-            cpe_name='cpe:/o:suse:sles:15:sp1'
+            cpe_name='cpe:/o:suse:sles:15:sp5'
         )
         os_release_content = ('NAME="SLES"\n'
-                              'VERSION="15-SP1"\n'
-                              'VERSION_ID="15.1"\n'
-                              'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP1"\n'
+                              'VERSION="15-SP5"\n'
+                              'VERSION_ID="15.5"\n'
+                              'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"\n'
                               'ID="sles"\n'
                               'ID_LIKE="suse"\n'
                               'ANSI_COLOR="0;32"\n'
-                              'CPE_NAME="cpe:/o:suse:sles:15:sp1"')
+                              'CPE_NAME="cpe:/o:suse:sles:15:sp5"')
         with patch('builtins.open', create=True) as mock_open:
             mock_open_os_release = MagicMock(spec=io.IOBase)
 
