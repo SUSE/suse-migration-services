@@ -37,6 +37,7 @@
     </repository>
     <packages type="image">
         <package name="patterns-base-minimal_base"/>
+        <package name="suseconnect-ng"/>
         <package name="ifplugd"/>
         <package name="iputils"/>
         <package name="vim"/>
@@ -65,7 +66,6 @@
         <package name="bind-utils"/>
         <package name="util-linux"/>
         <package name="suse-migration-services"/>
-        <package name="zypper-migration-plugin"/>
         <package name="dialog"/>
         <package name="sudo"/>
         <package name="mdadm"/>
