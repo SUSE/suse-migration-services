@@ -1,6 +1,6 @@
 [Unit]
 Description=Update the bootloader
-After=suse-migration-update-bootloader.service
+After=suse-migration-grub-setup.service
 
 [Service]
 Type=oneshot
