@@ -1,4 +1,6 @@
 :docinfo:
+// defining article ID
+[#art-suse-migration-services]
 
 = Using the SUSE Distribution Migration System
 Marcus Schäfer; Jesús Velázquez; Keith Berger
