@@ -1,6 +1,27 @@
+
+<meta name="series">Products &amp; Solutions</meta>
+<meta name="title">Using the SUSE Distribution Migration System</meta>
+<meta name="description">How to use the SUSE Distribution Migration System to seamlessly transition between SLE releases</meta>	
+<meta name="social-descr">Transition between SLE releases</meta>
+<meta name="task">
+  <phrase>Upgrade &amp; Update</phrase>
+</meta>
+
 <dm:docmanager xmlns:dm="urn:x-suse:ns:docmanager">
     <dm:bugtracker>
         <dm:url>https://github.com/SUSE/suse-migration-services/issues/new</dm:url>
 	<dm:editurl>https://github.com/SUSE/suse-migration-services/edit/master/doc/adoc/user_guide.adoc</dm:editurl>
     </dm:bugtracker>
 </dm:docmanager>
+
+	
+<revhistory xml:id="rh-suse-migration-services">
+    <revision>
+      <date>2023-07-24</date>
+      <revdescription>
+        <para>
+          Clarify supported versions of SLES.
+        </para>
+      </revdescription>
+    </revision>
+  </revhistory>
