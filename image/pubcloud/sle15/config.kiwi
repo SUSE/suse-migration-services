@@ -6,7 +6,7 @@
         <contact>public-cloud-dev@susecloud.net</contact>
         <specification>
             SLES15 Distribution Migration Live System to upgrade
-            SLES12-SP4+ instances to SLES15+
+            SLES12-SP5+ instances to SLES15+
         </specification>
     </description>
     <preferences>
@@ -23,6 +23,21 @@
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/root" name="root" groups="root"/>
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/home/migration" name="migration" groups="users"/>
     </users>
+    <repository type="rpm-md" >
+        <source path='obsrepositories:/'/>
+    </repository>
+    <repository type="rpm-md">
+	 <source path="obs://SUSE:SLE-15-SP3:Update/standard"/>
+    </repository>
+    <repository type="rpm-md">
+	 <source path="obs://SUSE:SLE-15-SP3:GA/standard"/>
+    </repository>
+    <repository type="rpm-md">
+	 <source path="obs://SUSE:SLE-15-SP2:Update/standard"/>
+    </repository>
+    <repository type="rpm-md">
+	 <source path="obs://SUSE:SLE-15-SP2:GA/standard"/>
+    </repository>
     <repository type="rpm-md">
         <source path="obs://SUSE:SLE-15-SP1:Update/standard"/>
     </repository>
