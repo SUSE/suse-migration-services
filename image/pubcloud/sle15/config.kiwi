@@ -6,7 +6,7 @@
         <contact>public-cloud-dev@susecloud.net</contact>
         <specification>
             SLES15 Distribution Migration Live System to upgrade
-            SLES12-SP4+ instances to SLES15+
+            SLES12-SP5+ instances to SLES15+
         </specification>
     </description>
     <preferences>

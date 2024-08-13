@@ -28,9 +28,9 @@ endif::[]
 == Concept
 The Distribution Migration System provides an upgrade path for an
 installed SUSE Linux Enterprise system from one major version to another,
-for example, from SUSE Linux Enterprise Server 12 SP4 to SUSE Linux
-Enterprise Server 15. For a service pack upgrade from one Service Pack (SP)
-to another within a given major version release series the existing
+for example, from SUSE Linux Enterprise Server 12 SP5 to SUSE Linux
+Enterprise Server 15 SP3. For a service pack upgrade from one Service Pack
+(SP) to another within a given major version release series the existing
 Zypper migration workflow provides the supported upgrade path.
 The distribution migration system provides the ability to upgrade across
 major distributions without the need to use the next major version
@@ -100,9 +100,9 @@ data or processes. For example, DMS will function if /home is its own
 partition, but not if /var is on a separate partition from root.
 
 SLES Version Support::
-Upgrade is supported from SLES12 SP4 or SLES12 SP5 to SLES 15 SP3. It is
-possible to configure other versions of SLES as the migration target,
-but doing so is not a tested or supported use case.
+Upgrade is supported from SLES12 SP5 to SLES 15 SP3. It is possible to
+configure other versions of SLES as the migration target, but doing so
+is not a tested or supported use case.
 
 Support for SLES12 SP4 will end December 31 2023. From 2024 onward
 SLES12 SP5 is the only supported migration starting point.
@@ -370,7 +370,6 @@ the commands from the Installation Section of this document.
 * Upgrade is only possible for systems that use unencrypted root file systems,
   at the OS level. Encrypting the root device using a cloud framework
   encryption mechanism happens at a different level.
-* Upgrade has been tested for SLES 12 SP4 to SLES 15 SP3
 * Upgrade has been tested for SLES 12 SP5 to SLES 15 SP3
 * The system is primarily intended for Public Cloud instance upgrade use. The
   system also works for simple setups in a data center setting on physical
@@ -396,6 +395,6 @@ the commands from the Installation Section of this document.
   of the SLES version you started with. This cannot be changed.
 * The only supported migration path in the Public Cloud is from the
   final 2 service packs of a distribution to the first service pack of
-  the next distribution. For example from SLES 12 SP4 or SLES 12 SP5 to
-  SLES 15 SP3. The packages delivered by SUSE in the Public Cloud Module
-  implement this behavior by default.
+  the next distribution. For example from SLES 12 SP5 to SLES 15 SP3.
+  The packages delivered by SUSE in the Public Cloud Module implement
+  this behavior by default.
