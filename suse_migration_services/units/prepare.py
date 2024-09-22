@@ -69,8 +69,9 @@ def main():
     ]
     cache_cloudregister_path = '/var/cache/cloudregister'
     cloud_register_certs_path_fallback = '/usr/lib/regionService/certs'
+    cloud_register_certs_bind_mount_path = ''
 
-    cloud_register_metadata = ""
+    cloud_register_metadata = ''
 
     if os.path.exists(suse_connect_setup):
         shutil.copy(
@@ -88,6 +89,8 @@ def main():
             suse_cloud_regionsrv_setup,
             cloud_register_certs_path_fallback
         )
+        cloud_register_certs_bind_mount_path = \
+            root_path + cloud_register_certs_path
         report_if_regionsrv_certs_not_found(
             root_path + cloud_register_certs_path, log
         )
@@ -202,8 +205,6 @@ def main():
                     cache_cloudregister_path
                 ]
             )
-        cloud_register_certs_bind_mount_path = \
-            root_path + cloud_register_certs_path
         if os.path.exists(cloud_register_certs_bind_mount_path):
             log.info(
                 'Bind mounting {0} from {1}'.format(
@@ -232,6 +233,12 @@ def main():
         )
         # Check if system is registered
         migration_config = MigrationConfig()
+        migration_config.update_migration_config_file()
+        log.info(
+            'Config file content:\n{content}\n'. format(
+                content=migration_config.get_migration_config_file_content()
+            )
+        )
         if migration_config.is_zypper_migration_plugin_requested():
             if not SUSEConnect.is_registered():
                 message = 'System not registered. Aborting migration.'
