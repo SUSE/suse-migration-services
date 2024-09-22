@@ -50,59 +50,60 @@ class Fstab:
         :param string filename: path to a fstab file
         """
         self.fstab = []
-        with open(filename) as fstab:
-            for line in fstab.readlines():
-                mount_record = line.split()
-                if not mount_record or mount_record[0].startswith('#') or \
-                        mount_record[2].lower() == 'none':
-                    continue
-                device = mount_record[0]
-                mountpoint = mount_record[1]
-                fstype = mount_record[2]
-                try:
-                    options = mount_record[3]
-                except IndexError:
-                    options = ''
-                eligible_for_mount = True
-                if fstype != 'swap':
-                    if mountpoint == '/':
-                        # the main rootfs mountpoint is mounted in an
-                        # extra operation and therefore flagged as being
-                        # not eligible for a mount operation when read
-                        # from this fstab instance
-                        eligible_for_mount = False
-                    if device.startswith('UUID'):
-                        device_path = ''.join(
-                            ['/dev/disk/by-uuid/', device.split('=')[1]]
-                        )
-                    elif device.startswith('LABEL'):
-                        device_path = ''.join(
-                            ['/dev/disk/by-label/', device.split('=')[1]]
-                        )
-                    elif device.startswith('PARTUUID'):
-                        device_path = ''.join(
-                            ['/dev/disk/by-partuuid/', device.split('=')[1]]
-                        )
-                    else:
-                        device_path = device
-
-                    if os.path.exists(device_path):
-                        self.fstab.append(
-                            self.fstab_entry_type(
-                                fstype=fstype,
-                                mountpoint=mountpoint,
-                                device=device_path,
-                                options=options,
-                                eligible_for_mount=eligible_for_mount
-                            )
-                        )
-                    else:
-                        log.warning(
-                            'Device path {0} not found and skipped'.format(
-                                device_path
-                            )
-                        )
+        if os.path.exists(filename):
+            with open(filename) as fstab:
+                for line in fstab.readlines():
+                    mount_record = line.split()
+                    if not mount_record or mount_record[0].startswith('#') or \
+                            mount_record[2].lower() == 'none':
                         continue
+                    device = mount_record[0]
+                    mountpoint = mount_record[1]
+                    fstype = mount_record[2]
+                    try:
+                        options = mount_record[3]
+                    except IndexError:
+                        options = ''
+                    eligible_for_mount = True
+                    if fstype != 'swap':
+                        if mountpoint == '/':
+                            # the main rootfs mountpoint is mounted in an
+                            # extra operation and therefore flagged as being
+                            # not eligible for a mount operation when read
+                            # from this fstab instance
+                            eligible_for_mount = False
+                        if device.startswith('UUID'):
+                            device_path = ''.join(
+                                ['/dev/disk/by-uuid/', device.split('=')[1]]
+                            )
+                        elif device.startswith('LABEL'):
+                            device_path = ''.join(
+                                ['/dev/disk/by-label/', device.split('=')[1]]
+                            )
+                        elif device.startswith('PARTUUID'):
+                            device_path = ''.join(
+                                ['/dev/disk/by-partuuid/', device.split('=')[1]]
+                            )
+                        else:
+                            device_path = device
+
+                        if os.path.exists(device_path):
+                            self.fstab.append(
+                                self.fstab_entry_type(
+                                    fstype=fstype,
+                                    mountpoint=mountpoint,
+                                    device=device_path,
+                                    options=options,
+                                    eligible_for_mount=eligible_for_mount
+                                )
+                            )
+                        else:
+                            log.warning(
+                                'Device path {0} not found and skipped'.format(
+                                    device_path
+                                )
+                            )
+                            continue
 
     def add_entry(
         self, device, mountpoint, fstype=None, options=None,
