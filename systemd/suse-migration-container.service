@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Zypper Migration
+After=suse-migration-container-product-setup.service
+Requires=suse-migration-container-product-setup.service
+OnFailure=suse-migration-container-emergency.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,153 @@
+#!/bin/bash
+# Copyright (c) 2024 SUSE LLC.  All rights reserved.
+#
+# This file is part of suse-migration-services.
+#
+# suse-migration-services is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# suse-migration-services is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
+#
+set -e
+
+# TODO: this location needs to be changed to an official place
+MIGRATION_SYSTEM=registry.opensuse.org/home/marcus.schaefer/dms/containers_sle15/migration:latest
+
+ARGUMENT_LIST=(
+    "debug"
+    "reboot"
+    "use-zypper-dup"
+    "product:"
+)
+
+# Functions
+usage() {
+    echo "migrate [OPTIONS]"
+    echo "  --product <name>"
+    echo "      Set target product e.g. SLES/15.5/x86_64"
+    echo "      If no product is specified the target is"
+    echo "      the same as the base product setup in the"
+    echo "      migration container"
+    echo "  --use-zypper-dup"
+    echo "      Use zypper dup method instead of the zypper"
+    echo "      migration plugin. NOTE: This requires all"
+    echo "      target repos to be setup before migration !"
+    echo "      An eventually given --product option will be"
+    echo "      ignored"
+    echo "  --reboot"
+    echo "      Reboot after successful upgrade"
+    echo "  --debug"
+    echo "      Run attached to the migration container"
+}
+
+migrate() {
+    set -x
+    local detach="--detach"
+    touch /var/log/distro_migration.log
+    # initialize with a failed state
+    echo 1 > /var/log/distro_migration.exitcode
+    if [ "${argDebug}" ];then
+        echo "Running in debug mode..."
+        detach=""
+    fi
+    # shellcheck disable=SC2086
+    sudo podman run \
+        ${detach} \
+        --rm \
+        -ti \
+        --name migration \
+        --privileged \
+        --net host \
+        --volume /:/system-root \
+        --volume /var/log:/var/log \
+    "${MIGRATION_SYSTEM}"
+    if [ -z "${argDebug}" ];then
+        sudo tail -f --retry --pid "$(pidof conmon)" \
+            /var/log/distro_migration.log
+        read -r exitcode < /var/log/distro_migration.exitcode
+        if [ "${exitcode}" != "0" ];then
+            echo "Migration failed"
+            exit "${exitcode}"
+        else
+            echo "Migration succeeded"
+            cleanup
+        fi
+        echo "Find log file at: /var/log/distro_migration.log"
+    fi
+}
+
+cleanup() {
+    # reset container storage
+    sudo rm -rf /var/lib/containers/storage/
+}
+
+# Read Arguments
+if ! opts=$(getopt \
+    --longoptions "$(printf "%s," "${ARGUMENT_LIST[@]}")" \
+    --name "$(basename "$0")" \
+    --options "" \
+    -- "$@"
+); then
+    usage
+    exit 1
+fi
+
+eval set --"${opts}"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --debug)
+            argDebug=1
+            shift
+            ;;
+
+        --reboot)
+            argReboot=1
+            shift
+            ;;
+
+        --use-zypper-dup)
+            argZypperDup=1
+            shift
+            ;;
+
+        --product)
+            argProduct=$2
+            shift 2
+            ;;
+
+        *)
+            break
+            ;;
+    esac
+done
+
+cat > /etc/sle-migration-service.yml <<-EOF
+soft_reboot: false
+EOF
+
+if [ "${argDebug}" ];then
+    echo "debug: true" >> /etc/sle-migration-service.yml
+fi
+
+if [ "${argProduct}" ];then
+    echo "migration_product: ${argProduct}" >> /etc/sle-migration-service.yml
+fi
+
+if [ "${argZypperDup}" ];then
+    echo "use_zypper_migration: false" >> /etc/sle-migration-service.yml
+fi
+
+migrate
+
+if [ "${argReboot}" ];then
+    sudo reboot -f
+fi
