@@ -4,6 +4,7 @@ __pycache__/
 
 # Distribution / packaging
 dist/
+dist_migrate/
 .tox/
 *.egg-info/
 .cache
