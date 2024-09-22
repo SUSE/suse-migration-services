@@ -47,6 +47,12 @@ def main():
     try:
         log.info('Running migrate service')
         migration_config = MigrationConfig()
+        migration_config.update_migration_config_file()
+        log.info(
+            'Config file content:\n{content}\n'. format(
+                content=migration_config.get_migration_config_file_content()
+            )
+        )
         if migration_config.get_preserve_info():
             # set potential missing settings in env
             log.info('Update env variables')
