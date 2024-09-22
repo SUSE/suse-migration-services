@@ -13,20 +13,20 @@ build: check test
 	mv setup.pye setup.py
 	# provide rpm source tarball
 	mv dist/suse_migration_services-${version}.tar.gz \
-		dist/suse-migration-services.tar.gz
+		dist/python-migration.tar.gz
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
-		--since package/suse-migration-services.changes.ref --utc > \
-        dist/suse-migration-services.changes
+		--since package/python-migration.changes.ref --utc > \
+        dist/python-migration.changes
 	helper/update_changelog.py \
-		--file package/suse-migration-services.changes >> \
-        dist/suse-migration-services.changes
+		--file package/python-migration.changes >> \
+        dist/python-migration.changes
 	# update package version in spec file
-	cat package/suse-migration-services-spec-template \
+	cat package/python-migration-spec-template \
 		| sed -e s'@%%VERSION@${version}@' \
-		> dist/suse-migration-services.spec
+		> dist/python-migration.spec
 	# provide rpm rpmlintrc
-	cp package/suse-migration-services-rpmlintrc dist
+	cp package/python-migration-rpmlintrc dist
 
 sle15_activation: check
 	rm -f dist/*
@@ -62,9 +62,16 @@ sle15_activation: check
            exit 1;\
 	fi
 
+migrate:
+	rm -rf dist_migrate
+	mkdir -p dist_migrate
+	cp tools/migrate dist_migrate/
+	cp package/suse-migration.spec dist_migrate/
+	cp package/suse-migration.changes dist_migrate/
+
 .PHONY: test
 test:
-	tox -e unit_py3
+	tox
 
 check:
 	tox -e check

@@ -17,7 +17,7 @@ class TestLogger:
                 '/system-root/var/log'
             )
             mock_open.assert_called_once_with(
-                '/system-root/var/log/distro_migration.log', 'a', encoding=None
+                '/system-root/var/log/distro_migration.log', 'a', encoding='locale', errors=None
             )
 
     def test_setup_no_system_root(self, mock_Path_create):
@@ -29,5 +29,5 @@ class TestLogger:
                 '/var/log'
             )
             mock_open.assert_called_once_with(
-                '/var/log/distro_migration.log', 'a', encoding=None
+                '/var/log/distro_migration.log', 'a', encoding='locale', errors=None
             )
