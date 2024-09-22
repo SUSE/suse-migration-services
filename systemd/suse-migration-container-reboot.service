@@ -1,0 +1,11 @@
+[Unit]
+Description=Reboot System
+After=suse-migration-container.service
+Requires=suse-migration-container.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-reboot
+
+[Install]
+WantedBy=multi-user.target
