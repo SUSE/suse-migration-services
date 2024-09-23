@@ -8,15 +8,15 @@ from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 
 
-@patch('os.path.exists')
-@patch('suse_migration_services.command.Command.run')
-@patch('suse_migration_services.logger.Logger.setup')
-@patch.object(Defaults, 'get_migration_config_file')
 class TestKernelReboot(object):
     @fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
+    @patch('os.path.exists')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.units.reboot.MigrationConfig')
     def test_main_skip_reboot_due_to_debug_file_set(
         self, mock_MigrationConfig, mock_config_file,
@@ -29,9 +29,15 @@ class TestKernelReboot(object):
             main()
             assert 'Reboot skipped due to debug flag set' in self._caplog.text
 
+    @patch('os.path.exists')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_kexec_reboot(
-        self, mock_Fstab, mock_get_migration_config_file,
+        self, mock_Fstab, mock_get_system_migration_custom_config_file,
+        mock_get_migration_config_file,
         mock_logger_setup, mock_Command_run, mock_os_path_exists
     ):
         def skip_device(device):
@@ -47,12 +53,10 @@ class TestKernelReboot(object):
         mock_Fstab.return_value = fstab_mock
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
+        mock_get_system_migration_custom_config_file.return_value = \
+            '../data/migration-config.yml'
         main()
         assert mock_Command_run.call_args_list == [
-            call(
-                ['systemctl', 'status', '-l', '--all'],
-                raise_on_error=False
-            ),
             call(
                 ['systemctl', 'stop', 'suse-migration-console-log'],
                 raise_on_error=False
@@ -72,10 +76,16 @@ class TestKernelReboot(object):
             call(['systemctl', 'kexec'])
         ]
 
+    @patch('os.path.exists')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
     @patch('suse_migration_services.units.reboot.Fstab')
     def test_main_force_reboot(
-        self, mock_Fstab, mock_get_migration_config_file,
-        mock_logger_setup, mock_Command_run, mock_os_path_exists
+        self, mock_Fstab, mock_get_system_migration_custom_config_file,
+        mock_get_migration_config_file, mock_logger_setup,
+        mock_Command_run, mock_os_path_exists
     ):
         def skip_device(device):
             if '/dev/mynode' in device:
@@ -93,19 +103,16 @@ class TestKernelReboot(object):
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            MagicMock(),
             Exception,
             None
         ]
         mock_get_migration_config_file.return_value = \
             '../data/migration-config-hard-reboot.yml'
+        mock_get_system_migration_custom_config_file.return_value = \
+            '../data/migration-config-hard-reboot.yml'
         with self._caplog.at_level(logging.WARNING):
             main()
             assert mock_Command_run.call_args_list == [
-                call(
-                    ['systemctl', 'status', '-l', '--all'],
-                    raise_on_error=False
-                ),
                 call(
                     ['systemctl', 'stop', 'suse-migration-console-log'],
                     raise_on_error=False
