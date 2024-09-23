@@ -43,7 +43,7 @@ usage() {
     echo "      An eventually given --product option will be"
     echo "      ignored"
     echo "  --reboot"
-    echo "      Reboot after upgrade"
+    echo "      Reboot after successful upgrade"
     echo "  --debug"
     echo "      Run attached to the migration container"
 }
@@ -52,11 +52,10 @@ migrate() {
     set -x
     local detach="--detach"
     touch /var/log/distro_migration.log
+    # initialize with a failed state
+    echo 1 > /var/log/distro_migration.exitcode
     if [ "${argDebug}" ];then
-        echo "Running in debug mode"
-        echo "You will be attached to the container runtime"
-        echo "Find the log file at: /var/log/distro_migration.log"
-        echo "Remember to have fun..."
+        echo "Running in debug mode..."
         detach=""
     fi
     # shellcheck disable=SC2086
