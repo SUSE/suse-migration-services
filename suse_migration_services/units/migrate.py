@@ -43,6 +43,7 @@ def main():
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
+    exit_code_file = Defaults.get_migration_exit_code_file()
 
     try:
         log.info('Running migrate service')
@@ -99,6 +100,9 @@ def main():
                         bash_command, zypper_call.output, zypper_call.error
                     )
                 )
+        # report success(0) return code
+        with open(exit_code_file, 'w') as exit_code:
+            exit_code.write('0{}'.format(os.linesep))
     except Exception as issue:
         etc_issue_path = os.sep.join(
             [root_path, 'etc/issue']
@@ -112,6 +116,9 @@ def main():
                     log_path_migrated_system
                 )
             )
+        # report failed(1) return code
+        with open(exit_code_file, 'w') as exit_code:
+            exit_code.write('1{}'.format(os.linesep))
         log.error('migrate service failed with {0}'.format(issue))
         raise DistMigrationZypperException(
             'Migration failed with {0}'.format(issue)
