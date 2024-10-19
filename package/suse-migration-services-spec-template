@@ -1,5 +1,5 @@
 #
-# spec file for package python-migration
+# spec file for package suse-migration-services
 #
 # Copyright (c) 2024 SUSE LLC
 #
@@ -14,24 +14,36 @@
 #
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
-%{?sle15_python_module_pythons}
-Name:             python-migration
+%if 0%{?suse_version} >= 1600
+%define pythons %{primary_python}
+%else
+%define pythons python3
+%endif
+%global _sitelibdir %{%{pythons}_sitelib}
+
+Name:             suse-migration-services
 Version:          %%VERSION
 Release:          0
 Url:              https://github.com/SUSE/suse-migration-services
 Summary:          SUSE Distribution Migration Services
 License:          GPL-3.0+
 Group:            System/Management
-Source:           python-migration.tar.gz
+Source:           suse-migration-services.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildRequires:    fdupes
-BuildRequires:    %{python_module setuptools}
-BuildRequires:    %{python_module Cerberus}
-BuildRequires:    %{python_module PyYAML}
+BuildRequires:    python-rpm-macros
+BuildRequires:    %{pythons}-setuptools
+BuildRequires:    %{pythons}-Cerberus
+BuildRequires:    %{pythons}-PyYAML
+%if 0%{?suse_version} >= 1600
+BuildRequires:    %{pythons}-pip
+BuildRequires:    %{pythons}-wheel
+%endif
 BuildRequires:    systemd-rpm-macros
-Requires:         python-Cerberus
-Requires:         python-PyYAML
-Requires:         python-setuptools
+Requires:         %{pythons}-Cerberus
+Requires:         %{pythons}-PyYAML
+Requires:         %{pythons}-setuptools
+Requires:         %{pythons}-migration
 Requires:         util-linux
 Requires:         kexec-tools
 Requires:         ca-certificates
@@ -42,40 +54,55 @@ Requires:         suse-migration-services = %{version}-%{release}
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
-%python_subpackages
 
 %description
-Python based implementation for suse major code stream upgrade system
+Systemd services to prepare and run a distribution migration process.
 
-%package          -n suse-migration-services
-Summary:          The systemd services for python-migration
+%package          -n python3-migration
+Summary:          The systemd services for python3-migration
 Group:            System/Management
 
-%description -n suse-migration-services
-Systemd services to prepare and run a distribution migration process.
+%description -n python3-migration
+Python based implementation for suse major code stream upgrade system
+
+%package          -n suse-migration-pre-checks
+Summary:          The pre-checks code used with python3-migration
+Group:            System/Management
+Requires:         %{pythons}-migration
+Conflicts:        suse-migration-sle15-activation < 2.0.33
+
+%description -n suse-migration-pre-checks
+Checks to be performed before starting a distribution migration process
+
+%package          -n suse-migration
+Summary:          The migrate tool for a container based upgrade
+Group:            System/Management
+Requires:         podman
+Requires:         sudo
+BuildArch:        noarch
+
+%description -n suse-migration
+The migrate tool to start the migration as container based process
 
 %prep
 %setup -q -n suse_migration_services-%{version}
 
 %build
-%python_build
+%if 0%{?suse_version} >= 1600
+%pyproject_wheel
+%else
+%{pythons} setup.py build
+%endif
 
 %install
-%python_install
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-pre-checks
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-ssh-keys
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-mount-system
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-post-mount-system
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-setup-host-network
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-prepare
-%python_clone -a %{buildroot}%{_bindir}/suse-migration
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-grub-setup
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-update-bootloader
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-product-setup
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-regenerate-initrd
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-kernel-load
-%python_clone -a %{buildroot}%{_bindir}/suse-migration-reboot
-%python_expand %fdupes %{buildroot}%{$python_sitelib}
+%if 0%{?suse_version} >= 1600
+%pyproject_install
+%else
+%{pythons} setup.py install --prefix=%{_prefix} --root=%{buildroot}
+%endif
+
+install -D -m 755 tools/run_migration \
+    %{buildroot}%{_sbindir}/run_migration
 
 install -D -m 644 systemd/suse-migration-mount-system.service \
     %{buildroot}%{_unitdir}/suse-migration-mount-system.service
@@ -134,20 +161,8 @@ install -D -m 644 systemd/suse-migration-ssh-keys.service \
 install -D -m 644 systemd/suse-migration-console-log.service \
     %{buildroot}%{_unitdir}/suse-migration-console-log.service
 
-%post
-%python_install_alternative suse-migration-pre-checks
-%python_install_alternative suse-migration-ssh-keys
-%python_install_alternative suse-migration-mount-system
-%python_install_alternative suse-migration-post-mount-system
-%python_install_alternative suse-migration-setup-host-network
-%python_install_alternative suse-migration-prepare
-%python_install_alternative suse-migration
-%python_install_alternative suse-migration-grub-setup
-%python_install_alternative suse-migration-update-bootloader
-%python_install_alternative suse-migration-product-setup
-%python_install_alternative suse-migration-regenerate-initrd
-%python_install_alternative suse-migration-kernel-load
-%python_install_alternative suse-migration-reboot
+install -D -m 755 tools/migrate \
+    %{buildroot}%{_sbindir}/migrate
 
 # preun / postun
 # While the package provides services all services are one-shot.
@@ -156,26 +171,22 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 # packed into a readonly squashfs layer. Therefore there is no
 # need for use of the "standard" systemd service handling macros.
 
-%files %{python_files}
-%{python_sitelib}/*
-%python_alternative %{_bindir}/suse-migration-pre-checks
-%python_alternative %{_bindir}/suse-migration-ssh-keys
-%python_alternative %{_bindir}/suse-migration-mount-system
-%python_alternative %{_bindir}/suse-migration-post-mount-system
-%python_alternative %{_bindir}/suse-migration-setup-host-network
-%python_alternative %{_bindir}/suse-migration-prepare
-%python_alternative %{_bindir}/suse-migration
-%python_alternative %{_bindir}/suse-migration-grub-setup
-%python_alternative %{_bindir}/suse-migration-update-bootloader
-%python_alternative %{_bindir}/suse-migration-product-setup
-%python_alternative %{_bindir}/suse-migration-regenerate-initrd
-%python_alternative %{_bindir}/suse-migration-kernel-load
-%python_alternative %{_bindir}/suse-migration-reboot
-
-%files -n suse-migration-services
+%files
+%{_sbindir}/run_migration
+%{_bindir}/suse-migration-ssh-keys
+%{_bindir}/suse-migration-mount-system
+%{_bindir}/suse-migration-post-mount-system
+%{_bindir}/suse-migration-setup-host-network
+%{_bindir}/suse-migration-prepare
+%{_bindir}/suse-migration
+%{_bindir}/suse-migration-grub-setup
+%{_bindir}/suse-migration-update-bootloader
+%{_bindir}/suse-migration-product-setup
+%{_bindir}/suse-migration-regenerate-initrd
+%{_bindir}/suse-migration-kernel-load
+%{_bindir}/suse-migration-reboot
 %{_unitdir}/suse-migration-ssh-keys.service
 %{_unitdir}/suse-migration-mount-system.service
-%{_unitdir}/suse-migration-pre-checks.service
 %{_unitdir}/suse-migration-post-mount-system.service
 %{_unitdir}/suse-migration-setup-host-network.service
 %{_unitdir}/suse-migration-prepare.service
@@ -192,5 +203,15 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 %{_unitdir}/suse-migration-regenerate-initrd.service
 %{_unitdir}/suse-migration-kernel-load.service
 %{_unitdir}/suse-migration-reboot.service
+
+%files -n python3-migration
+%{python_sitelib}/*
+
+%files -n suse-migration-pre-checks
+%{_bindir}/suse-migration-pre-checks
+%{_unitdir}/suse-migration-pre-checks.service
+
+%files -n suse-migration
+%{_sbindir}/migrate
 
 %changelog

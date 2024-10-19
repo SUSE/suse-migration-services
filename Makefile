@@ -13,20 +13,20 @@ build: check test
 	mv setup.pye setup.py
 	# provide rpm source tarball
 	mv dist/suse_migration_services-${version}.tar.gz \
-		dist/python-migration.tar.gz
+		dist/suse-migration-services.tar.gz
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
-		--since package/python-migration.changes.ref --utc > \
-        dist/python-migration.changes
+		--since package/suse-migration-services.changes.ref --utc > \
+        dist/suse-migration-services.changes
 	helper/update_changelog.py \
-		--file package/python-migration.changes >> \
-        dist/python-migration.changes
+		--file package/suse-migration-services.changes >> \
+        dist/suse-migration-services.changes
 	# update package version in spec file
-	cat package/python-migration-spec-template \
+	cat package/suse-migration-services-spec-template \
 		| sed -e s'@%%VERSION@${version}@' \
-		> dist/python-migration.spec
+		> dist/suse-migration-services.spec
 	# provide rpm rpmlintrc
-	cp package/python-migration-rpmlintrc dist
+	cp package/suse-migration-services-rpmlintrc dist
 
 sle15_activation: check
 	rm -f dist/*
@@ -61,13 +61,6 @@ sle15_activation: check
 	   echo "MANIFEST.in does not have '$(expected_value)'";\
            exit 1;\
 	fi
-
-migrate:
-	rm -rf dist_migrate
-	mkdir -p dist_migrate
-	cp tools/migrate dist_migrate/
-	cp package/suse-migration.spec dist_migrate/
-	cp package/suse-migration.changes dist_migrate/
 
 .PHONY: test
 test:
