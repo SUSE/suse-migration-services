@@ -45,11 +45,11 @@ def main():
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
     try:
+        migration_config = MigrationConfig()
+        migration_config.update_migration_config_file()
         log.info(
-            'Systemctl Status Information: {0}{1}'.format(
-                os.linesep, Command.run(
-                    ['systemctl', 'status', '-l', '--all'], raise_on_error=False
-                ).output
+            'Config file content:\n{content}\n'. format(
+                content=migration_config.get_migration_config_file_content()
             )
         )
         # stop console dialog log. The service holds a busy state
@@ -59,7 +59,7 @@ def main():
             ['systemctl', 'stop', 'suse-migration-console-log'],
             raise_on_error=False
         )
-        if MigrationConfig().is_debug_requested():
+        if migration_config.is_debug_requested():
             log.info('Reboot skipped due to debug flag set')
         else:
             log.info('Umounting system')
@@ -76,7 +76,7 @@ def main():
                         )
                     )
                 )
-            if not MigrationConfig().is_soft_reboot_requested():
+            if not migration_config.is_soft_reboot_requested():
                 restart_system = 'reboot'
             else:
                 restart_system = 'kexec'
