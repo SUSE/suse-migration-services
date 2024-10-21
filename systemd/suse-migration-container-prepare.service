@@ -1,0 +1,10 @@
+[Unit]
+Description=Prepare For Migration
+OnFailure=suse-migration-container-emergency.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-prepare
+
+[Install]
+WantedBy=multi-user.target
