@@ -7,7 +7,7 @@ Distribution Migration System
 
 |GitHub Action Unit Types|
 
-**Migrate from one major SUSE version to another with the DMS**
+**Migrate a SUSE distribution from 12 to 15 with DMS**
 
 Contents
 --------
