@@ -38,6 +38,10 @@ class Defaults:
         return 'suse-migration'
 
     @staticmethod
+    def get_migration_exit_code_file():
+        return '/var/log/distro_migration.exitcode'
+
+    @staticmethod
     def get_migration_log_file(system_root=True):
         migration_log_file = 'var/log/distro_migration.log'
 
