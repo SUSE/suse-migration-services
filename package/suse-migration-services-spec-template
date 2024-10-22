@@ -1,7 +1,7 @@
 #
 # spec file for package suse-migration-services
 #
-# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2024 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -11,10 +11,15 @@
 # case the license is the MIT License). An "Open Source License" is a
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
-
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-
+# Please submit bugfixes or comments via https://bugs.opensuse.org/
+#
+%if 0%{?suse_version} >= 1600
+%define pythons %{primary_python}
+%else
+%define pythons python3
+%endif
+%global _sitelibdir %{%{pythons}_sitelib}
 
 Name:             suse-migration-services
 Version:          %%VERSION
@@ -25,20 +30,27 @@ License:          GPL-3.0+
 Group:            System/Management
 Source:           suse-migration-services.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
-Conflicts:        suse-migration-sle15-activation
-BuildRequires:    python3-devel
-BuildRequires:    python3-setuptools
+BuildRequires:    fdupes
+BuildRequires:    python-rpm-macros
+BuildRequires:    %{pythons}-setuptools
+BuildRequires:    %{pythons}-Cerberus
+BuildRequires:    %{pythons}-PyYAML
+%if 0%{?suse_version} >= 1600
+BuildRequires:    %{pythons}-pip
+BuildRequires:    %{pythons}-wheel
+%endif
 BuildRequires:    systemd-rpm-macros
-Requires:         suse-migration-pre-checks
-Requires:         python3-Cerberus
-Requires:         python3-PyYAML
-Requires:         python3-setuptools
+Requires:         %{pythons}-Cerberus
+Requires:         %{pythons}-PyYAML
+Requires:         %{pythons}-setuptools
+Requires:         %{pythons}-migration
 Requires:         util-linux
 Requires:         kexec-tools
 Requires:         ca-certificates
 Requires:         dialog
 Requires:         rsync
 Requires:         suseconnect-ng
+Requires:         suse-migration-services = %{version}-%{release}
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
@@ -46,11 +58,17 @@ BuildArch:        noarch
 %description
 Systemd services to prepare and run a distribution migration process.
 
-%package          -n suse-migration-pre-checks
-Summary:          The pre-checks code used with suse-migration-services
+%package          -n python3-migration
+Summary:          The systemd services for python3-migration
 Group:            System/Management
-Requires:         python3-Cerberus
-Requires:         python3-PyYAML
+
+%description -n python3-migration
+Python based implementation for suse major code stream upgrade system
+
+%package          -n suse-migration-pre-checks
+Summary:          The pre-checks code used with python3-migration
+Group:            System/Management
+Requires:         %{pythons}-migration
 Conflicts:        suse-migration-sle15-activation < 2.0.33
 
 %description -n suse-migration-pre-checks
@@ -60,10 +78,18 @@ Checks to be performed before starting a distribution migration process
 %setup -q -n suse_migration_services-%{version}
 
 %build
-python3 setup.py build
+%if 0%{?suse_version} >= 1600
+%pyproject_wheel
+%else
+%{pythons} setup.py build
+%endif
 
 %install
-python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
+%if 0%{?suse_version} >= 1600
+%pyproject_install
+%else
+%{pythons} setup.py install --prefix=%{_prefix} --root=%{buildroot}
+%endif
 
 install -D -m 755 tools/run_migration \
     %{buildroot}%{_sbindir}/run_migration
@@ -118,83 +144,38 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 # need for use of the "standard" systemd service handling macros.
 
 %files
-%defattr(-,root,root,-)
-%{python3_sitelib}/suse_migration_services/suse_connect.py
-%{python3_sitelib}/suse_migration_services/units
-%{python3_sitelib}/suse_migration_services/__pycache__/migration_config.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/path.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/schema.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/suse_connect.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/suse_product.cpython-*.pyc
-
 %{_sbindir}/run_migration
-
 %{_bindir}/suse-migration-ssh-keys
-%{_unitdir}/suse-migration-ssh-keys.service
-
 %{_bindir}/suse-migration-mount-system
-%{_unitdir}/suse-migration-mount-system.service
-
-# The %{_bindir}/suse-migration-pre-checks is
-# installed from the suse-migration-pre-checks package
-%{_unitdir}/suse-migration-pre-checks.service
-
 %{_bindir}/suse-migration-post-mount-system
-%{_unitdir}/suse-migration-post-mount-system.service
-
 %{_bindir}/suse-migration-setup-host-network
-%{_unitdir}/suse-migration-setup-host-network.service
-
 %{_bindir}/suse-migration-prepare
-%{_unitdir}/suse-migration-prepare.service
-
 %{_bindir}/suse-migration
+%{_bindir}/suse-migration-grub-setup
+%{_bindir}/suse-migration-update-bootloader
+%{_bindir}/suse-migration-product-setup
+%{_bindir}/suse-migration-regenerate-initrd
+%{_bindir}/suse-migration-kernel-load
+%{_bindir}/suse-migration-reboot
+%{_unitdir}/suse-migration-ssh-keys.service
+%{_unitdir}/suse-migration-mount-system.service
+%{_unitdir}/suse-migration-post-mount-system.service
+%{_unitdir}/suse-migration-setup-host-network.service
+%{_unitdir}/suse-migration-prepare.service
 %{_unitdir}/suse-migration.service
 %{_unitdir}/suse-migration-console-log.service
-
-%{_bindir}/suse-migration-grub-setup
 %{_unitdir}/suse-migration-grub-setup.service
-
-%{_bindir}/suse-migration-update-bootloader
 %{_unitdir}/suse-migration-update-bootloader.service
-
-%{_bindir}/suse-migration-product-setup
 %{_unitdir}/suse-migration-product-setup.service
-
-%{_bindir}/suse-migration-regenerate-initrd
 %{_unitdir}/suse-migration-regenerate-initrd.service
-
-%{_bindir}/suse-migration-kernel-load
 %{_unitdir}/suse-migration-kernel-load.service
-
-%{_bindir}/suse-migration-reboot
 %{_unitdir}/suse-migration-reboot.service
 
+%files -n python3-migration
+%{python_sitelib}/*
+
 %files -n suse-migration-pre-checks
-%defattr(-,root,root,-)
-%{python3_sitelib}/suse_migration_services/command.py
-%{python3_sitelib}/suse_migration_services/defaults.py
-%{python3_sitelib}/suse_migration_services/exceptions.py
-%{python3_sitelib}/suse_migration_services/fstab.py
-%{python3_sitelib}/suse_migration_services/logger.py
-%{python3_sitelib}/suse_migration_services/migration_config.py
-%{python3_sitelib}/suse_migration_services/path.py
-%{python3_sitelib}/suse_migration_services/schema.py
-%{python3_sitelib}/suse_migration_services/suse_product.py
-%{python3_sitelib}/suse_migration_services/version.py
-%{python3_sitelib}/suse_migration_services/__init__.py
-%{python3_sitelib}/suse_migration_services/prechecks
 %{_bindir}/suse-migration-pre-checks
-%{python3_sitelib}/suse_migration_services-*
-%{python3_sitelib}/suse_migration_services/__pycache__/__init__.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/command.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/defaults.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/exceptions.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/fstab.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/logger.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services/__pycache__/version.cpython-*.pyc
-%{python3_sitelib}/suse_migration_services-*/
-%dir %{python3_sitelib}/suse_migration_services
-%dir %{python3_sitelib}/suse_migration_services/__pycache__
+%{_unitdir}/suse-migration-pre-checks.service
 
 %changelog

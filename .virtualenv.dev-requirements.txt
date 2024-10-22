@@ -10,6 +10,7 @@ mock
 
 # Python style guide checker
 flake8
+mypy
 
 # Version-bump your software with a single command!
 bumpversion
