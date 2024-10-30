@@ -1,0 +1,9 @@
+[Unit]
+Description=Reboot System
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-reboot
+
+[Install]
+WantedBy=multi-user.target

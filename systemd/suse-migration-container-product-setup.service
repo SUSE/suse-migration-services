@@ -1,0 +1,12 @@
+[Unit]
+Description=Prepare Product Setup for Migration
+After=suse-migration-container-prepare.service
+Requires=suse-migration-container-prepare.service
+OnFailure=suse-migration-container-emergency.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-product-setup
+
+[Install]
+WantedBy=multi-user.target

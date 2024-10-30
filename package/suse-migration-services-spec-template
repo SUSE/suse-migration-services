@@ -74,6 +74,16 @@ Conflicts:        suse-migration-sle15-activation < 2.0.33
 %description -n suse-migration-pre-checks
 Checks to be performed before starting a distribution migration process
 
+%package          -n suse-migration
+Summary:          The migrate tool for a container based upgrade
+Group:            System/Management
+Requires:         podman
+Requires:         sudo
+BuildArch:        noarch
+
+%description -n suse-migration
+The migrate tool to start the migration as container based process
+
 %prep
 %setup -q -n suse_migration_services-%{version}
 
@@ -112,6 +122,21 @@ install -D -m 644 systemd/suse-migration-prepare.service \
 install -D -m 644 systemd/suse-migration.service \
     %{buildroot}%{_unitdir}/suse-migration.service
 
+install -D -m 644 systemd/suse-migration-container.service \
+    %{buildroot}%{_unitdir}/suse-migration-container.service
+
+install -D -m 644 systemd/suse-migration-container-prepare.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-prepare.service
+
+install -D -m 644 systemd/suse-migration-container-product-setup.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-product-setup.service
+
+install -D -m 644 systemd/suse-migration-container-reboot.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-reboot.service
+
+install -D -m 644 systemd/suse-migration-container-emergency.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-emergency.service
+
 install -D -m 644 systemd/suse-migration-grub-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
 
@@ -135,6 +160,9 @@ install -D -m 644 systemd/suse-migration-ssh-keys.service \
 
 install -D -m 644 systemd/suse-migration-console-log.service \
     %{buildroot}%{_unitdir}/suse-migration-console-log.service
+
+install -D -m 755 tools/migrate \
+    %{buildroot}%{_sbindir}/migrate
 
 # preun / postun
 # While the package provides services all services are one-shot.
@@ -163,6 +191,11 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 %{_unitdir}/suse-migration-setup-host-network.service
 %{_unitdir}/suse-migration-prepare.service
 %{_unitdir}/suse-migration.service
+%{_unitdir}/suse-migration-container.service
+%{_unitdir}/suse-migration-container-prepare.service
+%{_unitdir}/suse-migration-container-product-setup.service
+%{_unitdir}/suse-migration-container-reboot.service
+%{_unitdir}/suse-migration-container-emergency.service
 %{_unitdir}/suse-migration-console-log.service
 %{_unitdir}/suse-migration-grub-setup.service
 %{_unitdir}/suse-migration-update-bootloader.service
@@ -177,5 +210,8 @@ install -D -m 644 systemd/suse-migration-console-log.service \
 %files -n suse-migration-pre-checks
 %{_bindir}/suse-migration-pre-checks
 %{_unitdir}/suse-migration-pre-checks.service
+
+%files -n suse-migration
+%{_sbindir}/migrate
 
 %changelog
