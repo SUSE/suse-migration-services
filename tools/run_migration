@@ -39,7 +39,7 @@ function get_migration_image {
     # """
     # Search for migration ISO file
     # """
-    echo /usr/share/migration-image/*-Migration.*.iso
+    echo /migration-image/*-Migration.*.iso
 }
 
 function get_system_root_device {
