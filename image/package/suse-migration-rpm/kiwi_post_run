@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+set -u
+
+: ${TOPDIR:=/usr/src/packages}
+
+IMAGE_DIR=$TOPDIR/KIWI
+BUILD_DIR=/usr/lib/build
+
+cd $IMAGE_DIR
+
+ARCH=$(rpm --eval '%{_arch}')
+IMAGE=$(echo *.iso)
+NAME=$(echo $IMAGE | cut -f1 -d.)
+VERSION=$(echo $IMAGE | cut -f3 -d-)
+RELEASE=$(echo $IMAGE | cut -f4 -d- | sed -e "s@Build@@" | cut -f1 -d.)
+
+if [ -z "$IMAGE" ]; then
+    echo "Couldn't find anything in $IMAGE_DIR matching *.iso"
+    echo "Will skip containment rpm wrapping steps."
+    exit 0
+fi
+
+echo "Attempting to wrap $IMAGE in a containment rpm ..."
+
+echo "name $NAME"
+echo "version $VERSION"
+echo "release $RELEASE"
+
+sed -e "s/__NAME__/$NAME/g" \
+    -e "s/__VERSION__/$VERSION/g" \
+    -e "s/__RELEASE__/$RELEASE/g" \
+    -e "s/__SOURCE__/$IMAGE/g" \
+    < $BUILD_DIR/image.spec.in \
+    > $BUILD_DIR/image.spec
+
+# Local builds have the file already in place, that's not true on IBS
+if [ ! -f $TOPDIR/SOURCES/$IMAGE ]; then
+  ln $IMAGE $TOPDIR/SOURCES
+fi
+
+# Make sure /usr/src/packages/* dirs exist
+if [ ! -f $TOPDIR/BUILD ]; then
+  echo "Create BUILD dir"
+  mkdir -p $TOPDIR/BUILD
+fi
+
+if [ ! -f $TOPDIR/SRPMS ]; then
+  echo "Create SRPMS dir"
+  mkdir -p $TOPDIR/SRPMS
+fi
+
+if [ ! -f $TOPDIR/RPMS/$ARCH ]; then
+  echo "Create SRPMS dir"
+  mkdir -p $TOPDIR/RPMS/$ARCH
+fi
+
+rpmbuild -ba $BUILD_DIR/image.spec
+
+# required for the BS to find the rpm, because it is
+# a "non-standard result file for KIWI"
+mkdir -p $TOPDIR/OTHER
+mv $TOPDIR/RPMS/$ARCH/$NAME-$VERSION-$RELEASE.$ARCH.rpm $TOPDIR/OTHER/

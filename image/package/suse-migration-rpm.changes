@@ -1,0 +1,67 @@
+-------------------------------------------------------------------
+Wed Oct 30 13:21:08 UTC 2024 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Install migration live image to /migration-image
+
+  This change helps to run migrations on systems which stores
+  /usr/share in a special way, e.g. as LVM volume or other
+  type that cannot be read via the loopback grub or kexec
+  method
+
+-------------------------------------------------------------------
+Thu Nov 14 10:11:04 UTC 2019 - Marcus Schaefer <ms@suse.com>
+
+- Reference commit for SUSE maintenance
+  
+  This submission creates a reference to bsc#1155192
+
+-------------------------------------------------------------------
+Mon Nov 11 14:29:56 UTC 2019 - Marcus Schaefer <ms@suse.com>
+
+- Add product version requirement to spec file
+  For further details see: https://github.com/SUSE/suse-migration-services/pull/143
+
+-------------------------------------------------------------------
+Tue Aug 20 12:01:26 UTC 2019 - Jesús Bermúdez Velázquez <jesusbv@suse.com>
+
+- Reference commit for SUSE maintenance
+  Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108) 
+
+-------------------------------------------------------------------
+Wed Aug 14 11:47:24 UTC 2019 - Jesús Bermúdez Velázquez <jesusbv@suse.com>
+
+- This submission creates a reference to bsc#1142108
+ 
+-------------------------------------------------------------------
+Wed Jul 17 09:46:13 UTC 2019 - ms@suse.com
+
+- Install run_migration from suse-migration-services package
+  that is now a build requirement. For details see:
+  https://github.com/SUSE/suse-migration-services/issues/108
+
+-------------------------------------------------------------------
+Thu May  2 13:24:04 UTC 2019 - ms@suse.com
+
+- Reference commit for SUSE maintenance
+
+  This submission creates a reference to fate#327175 and bsc#1133919
+
+-------------------------------------------------------------------
+Mon Mar  4 12:53:44 UTC 2019 - ms@suse.com
+
+- Install SLES15-Migration live image to /usr/share/migration-image
+  See https://github.com/SUSE/suse-migration-services/issues/54
+  for details 
+
+-------------------------------------------------------------------
+Fri Jan 25 10:08:59 UTC 2019 - ms@suse.com
+
+- Install SLES15-Migration live image to /boot
+
+-------------------------------------------------------------------
+Wed Nov 14 15:32:25 UTC 2018 - ms@suse.com
+
+- Post Processing package for SLES15-Migration live image.
+  This package provides metadata used at the end of an
+  appliance build to package the image results into a
+  package

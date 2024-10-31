@@ -1,0 +1,41 @@
+# needsrootforbuild
+
+%global MinSLEVersion 12.3
+
+Url:            http://www.suse.com/
+Name:           __NAME__
+Summary:        Migration Live System
+Version:        __VERSION__
+Release:        __RELEASE__
+Group:          System/Management
+License:        SUSE-EULA
+Source0:        __SOURCE__
+Requires:       product(SLES) >= %{MinSLEVersion}
+Requires:       suse-migration-pre-checks
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+
+%description
+This package contains the Migration Live System.
+
+%prep
+
+%build
+
+%install
+install -d -m 755 $RPM_BUILD_ROOT/migration-image
+install -d -m 755 $RPM_BUILD_ROOT/%{_sbindir}
+cp %{SOURCE0} $RPM_BUILD_ROOT/migration-image
+cp %{_sbindir}/run_migration $RPM_BUILD_ROOT/%{_sbindir}
+
+%post
+/usr/bin/suse-migration-pre-checks
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-, root, root)
+/migration-image
+%{_sbindir}/run_migration
+
+%changelog
