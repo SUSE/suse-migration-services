@@ -22,9 +22,9 @@ This package contains the Migration Live System.
 %build
 
 %install
-install -d -m 755 $RPM_BUILD_ROOT/usr/share/migration-image
+install -d -m 755 $RPM_BUILD_ROOT/migration-image
 install -d -m 755 $RPM_BUILD_ROOT/%{_sbindir}
-cp %{SOURCE0} $RPM_BUILD_ROOT/usr/share/migration-image
+cp %{SOURCE0} $RPM_BUILD_ROOT/migration-image
 cp %{_sbindir}/run_migration $RPM_BUILD_ROOT/%{_sbindir}
 
 %post
@@ -35,7 +35,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-, root, root)
-/usr/share/migration-image
+/migration-image
 %{_sbindir}/run_migration
 
 %changelog

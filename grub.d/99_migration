@@ -14,7 +14,7 @@ else
     ) ${CLASS}"
 fi
 
-migration_iso=$(echo /usr/share/migration-image/*-Migration.*.iso)
+migration_iso=$(echo /migration-image/*-Migration.*.iso)
 
 root_device=$(
     lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" "
@@ -74,6 +74,7 @@ if grub_file_is_not_garbage "${migration_iso}"; then
             "/@/boot/grub2/x86_64-efi"
         printf "    insmod loopback\n"
     fi
+    printf "    insmod lvm\n"
     printf "    insmod %s\n" "${image_fs_type}"
     printf "    search --no-floppy --fs-uuid --set=root %s\n" "${image_fs_uuid}"
     printf "    set isofile='%s'\n" \
