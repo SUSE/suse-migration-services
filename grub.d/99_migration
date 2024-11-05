@@ -14,7 +14,7 @@ else
     ) ${CLASS}"
 fi
 
-migration_iso=$(ls -1 /migration-image/*-Migration.*.iso | tail -1)
+migration_iso=$(echo /migration-image/*-Migration.*.iso)
 
 root_device=$(
     lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" "
