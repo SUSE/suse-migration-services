@@ -14,32 +14,14 @@ else
     ) ${CLASS}"
 fi
 
-migration_iso=$(echo /migration-image/*-Migration.*.iso)
+migration_iso=$(echo /*-Migration.*.iso)
 
 root_device=$(
     lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" "
 )
 
-# check if location of migration_iso is not on the root_device
-if [ -f "${migration_iso}" ]; then
-    image_fs_device=${root_device}
-else
-    index=4
-    for path in "/usr/share" "/usr";do
-        if mountpoint -q ${path};then
-            image_fs_device=$(
-                lsblk -p -n -r -o NAME,MOUNTPOINT |\
-                grep -E "${path}$" | uniq | cut -f1 -d" "
-            )
-            migration_iso=/$(echo "${migration_iso}" | cut -f"${index}"- -d/)
-            break
-        fi
-        index=$((index -1))
-    done
-fi
-
-image_fs_uuid=$(blkid -s UUID -o value "${image_fs_device}")
-image_fs_type=$(blkid -s TYPE -o value "${image_fs_device}")
+image_fs_uuid=$(blkid -s UUID -o value "${root_device}")
+image_fs_type=$(blkid -s TYPE -o value "${root_device}")
 
 if [[ ${image_fs_type} =~ ^ext[[:digit:]] ]] ; then
    image_fs_type="ext2"
