@@ -86,8 +86,8 @@ migrate() {
 
 cleanup() {
     # reset container storage
-    sudo umount --lazy /var/lib/containers/storage/overlay
-    sudo umount --lazy /var/lib/containers/storage/overlay-containers/*/*/shm
+    sudo umount --lazy /var/lib/containers/storage/overlay || true
+    sudo umount --lazy /var/lib/containers/storage/overlay-containers/*/*/shm || true
     sudo rm -rf /var/lib/containers/storage
 }
 
