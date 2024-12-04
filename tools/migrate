@@ -18,7 +18,7 @@
 #
 set -e
 
-# TODO: this location needs to be changed to an official place
+# default migration system
 MIGRATION_SYSTEM=registry.opensuse.org/home/marcus.schaefer/dms/containers_sle15/migration:latest
 
 ARGUMENT_LIST=(
@@ -26,6 +26,7 @@ ARGUMENT_LIST=(
     "reboot"
     "use-zypper-dup"
     "product:"
+    "migration-system:"
 )
 
 # Functions
@@ -42,6 +43,10 @@ usage() {
     echo "      target repos to be setup before migration !"
     echo "      An eventually given --product option will be"
     echo "      ignored"
+    echo "  --migration-system <URI>"
+    echo "      Use the given migration container to run the"
+    echo "      migration process. By default a SLE15 container"
+    echo "      is used"
     echo "  --reboot"
     echo "      Reboot after successful upgrade"
     echo "  --debug"
@@ -126,6 +131,11 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
 
+        --migration-system)
+            argMigrationSystem=$2
+            shift 2
+            ;;
+
         *)
             break
             ;;
@@ -138,6 +148,10 @@ EOF
 
 if [ "${argDebug}" ];then
     echo "debug: true" >> /etc/sle-migration-service.yml
+fi
+
+if [ "${argMigrationSystem}" ];then
+    MIGRATION_SYSTEM="${argMigrationSystem}"
 fi
 
 if [ "${argProduct}" ];then
