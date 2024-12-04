@@ -58,15 +58,15 @@ BuildArch:        noarch
 %description
 Systemd services to prepare and run a distribution migration process.
 
-%package          -n python3-migration
-Summary:          The systemd services for python3-migration
+%package          -n %{pythons}-migration
+Summary:          The systemd services for the python migration module
 Group:            System/Management
 
-%description -n python3-migration
+%description -n %{pythons}-migration
 Python based implementation for suse major code stream upgrade system
 
 %package          -n suse-migration-pre-checks
-Summary:          The pre-checks code used with python3-migration
+Summary:          The pre-checks code used with the python migration module
 Group:            System/Management
 Requires:         %{pythons}-migration
 Conflicts:        suse-migration-sle15-activation < 2.0.33
@@ -204,7 +204,7 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-kernel-load.service
 %{_unitdir}/suse-migration-reboot.service
 
-%files -n python3-migration
+%files -n %{pythons}-migration
 %{python_sitelib}/*
 
 %files -n suse-migration-pre-checks
