@@ -34,7 +34,6 @@
         <package name="systemd"/>
         <package name="procps"/>
         <package name="suseconnect-ng"/>
-        <package name="ifplugd"/>
         <package name="iputils"/>
         <package name="tar"/>
         <package name="parted"/>
@@ -59,7 +58,6 @@
         <package name="python3-gcemetadata"/>
         <package name="python3-ec2metadata"/>
         <package name="python3-azuremetadata"/>
-        <package name="haveged"/>
     </packages>
     <packages type="bootstrap">
         <package name="zypper"/>
