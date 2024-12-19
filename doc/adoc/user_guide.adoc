@@ -232,6 +232,28 @@ workflow is not used, the setup of the repositories must be performed
 manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
+Specify Migration Product::
+By default the system will be migrated to SLES15 SP3. This default
+target can be changed via the `migration_product` setting.
+The product must be specified with the triplet `name/version/arch`
+found in '/etc/products.d/baseproduct' of the target product,
+for example:
++
+[listing]
+----
+migration_product: SLES/15.3/x86_64
+----
++
+[WARNING]
+Changing the default product leads to unsupported territory and
+is not tested nor covered by the SUSE support offering !
+The specified product name must be supported by the repository
+server used for the migration. If the given product does not
+exist or the repository server cannot calculate an upgrade
+path, an error message from the repository server will be
+logged in the migration log file. Also see:
+https://documentation.suse.com/sles/15-SP6/html/SLES-all/cha-upgrade-background.html[Lifecycle and support]
+
 Preserve System Data::
 Preserve custom data file(s) e.g. udev rules from the system
 to be migrated into the upgrade live system and make sure
@@ -395,8 +417,7 @@ the commands from the Installation Section of this document.
 * The instance metadata will not change. As far as the
   cloud framework is concerned, you will still be running an instance
   of the SLES version you started with. This cannot be changed.
-* The only supported migration path in the Public Cloud is from the
-  final 2 service packs of a distribution to the first service pack of
-  the next distribution. For example from SLES 12 SP5 to SLES 15 SP3.
-  The packages delivered by SUSE in the Public Cloud Module implement
-  this behavior by default.
+* The default migration path in the Public Cloud is from the final service
+  pack of SLES 12 (SP5) to SLES 15 SP3. The target may be changed by the
+  customer to service packs greater than SP3, but the source may not be
+  earlier than 12 SP5.
