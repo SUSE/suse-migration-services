@@ -129,3 +129,9 @@ class Defaults:
     @staticmethod
     def get_zypp_gen_solver_test_case():
         return ''
+
+    @staticmethod
+    def get_grub_default_file():
+        return os.sep.join(
+                [Defaults.get_system_root_path(), '/etc/default/grub']
+        )
