@@ -52,10 +52,6 @@ def main():
     resolv_conf = os.sep.join(
         [root_path, 'etc', 'resolv.conf']
     )
-    if not os.path.exists(resolv_conf):
-        raise DistMigrationNameResolverException(
-            'Could not find {0} on migration host'.format(resolv_conf)
-        )
     sysconfig_network_providers = os.sep.join(
         [root_path, 'etc', 'sysconfig', 'network', 'providers']
     )
@@ -64,15 +60,16 @@ def main():
     )
     try:
         log.info('Running setup host network service')
-        Command.run(
-            [
-                'mount', '--bind', sysconfig_network_providers,
-                '/etc/sysconfig/network/providers'
-            ]
-        )
-        system_mount.add_entry(
-            sysconfig_network_providers, '/etc/sysconfig/network/providers'
-        )
+        if os.path.exists(sysconfig_network_providers):
+            Command.run(
+                [
+                    'mount', '--bind', sysconfig_network_providers,
+                    '/etc/sysconfig/network/providers'
+                ]
+            )
+            system_mount.add_entry(
+                sysconfig_network_providers, '/etc/sysconfig/network/providers'
+            )
         for network_setup in glob.glob(sysconfig_network_setup):
             if os.path.isfile(network_setup):
                 shutil.copy(
@@ -87,7 +84,14 @@ def main():
                 resolv_conf, '/etc/resolv.conf'
             )
         else:
-            log.info('Empty {0}, bind mounting /etc/resolv.conf to {0}'.format(resolv_conf))
+            # ensure resolv.conf won't be a symlink on migrated system, create an empty file instead to allow bind mount
+            if os.path.islink(resolv_conf):
+                log.info('{0} is a symlink, renaming it to {0}.pre-migration, bind mounting /etc/resolv.conf to {0}'.format(resolv_conf))
+                os.replace(resolv_conf,resolv_conf+'.pre-migration')
+                open(resolv_conf,'w').close()
+            else:
+                log.info('Empty {0}, bind mounting /etc/resolv.conf to {0}'.format(resolv_conf))
+
             Command.run(
                 [
                     'mount', '--bind', '/etc/resolv.conf',
@@ -154,6 +158,8 @@ def log_network_details():
 
 
 def has_host_resolv_setup(resolv_conf_path):
+    if not os.path.exists(resolv_conf_path):
+        return False
     with open(resolv_conf_path, 'r') as resolv:
         for line in resolv:
             # check there is useful information in the remaining lines
