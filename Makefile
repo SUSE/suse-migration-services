@@ -19,7 +19,7 @@ build: check test
 		--since package/suse-migration-services.changes.ref --utc > \
         dist/suse-migration-services.changes
 	helper/update_changelog.py \
-		--file package/suse-migration-services.changes >> \
+		--file package/suse-migration-services.changes --utc >> \
         dist/suse-migration-services.changes
 	# update package version in spec file
 	cat package/suse-migration-services-spec-template \

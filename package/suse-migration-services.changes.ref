@@ -1,7 +1,7 @@
-commit d33e3b61338d57b0230ddf61c56fce8d71262ff6 (tag: v0.5.30)
-Author:     Marcus Schäfer <ms@suse.de>
-AuthorDate: Thu May 2 15:16:38 2019 +0200
-Commit:     Marcus Schäfer <ms@suse.de>
-CommitDate: Thu May 2 15:16:38 2019 +0200
+commit 646dc3789a5ff078764332e1b87636b4f37aec80
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Tue Aug 13 13:26:17 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Tue Aug 13 13:26:17 2024 -0400
 
-    Bump version: 0.5.29 → 0.5.30
+    Bump version: 2.0.39 → 2.0.40
