@@ -275,11 +275,11 @@ AuthorDate: Thu Dec 8 17:09:29 2022 -0500
 Commit:     KeithMnemonic <kberger@suse.com>
 CommitDate: Tue Jan 3 10:00:31 2023 -0500
 
-    Use bind mount when needed, to ensure the resolv.conf in the root_path contains proper settings
+    Use bind mount when needed, to ensure the resolv.conf in the root_path contains proper settings bsc#1206194
     
     Bump version: 2.0.34 → 2.0.35
     
-    Fix kernel check when there is no entry for 'multiversion ='
+    Fix kernel check when there is no entry for 'multiversion =' bsc#1206701
 
 commit 02455af48806f7ef7820d65580303e86e3caea8e
 Author:     KeithMnemonic <kberger@suse.com>
@@ -287,7 +287,8 @@ AuthorDate: Thu Dec 8 17:09:29 2022 -0500
 Commit:     KeithMnemonic <kberger@suse.com>
 CommitDate: Tue Dec 13 16:25:48 2022 -0500
 
-    Use bind mount when needed, to ensure the resolv.conf in the root_path contains proper settings
+    Use bind mount when needed, to ensure the resolv.conf in the root_path contains proper settings bsc#1206194
+    Fix kernel check when there is no entry for 'multiversion =' bsc#1206701
     
     Bump version: 2.0.34 → 2.0.35
 
