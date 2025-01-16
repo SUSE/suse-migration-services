@@ -24,6 +24,9 @@ class TestMigration(object):
         mock_get_migration_config_file.return_value = \
             '../data/migration-config-zypper-dup.yml'
         self.migration_config_dup = MigrationConfig()
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config-solver-case.yml'
+        self.migration_config_solver_case = MigrationConfig()
 
     @patch.object(Defaults, 'get_migration_config_file')
     def setup_method(self, cls, mock_get_migration_config_file):
@@ -142,6 +145,7 @@ class TestMigration(object):
                 'bash', '-c',
                 'zypper migration '
                 '--no-verbose '
+                ' '
                 '--non-interactive '
                 '--gpg-auto-import-keys '
                 '--no-selfupdate '
@@ -174,6 +178,40 @@ class TestMigration(object):
                 'bash', '-c',
                 'zypper migration '
                 '--verbose '
+                ' '
+                '--non-interactive '
+                '--gpg-auto-import-keys '
+                '--no-selfupdate '
+                '--auto-agree-with-licenses '
+                '--allow-vendor-change '
+                '--strict-errors-dist-migration '
+                '--replacefiles '
+                '--product SLES/15/x86_64 '
+                '--root /system-root '
+                '&>> /system-root/var/log/distro_migration.log'
+            ]
+        )
+
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.migrate.log_env')
+    @patch('suse_migration_services.units.migrate.update_env')
+    @patch.object(MigrationConfig, 'get_migration_product')
+    @patch('suse_migration_services.units.migrate.MigrationConfig')
+    def test_main_zypper_migration_plugin_solver_case(
+        self, mock_MigrationConfig, mock_get_system_root_path,
+        mock_update_env, mock_log_env, mock_Command_run, mock_logger_setup
+    ):
+        mock_MigrationConfig.return_value = self.migration_config_solver_case
+        mock_get_system_root_path.return_value = 'SLES/15/x86_64'
+        with patch('builtins.open', create=True):
+            main()
+        mock_Command_run.assert_called_once_with(
+            [
+                'bash', '-c',
+                'zypper migration '
+                '--no-verbose '
+                '--debug-solver '
                 '--non-interactive '
                 '--gpg-auto-import-keys '
                 '--no-selfupdate '

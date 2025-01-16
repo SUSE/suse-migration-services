@@ -59,12 +59,18 @@ def main():
             log.info('Update env variables')
             update_env(migration_config.get_preserve_info())
             log_env(log)
-        verbose_migration = '--verbose' if migration_config.is_verbosity_requested() else '--no-verbose'
+        verbose_migration = '--no-verbose'
+        if migration_config.is_verbosity_requested():
+            verbose_migration = '--verbose'
+        solver_case = Defaults.get_zypp_gen_solver_test_case()
+        if migration_config.is_zypp_solver_test_case_requested():
+            solver_case = '--debug-solver'
         if migration_config.is_zypper_migration_plugin_requested():
             bash_command = ' '.join(
                 [
                     'zypper', 'migration',
                     verbose_migration,
+                    solver_case,
                     '--non-interactive',
                     '--gpg-auto-import-keys',
                     '--no-selfupdate',

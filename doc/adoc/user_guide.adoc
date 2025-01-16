@@ -3,13 +3,13 @@
 [#art-suse-migration-services]
 
 = Using the SUSE Distribution Migration System
-Marcus Schäfer; Jesús Velázquez; Keith Berger
+Marcus Schäfer; Jesús Velázquez; Keith Berger; Robert Schweikert
 
 :toc:
 :icons: font
 :numbered:
 
-:Authors: Marcus Schäfer, Jesús Bermúdez Velázquez, Keith Berger
+:Authors: Marcus Schäfer, Jesús Bermúdez Velázquez, Keith Berger, Robert Schweikert
 :Latest_Version: 1.2.0
 :Contributors:
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
@@ -312,7 +312,8 @@ verbose_migration: true|false
 
 Enable the fix option for pre_checks::
 If enabled (default), the run_pre_checks systemd process will use the `--fix`
-option to automatically remediate applicable issues before the migration is started. 
+option to automatically remediate applicable issues before the migration
+is started. 
 +
 [listing]
 ----
@@ -330,6 +331,18 @@ independent initrd can be created by setting
 [listing]
 ----
 build_host_independent_initrd: true|false
+----
+
+Configure Dependency Solver Test Case Generation::
+It is possible that during the migration packages get installed that were not
+on the system previously and are pulled in because of dependencies. This
+setting will setup the migration such that a solver test case is generated.
+The information form the test case can then be used to understand why a
+given package was installed.
++
+[listing]
+----
+debug_solver: true|false
 ----
 
 == Run the Migration

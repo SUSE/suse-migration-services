@@ -125,3 +125,7 @@ class Defaults:
     @staticmethod
     def get_zypp_config_path():
         return '/etc/zypp/zypp.conf'
+
+    @staticmethod
+    def get_zypp_gen_solver_test_case():
+        return ''
