@@ -1,0 +1,13 @@
+[Unit]
+Description=Snapper btrfs snapshot before
+After=suse-migration-mount-system.service
+Requires=suse-migration-mount-system.service
+Before=suse-migration-post-mount-system.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-btrfs-snapshot-pre-migration
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
