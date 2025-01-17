@@ -9,7 +9,7 @@
         </specification>
     </description>
     <preferences>
-        <version>2.1.5</version>
+        <version>2.1.6</version>
         <packagemanager>zypper</packagemanager>
         <rpm-excludedocs>true</rpm-excludedocs>
         <rpm-check-signatures>false</rpm-check-signatures>
