@@ -42,5 +42,9 @@ schema = {
     'pre_checks_fix': {
         'required': False,
         'type': 'boolean'
+    },
+    'debug_solver': {
+        'required': False,
+        'type': 'boolean'
     }
 }

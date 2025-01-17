@@ -1,0 +1,7 @@
+debug_solver: true
+preserve:
+  rules:
+     - /etc/udev/rules.d/a.rules
+     - /etc/udev/rules.d/b.rules
+  static:
+    - /etc/sysconfig/proxy

@@ -148,6 +148,9 @@ class MigrationConfig:
     def is_verbosity_requested(self):
         return self.config_data.get('verbose_migration', False)
 
+    def is_zypp_solver_test_case_requested(self):
+        return self.config_data.get('debug_solver', False)
+
     def _write_config_file(self):
         with open(self.migration_config_file, 'w') as config:
             yaml.dump(self.config_data, config, default_flow_style=False)
