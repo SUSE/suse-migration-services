@@ -1,10 +1,12 @@
 [Unit]
 Description=Load the migrated system kernel/initrd
 After=suse-migration-regenerate-initrd.service
+Requisite=suse-migration.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/suse-migration-kernel-load
+RemainAfterExit=true
 
 [Install]
 WantedBy=multi-user.target
