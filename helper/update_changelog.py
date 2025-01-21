@@ -1,12 +1,15 @@
 #!/usr/bin/python3
 """
 usage: update_changelog (--since=<reference_file>|--file=<reference_file>)
+            [--from=<path>...]
             [--utc]
             [--fix]
 
 arguments:
     --since=<reference_file>
         changes since the latest entry in the reference file
+    --from=<path>
+        changes which affected the given file or path
     --file=<reference_file>
         changes from the given file
     --utc
@@ -73,12 +76,21 @@ if arguments['--since']:
         date_reference = parser.parse(latest_date)
 
     # Read git history since latest entry from reference file
+    git_arguments = [
+        'git', 'log'
+    ]
+    git_arguments.append('--no-merges')
+    git_arguments.append('--format=fuller')
+    if latest_date:
+        git_arguments.append('--since="{0}"'.format(latest_date))
+    if arguments.get('--from'):
+        for source_repo in arguments.get('--from'):
+            git_arguments.append(source_repo)
+
     process = subprocess.Popen(
-        [
-            'git', 'log', '--no-merges', '--format=fuller',
-            '--since="{0}"'.format(latest_date)
-        ], stdout=subprocess.PIPE
+        git_arguments, stdout=subprocess.PIPE
     )
+
     from_git_log = True
     for line in iter(process.stdout.readline, b''):
         if line.startswith(b'commit'):
