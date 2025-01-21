@@ -16,12 +16,10 @@ fi
 
 migration_iso=$(echo /migration-image/*-Migration.*.iso)
 
-root_device=$(
-    lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" "
-)
+root_device=$(findmnt -n -v -o SOURCE /)
 
-image_fs_uuid=$(blkid -s UUID -o value "${root_device}")
-image_fs_type=$(blkid -s TYPE -o value "${root_device}")
+image_fs_uuid=$(findmnt -n -o UUID /)
+image_fs_type=$(findmnt -n -o FSTYPE /)
 
 if [[ ${image_fs_type} =~ ^ext[[:digit:]] ]] ; then
    image_fs_type="ext2"
