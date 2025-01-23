@@ -75,6 +75,8 @@ suseInsertService suse-migration-regenerate-initrd
 suseInsertService suse-migration-kernel-load
 suseInsertService suse-migration-reboot
 suseInsertService NetworkManager
+
+# needed for network setup migration
 mkdir -p /etc/sysconfig/network/providers
 
 # Disable password based login via ssh
