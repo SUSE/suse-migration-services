@@ -161,6 +161,9 @@ install -D -m 644 systemd/suse-migration-ssh-keys.service \
 install -D -m 644 systemd/suse-migration-console-log.service \
     %{buildroot}%{_unitdir}/suse-migration-console-log.service
 
+install -D -m 644 systemd/systemd/suse-migration-apparmor-selinux.service \
+    %{buildroot}%{_unitdir}/systemd/suse-migration-apparmor-selinux.service
+
 install -D -m 755 tools/migrate \
     %{buildroot}%{_sbindir}/migrate
 
@@ -173,6 +176,7 @@ install -D -m 755 tools/migrate \
 
 %files
 %{_sbindir}/run_migration
+%{_bindir}/suse-migration-apparmor-selinux
 %{_bindir}/suse-migration-ssh-keys
 %{_bindir}/suse-migration-mount-system
 %{_bindir}/suse-migration-post-mount-system
@@ -197,6 +201,7 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-container-reboot.service
 %{_unitdir}/suse-migration-container-emergency.service
 %{_unitdir}/suse-migration-console-log.service
+%{_unitdir}/suse-migration-apparmor-selinux.service
 %{_unitdir}/suse-migration-grub-setup.service
 %{_unitdir}/suse-migration-update-bootloader.service
 %{_unitdir}/suse-migration-product-setup.service
