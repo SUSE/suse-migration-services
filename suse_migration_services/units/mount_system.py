@@ -179,6 +179,10 @@ def mount_system(root_path, fstab):
             system_mount.add_entry(
                 mount_type, mount_point
             )
+        log.info('Bind mount /run inside chroot {0}'.format(root_path))
+        Command.run(
+            ['mount', '-o', 'bind','/run', os.sep.join([root_path,'run'])]
+        )
     except Exception as issue:
         log.error(
             'Mounting system for upgrade failed with {0}'.format(issue)
