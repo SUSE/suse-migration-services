@@ -1,18 +1,4 @@
 #!/bin/bash
-#================
-# FILE          : config.sh
-#----------------
-# PROJECT       : KIWI - Image System
-# COPYRIGHT     : (c) 2023 SUSE Software Solutions Germany GmbH
-#               :
-# AUTHORS       : Marcus Schaefer <ms@suse.de>
-#               : Keith Berger <kberger@suse.com>
-#               :
-# BELONGS TO    : Operating System images
-#               :
-# DESCRIPTION   : configuration script for SUSE based
-#               : operating systems
-#----------------
 #======================================
 # Functions...
 #--------------------------------------
