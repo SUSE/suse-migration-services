@@ -201,6 +201,9 @@ class TestMountSystem(object):
                 ),
                 call(
                     ['mount', '-t', 'sysfs', 'sysfs', '/system-root/sys']
+                ),
+                call(
+                    ['mount', '-o', 'bind', '/run', '/system-root/run']
                 )
             ]
             assert fstab_mock.add_entry.call_args_list == [

@@ -181,7 +181,7 @@ def mount_system(root_path, fstab):
             )
         log.info('Bind mount /run inside chroot {0}'.format(root_path))
         Command.run(
-            ['mount', '-o', 'bind','/run', os.sep.join([root_path,'run'])]
+            ['mount', '-o', 'bind', '/run', os.sep.join([root_path, 'run'])]
         )
     except Exception as issue:
         log.error(
