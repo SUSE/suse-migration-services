@@ -31,7 +31,7 @@ baseSetRunlevel 3
 # to satisfy the dependencies on the zypper plugin side but
 # not for actually registering a guest to the public cloud
 # infrastructure. We expect that step to be already done
-suseRemoveService guestregister
+systemctl disable guestregister.service
 
 # disable and mask lvmetad
 systemctl disable lvm2-lvmetad.socket
@@ -42,28 +42,25 @@ systemctl mask lvm2-lvmetad.service
 #======================================
 # Activate services
 #--------------------------------------
-suseInsertService sshd
-suseInsertService haveged
-
+systemctl enable sshd.service
+systemctl enable haveged.service
 #======================================
 # Activate migration services
 #--------------------------------------
-suseInsertService suse-migration-mount-system
-suseInsertService suse-migration-post-mount-system
-suseInsertService suse-migration-ssh-keys
-suseInsertService suse-migration-pre-checks
-suseInsertService suse-migration-setup-host-network
-suseInsertService suse-migration-prepare
-suseInsertService suse-migration
-suseInsertService suse-migration-console-log
-suseInsertService suse-migration-grub-setup
-suseInsertService suse-migration-update-bootloader
-suseInsertService suse-migration-product-setup
-suseInsertService suse-migration-regenerate-initrd
-suseInsertService suse-migration-kernel-load
-suseInsertService suse-migration-reboot
-suseInsertService NetworkManager
-
+systemctl enable suse-migration-mount-system.service
+systemctl enable suse-migration-post-mount-system.service
+systemctl enable suse-migration-pre-checks.service
+systemctl enable suse-migration-setup-host-network.service
+systemctl enable suse-migration-prepare.service
+systemctl enable suse-migration.service
+systemctl enable suse-migration-console-log.service
+systemctl enable suse-migration-grub-setup.service
+systemctl enable suse-migration-update-bootloader.service
+systemctl enable suse-migration-product-setup.service
+systemctl enable suse-migration-regenerate-initrd.service
+systemctl enable suse-migration-kernel-load.service
+systemctl enable suse-migration-reboot.service
+systemctl enable NetworkManager.service
 # needed for network setup migration
 mkdir -p /etc/sysconfig/network/providers
 
