@@ -6,7 +6,6 @@ set -eux
 # Functions...
 #--------------------------------------
 test -f /.kconfig && . /.kconfig
-test -f /.profile && . /.profile
 
 #======================================
 # Greeting...
