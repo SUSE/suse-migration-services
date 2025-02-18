@@ -43,7 +43,6 @@ systemctl mask lvm2-lvmetad.service
 # Activate services
 #--------------------------------------
 systemctl enable sshd.service
-systemctl enable haveged.service
 #======================================
 # Activate migration services
 #--------------------------------------
