@@ -63,11 +63,6 @@ systemctl enable NetworkManager.service
 # needed for network setup migration
 mkdir -p /etc/sysconfig/network/providers
 
-# Disable password based login via ssh
-sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
-sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' \
-    /etc/ssh/sshd_config
-
 # Remove the password for root and migration user
 # Note the string matches the password set in the config file
 # FIXME: The line below must be active on production
