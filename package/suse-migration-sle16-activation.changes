@@ -1,0 +1,329 @@
+-------------------------------------------------------------------
+Thu Jan 23 13:54:21 UTC 2025 - Frederic Crozat <fcrozat@suse.com>
+
+- Initial SLE16 image
+
+-------------------------------------------------------------------
+Fri Nov 08 09:01:43 UTC 2024 - Erico Mendonca <erico.mendonca@gmail.com>
+
+- Fix ISO location logic in 99_migration
+
+  There is code in the grub script which checks if the location of the installed live
+  migration ISO file is on the same root device than (/). After the move of the
+  installation target to "/migration-image", that location check is no longer needed.
+  This commit drops the extra checks for /usr/share and /usr
+
+  Co-authored-by: Marcus Schäfer <marcus.schaefer@gmail.com>
+
+-------------------------------------------------------------------
+Wed Nov 06 14:28:06 UTC 2024 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Increase version for SLES15-Migration package
+
+  The version of the SLES15-Migration package is taken from the
+  kiwi image description. Thus the bump of the version has
+  happened in this file. In addition a proper version constraint
+  to the suse-migration-sle15-activation package was added
+  due to the latest change from commit #1dbb055bc which now
+  installs the migration live ISO from the SLES15-Migration
+  package to /migration-image and no longer to /usr/share/migration-image
+
+-------------------------------------------------------------------
+Wed Oct 30 16:02:39 UTC 2024 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Load lvm module in grub mode
+
+  If the DMS live ISO loopback boot runs on a machine
+  that has root (/) on LVM we need to load lvm in grub
+  to be able to read from the root of the toplevel
+  volume
+
+-------------------------------------------------------------------
+Wed Oct 30 13:23:46 UTC 2024 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Install migration live image to /migration-image
+
+  This change helps to run migrations on systems which stores
+  /usr/share in a special way, e.g. as LVM volume or other
+  type that cannot be read via the loopback grub or kexec
+  method. This Fixes #277
+
+-------------------------------------------------------------------
+Fri Apr 29 14:35:21 UTC 2022 - kberger65 <kberger@suse.com>
+
+- Add an EnvironmentFile to suse-migration-prepare.service bsc#1199028
+
+  Bump version: 2.0.32 → 2.0.33
+
+-------------------------------------------------------------------
+Fri Apr 01 16:24:26 UTC 2022 - kberger65 <kberger@suse.com>
+
+- Enable prechecks for SLES15-Migration
+
+-------------------------------------------------------------------
+Thu Jun 10 08:11:03 UTC 2021 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Setup package conflicts properly
+
+  migration services and migration activation conflicts.
+  The activation is installed on the host to migrate, the
+  services are installed in the live migration image. There
+  is no situation in which migration services and activation
+  is installed on the same host. As both packages are build
+  from the same python sources they have to conflict
+
+-------------------------------------------------------------------
+Wed Jun 09 16:38:01 UTC 2021 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Fixed migration services package build
+
+  Several issues fixed in this commit:
+
+  * Moving the sed original file over the changed one prior
+  calling sdist invalidates the actual change
+
+  * Fixed spec template for the activation
+  The package builds a python and a grub.d app. Thus the
+  instructions in the spec file to install from the two
+  places needs to be adapted. In addition the %post section
+  now runs a binary which is called in the process of creating
+  an rpm in the checks processing. Thus all python requirements
+  must be in BuildRequires
+
+  * Make sure prechecks are grafted in MANIFEST
+
+-------------------------------------------------------------------
+Wed May 05 15:12:55 UTC 2021 - Jesus Bermudez Velazquez <jesus.bv@suse.com>
+
+- Add pre checks
+
+  This extends the activation package
+
+  - Check no remote repositories
+  - Check filesystem has LUKS encryption
+
+  The checks are kept in their own files and run
+  on the host, before rebooting.
+
+  This Fixes #205
+
+-------------------------------------------------------------------
+Mon Apr 26 10:36:40 UTC 2021 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Respect host kernel boot options for migration
+
+  Follow up commit to add a reference to bsc#1182520
+
+-------------------------------------------------------------------
+Fri Apr 16 09:12:08 UTC 2021 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Respect host kernel boot options for migration
+
+  The kernel boot options used on the host to migrate can be
+  important for the migration live environment too. For example
+  if net.ifnames is passed is influences the network interface
+  names to become predictable. As the DMS inherits configuration
+  data from the host e.g the network setup, it's required that
+  also the kernel boot parameters matches.
+
+-------------------------------------------------------------------
+Mon Apr 12 12:43:55 UTC 2021 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Fixed loopback root setting
+
+  The root variable for the loopback search in grub was initialized
+  with the assumption that the /usr/share/ location on the system is
+  on the root partition. This assumption could be incorrect and the
+  code should be smart enough to detect this situation.
+  This Fixes #192
+
+-------------------------------------------------------------------
+Fri Nov 13 12:23:39 UTC 2020 - Jesus Bermudez Velazquez <jesus.bv@suse.com>
+
+- Set right root type fs
+
+  When root type is extX, insmod is extX and it should be ext2
+  that way grub ext2 module supports all extX fs.
+
+  This Fixes bsc#1178737
+
+-------------------------------------------------------------------
+Fri Jul 10 07:45:53 UTC 2020 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Mount EFI subvolume prior loopback
+
+  If the efi grub modules lives in a btrfs subvolume it's
+  required to mount the subvolume to allow module loading
+
+-------------------------------------------------------------------
+Wed Jul 08 14:36:14 UTC 2020 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Use dynamic loader allocation
+
+  Set linux and initrd loader depending on the grub_platform
+  This is related to bsc#1173532
+
+-------------------------------------------------------------------
+Thu Nov 14 10:18:48 UTC 2019 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Reference commit for SUSE maintenance
+
+  This submission creates a reference to bsc#1155192
+
+-------------------------------------------------------------------
+Tue Nov 12 14:50:16 UTC 2019 - Jesus Bermudez Velazquez <jesus.bv@suse.com>
+
+- Add requires for minimun version
+
+  Boolean expressions are available with rpm >= 4.13
+  and SLES_SAP provides product(SLES) = %{version}-%{release}
+
+-------------------------------------------------------------------
+Tue Nov 12 12:07:55 UTC 2019 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Disable use of bool expressions in Requires
+
+  Available with rpm >= 4.13. Thus we can't build for SLE12
+  because rpm is older there
+
+-------------------------------------------------------------------
+Tue Nov 12 11:50:10 UTC 2019 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Fixed Requires syntax
+
+  According to https://rpm.org/user_doc/more_dependencies.html
+  boolean expressions must be embedded into brackets
+
+-------------------------------------------------------------------
+Tue Nov 12 09:34:49 UTC 2019 - Jesus Bermudez Velazquez <jesus.bv@suse.com>
+
+- Add or condition properly
+
+-------------------------------------------------------------------
+Mon Nov 11 15:51:59 UTC 2019 - Jesus Bermudez Velazquez <jesus.bv@suse.com>
+
+- The minimum migration starting point should be
+
+  SLES 12 SP3
+
+  or
+
+  SLES For SAP 12 SP3.
+
+-------------------------------------------------------------------
+Fri Aug 23 10:08:20 UTC 2019 - Jesús Bermúdez Velázquez <jesusbv@suse.com>
+
+- Reference commit for SUSE maintenance
+  
+  Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108) 
+
+-------------------------------------------------------------------
+Wed Jul 17 13:10:22 UTC 2019 - Marcus Schäfer <ms@suse.de>
+
+- Partially revert the no bootloader based startup
+
+  After testing the kexec based implementation to start the
+  migration live image, we found that kexec does not work in
+  all cloud providers. Especially those using Xen like AWS
+  do not work. Thus it's required to keep the alternative
+  bootloader based startup sequence
+
+-------------------------------------------------------------------
+Mon Jul 15 16:26:04 UTC 2019 - Marcus Schäfer <ms@suse.de>
+
+- Avoid bootloader to run the migration
+
+  Instead of a reboot the customer should run the migration
+  by calling run_migration. This commit adds a service utility
+  to run the migration. The concept is based on kexec and
+  avoids the modification to the bootloader setup. This allows
+  more flexibility for clouds that runs instances not directly
+  through a bootloader and also avoids infinite boot/reboot
+  cycles in case of an early error of the migration mount
+  service. This Fixes #108
+
+-------------------------------------------------------------------
+Wed May 29 09:37:12 UTC 2019 - Marcus Schäfer <ms@suse.de>
+
+- Fix grub setup if root is on a raid device
+
+  If the root filesystem is on a raid device the boot parameter
+  rd.auto must be passed to the boot such that the dracut raid
+  module can setup the raid prior to iso-scan.sh searching
+  through the devices. Related to Issue #96
+
+-------------------------------------------------------------------
+Tue May 28 13:39:48 UTC 2019 - Tim Serong <tserong@suse.com>
+
+- Use `uniq` when finding root device in grub activation script
+
+  If the system is using mdraid on the root disk, the `lsblk` invocation
+  will return two lines matching "/$", e.g.:
+
+  /dev/md1
+  /dev/md1
+
+  This then breaks the subsequent `blkid` invocations, so $root_uuid and
+  $root_type are set to empty strings.  When you later boot into the
+  migration system, grub gives two errors:
+
+  error: one argument expected.
+  error: no such device: root.
+
+  Adding `uniq` fixes this.
+
+-------------------------------------------------------------------
+Thu May  2 15:38:09 CEST 2019 - ms@suse.de
+
+- Reference commit for SUSE maintenance
+  
+  This submission creates a reference to fate#327175 and bsc#1133919
+  
+-------------------------------------------------------------------
+Mon Mar  4 14:13:57 CET 2019 - ms@suse.de
+  
+- Add rootpart detection to grub activation script
+  
+  The live migration image gets installed to the system again
+  because of the space limitation on /boot. This affects the
+  menuentry created on grub side in a way that we can't use
+  the pre-allocated pointer to the boot device but have to search
+  the root partition like in a real grub root entry. This patch
+  adds the needed code changes to locate the root part, insert
+  the needed filesystem module and initializes the root variable
+  to allow the loopback loading of the image. This Fixes #54
+  
+-------------------------------------------------------------------
+Mon Mar  4 13:40:57 CET 2019 - ms@suse.de
+  
+- Revert location change from /usr/share to /boot
+  
+  This reverts commit 66dd8d4943d38f121f4b16b70bf0ab8d0b2ec82d.
+  If there is an extra boot partition and it's too small we
+  are not able to install the migration system and the customer
+  will not be able to use the migration concept. The image is
+  usually around ~300MB of size and that can often be too much
+  for an extra boot partition which is often designed to be small
+  
+-------------------------------------------------------------------
+Fri Jan 25 11:12:22 CET 2019 - ms@suse.de
+  
+- Change location for live migration ISO image
+  
+  Instead of /usr/share expect the image in /boot. The reason
+  for this change is because we don't know if the system uses
+  an extra boot partition to load the kernel and initrd from.
+  However the way we add the extra loop boot entry to grub
+  is based on reading the value for ($root) as it was configured
+  on the system. The location ($root) points to in grub could
+  be anywhere but we can trust /boot to be in there.
+  This Fixes the run of the migration in Azure and also
+  stabilizes the concept.
+  
+-------------------------------------------------------------------
+Fri Nov 23 09:44:46 CET 2018 - ms@suse.de
+  
+- Set the Migration boot entry to be the default
+  
+  In addition set the boot timeout to 1sec
+  
