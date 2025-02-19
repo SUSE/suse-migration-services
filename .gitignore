@@ -4,7 +4,6 @@ __pycache__/
 
 # Distribution / packaging
 dist/
-.tox/
 *.egg-info/
 .cache
 .pytest_cache
@@ -27,3 +26,6 @@ Session.vim
 
 ### Virtual envs ##
 .venv
+
+# Poetry
+poetry.lock

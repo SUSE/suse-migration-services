@@ -1,0 +1,89 @@
+[tool.poetry]
+name = "suse_migration_services"
+version = "2.1.7"
+description = "SUSE Distribution Migration Services"
+license = "GPL-3.0-or-later"
+readme = "README.rst"
+homepage = "https://github.com/SUSE/suse-migration-services"
+documentation = "https://documentation.suse.com/suse-distribution-migration-system/15/html/distribution-migration-system/index.html"
+repository = "https://github.com/SUSE/suse-migration-services"
+
+authors = [
+   "PubCloud Team <public-cloud-dev@susecloud.net>",
+]
+maintainers = [
+   "Marcus Schäfer <marcus.schaefer@suse.com>",
+]
+
+packages = [
+   { include = "suse_migration_services"},
+]
+
+include = [
+   { path = ".bumpversion.cfg", format = "sdist" },
+   { path = ".coverage*", format = "sdist" },
+   { path = "setup.cfg", format = "sdist" },
+   { path = "grub.d", format = "sdist" },
+   { path = "systemd", format = "sdist" },
+   { path = "helper", format = "sdist" },
+   { path = "tools", format = "sdist" },
+   { path = "Makefile", format = "sdist" },
+   { path = "package", format = "sdist" },
+   { path = "setup.py", format = "sdist" },
+   { path = "MANIFEST.in", format = "sdist" },
+   { path = "test", format = "sdist" },
+]
+
+classifiers = [
+   # classifier: http://pypi.python.org/pypi?%3Aaction=list_classifiers
+   "Development Status :: 5 - Production/Stable",
+   "Intended Audience :: Developers",
+   "Operating System :: POSIX :: Linux",
+   "Topic :: System :: Operating System",
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/SUSE/suse-migration-services/issues"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+PyYAML = ">=5.4.0"
+Cerberus = ">=1.3.0"
+
+[tool.poetry.scripts]
+suse-migration-mount-system = "suse_migration_services.units.mount_system:main"
+suse-migration-ssh-keys = "suse_migration_services.units.ssh_keys:main"
+suse-migration-setup-host-network = "suse_migration_services.units.setup_host_network:main"
+suse-migration-prepare = "suse_migration_services.units.prepare:main"
+suse-migration = "suse_migration_services.units.migrate:main"
+suse-migration-grub-setup = "suse_migration_services.units.grub_setup:main"
+suse-migration-update-bootloader = "suse_migration_services.units.update_bootloader:main"
+suse-migration-regenerate-initrd = "suse_migration_services.units.regenerate_initrd:main"
+suse-migration-kernel-load = "suse_migration_services.units.kernel_load:main"
+suse-migration-reboot = "suse_migration_services.units.reboot:main"
+suse-migration-product-setup = "suse_migration_services.units.product_setup:main"
+suse-migration-post-mount-system = "suse_migration_services.units.post_mount_system:main"
+suse-migration-pre-checks = "suse_migration_services.prechecks.pre_checks:main"
+
+[tool.poetry.group.test]
+[tool.poetry.group.test.dependencies]
+# python unit testing framework
+pytest = ">=6.2.0"
+pytest-cov = "*"
+pytest-xdist = "*"
+# type checking
+mypy = ">=0.971"
+types-PyYAML = "*"
+
+[tool.poetry.group.style]
+[tool.poetry.group.style.dependencies]
+flake8 = ">=4.0.0"
+
+[tool.poetry.group.development]
+[tool.poetry.group.development.dependencies]
+python-dateutil = "*"
+bumpversion = "*"
+
+[build-system]
+requires = ["poetry-core>=1.2.0"]
+build-backend = "poetry.core.masonry.api"

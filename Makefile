@@ -1,16 +1,19 @@
-version := $(shell python3 -c 'from suse_migration_services.version import __VERSION__; print(__VERSION__)')
+buildroot = /
+python_version = 3
+python_lookup_name = python$(python_version)
+python = $(shell which $(python_lookup_name))
+sc_disable = SC1091,SC1090,SC2001,SC2174,SC1117
 
-build: check test
-	rm -f dist/*
-	# create setup.py variant for rpm build.
-	# delete module versions from setup.py for building an rpm
-	# the dependencies to the python module rpm packages is
-	# managed in the spec file
-	sed -ie "s@>=[0-9.]*'@'@g" setup.py
+version := $(shell \
+	$(python) -c \
+	'from suse_migration_services.version import __VERSION__; print(__VERSION__)'\
+)
+
+tar: clean check test
 	# build the sdist source tarball
-	python3 setup.py sdist
-	# restore original setup.py backed up from sed
-	mv setup.pye setup.py
+	poetry build --format=sdist
+
+build: tar
 	# provide rpm source tarball
 	mv dist/suse_migration_services-${version}.tar.gz \
 		dist/suse-migration-services.tar.gz
@@ -28,8 +31,10 @@ build: check test
 	# provide rpm rpmlintrc
 	cp package/suse-migration-services-rpmlintrc dist
 
-sle15_activation: check
-	rm -f dist/*
+sle15_activation: tar
+	# provide rpm source tarball
+	mv dist/suse_migration_services-*.tar.gz  \
+		dist/suse-migration-sle15-activation.tar.gz
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
 		--since package/suse-migration-sle15-activation.changes.ref \
@@ -43,27 +48,11 @@ sle15_activation: check
 	cat package/suse-migration-sle15-activation-spec-template \
 		| sed -e s'@%%VERSION@${version}@' \
 		> dist/suse-migration-sle15-activation.spec
-	# include grub.d dir in MANIFEST
-	sed -ie s'@prune grub.d@graft grub.d@' MANIFEST.in
-	rm MANIFEST.ine
-	python3 setup.py sdist
-	# create tarball with grub.d + suse-migration-services
+
+sle16_activation: tar
+	# provide rpm source tarball
 	mv dist/suse_migration_services-*.tar.gz  \
-		dist/suse-migration-sle15-activation.tar.gz
-	# restore MANIFEST.ini
-	git checkout MANIFEST.in
-	# check MANIFEST.in has prune grub.d
-	# raise error if not
-	$(eval current_value = $(shell grep "prune grub.d" MANIFEST.in))
-	$(eval expected_value = "prune grub.d")
-
-	@if [ "$(current_value)" != $(expected_value) ]; then\
-	   echo "MANIFEST.in does not have '$(expected_value)'";\
-           exit 1;\
-	fi
-
-sle16_activation: check
-	rm -f dist/*
+		dist/suse-migration-sle16-activation.tar.gz
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
 		--since package/suse-migration-sle16-activation.changes.ref \
@@ -77,28 +66,28 @@ sle16_activation: check
 	cat package/suse-migration-sle16-activation-spec-template \
 		| sed -e s'@%%VERSION@${version}@' \
 		> dist/suse-migration-sle16-activation.spec
-	# include grub.d dir in MANIFEST
-	sed -ie s'@prune grub.d@graft grub.d@' MANIFEST.in
-	rm MANIFEST.ine
-	python3 setup.py sdist
-	# create tarball with grub.d + suse-migration-services
-	mv dist/suse_migration_services-*.tar.gz  \
-		dist/suse-migration-sle16-activation.tar.gz
-	# restore MANIFEST.ini
-	git checkout MANIFEST.in
-	# check MANIFEST.in has prune grub.d
-	# raise error if not
-	$(eval current_value = $(shell grep "prune grub.d" MANIFEST.in))
-	$(eval expected_value = "prune grub.d")
 
-	@if [ "$(current_value)" != $(expected_value) ]; then\
-	   echo "MANIFEST.in does not have '$(expected_value)'";\
-           exit 1;\
-	fi
+setup:
+	poetry install --all-extras
 
-.PHONY: test
-test:
-	tox
+check: setup
+	# shell code checks
+	bash -c 'shellcheck -e ${sc_disable} tools/* grub.d/* -s bash'
+	# python flake tests
+	poetry run flake8 --statistics -j auto --count suse_migration_services
+	poetry run flake8 --statistics -j auto --count test/unit
 
-check:
-	tox -e check
+test: setup
+	# python static code checks
+	poetry run mypy suse_migration_services
+	# unit tests
+	poetry run bash -c 'pushd test/unit && pytest -n 5 \
+		--doctest-modules \
+		--cov=suse_migration_services \
+		--no-cov-on-fail \
+		--cov-report=term-missing \
+		--cov-fail-under=100 \
+		--cov-config .coveragerc'
+
+clean:
+	rm -rf dist

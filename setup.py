@@ -10,9 +10,6 @@ from suse_migration_services.version import __VERSION__
 
 python_version = platform.python_version().split('.')[0]
 
-with open('.virtualenv.requirements.txt') as f:
-    requirements = f.read().splitlines()
-
 config = {
     'name': 'suse_migration_services',
     'description': 'SUSE Distribution Migration Services',
@@ -21,7 +18,7 @@ config = {
     'download_url': 'https://github.com/SUSE/suse-migration-services',
     'author_email': 'public-cloud-dev@susecloud.net',
     'version': __VERSION__,
-    'install_requires': requirements,
+    'install_requires': ['setuptools', 'PyYAML', 'cerberus'],
     'packages': ['suse_migration_services'],
     'entry_points': {
         'console_scripts': [
