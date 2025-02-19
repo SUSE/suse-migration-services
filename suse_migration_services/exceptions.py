@@ -93,6 +93,10 @@ class DistMigrationGrubConfigException(DistMigrationException):
     Exception raised if the grub update call has failed
     """
 
+class DistMigrationAppArmorMigrationException(DistMigrationException):
+    """
+    Exception raised if AppArmor migration has failed
+    """
 
 class DistMigrationKernelRebootException(DistMigrationException):
     """

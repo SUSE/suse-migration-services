@@ -1,0 +1,13 @@
+[Unit]
+Description=Migrate from apparmor to selinux
+After=suse-migration.service
+Requisite=suse-migration.service
+Before=suse-migration-grub-setup.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-apparmor-selinux
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
