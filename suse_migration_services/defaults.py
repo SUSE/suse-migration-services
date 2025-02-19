@@ -132,6 +132,8 @@ class Defaults:
 
     @staticmethod
     def get_grub_default_file():
-        return os.sep.join(
+        return os.path.normpath(
+            os.sep.join(
                 [Defaults.get_system_root_path(), '/etc/default/grub']
+            )
         )

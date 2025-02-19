@@ -15,6 +15,10 @@ class TestDefaults(object):
         assert self.defaults.get_migration_config_file() == \
             '/etc/migration-config.yml'
 
+    def test_get_grub_default_file(self):
+        assert self.defaults.get_grub_default_file() == \
+            '/system-root/etc/default/grub'
+
     def test_get_os_release(self):
         os_release_tuple = namedtuple(
             'OSRelease', [
