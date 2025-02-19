@@ -4,6 +4,7 @@ Description=Mount System To Upgrade
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/suse-migration-mount-system
+RemainAfterExit=true
 
 [Install]
 WantedBy=multi-user.target

@@ -7,6 +7,7 @@ After=network.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/suse-migration-setup-host-network
+RemainAfterExit=true
 
 [Install]
 WantedBy=multi-user.target
