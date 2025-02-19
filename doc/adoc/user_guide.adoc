@@ -383,6 +383,9 @@ There is no need to provide any other information or key. The known SSH
 keys on the system to be upgraded have been imported into the upgrade system.
 Password-based login is not possible.
 
+The system automatically reboots after the update. To disable this (e.g., for debugging), edit the boot command line in the GRUB menu (select the migration entry and press 
+`e`). Add `migration.noreboot` to the end of the `linux` line, then press `Ctrl-X` or `F10` to start the update. Important: You must reboot manually afterward.
+
 == After the Migration
 Whether the upgrade succeeded or not, a log file is available in
 `/var/log/distro_migration.log` and it will contain information about the
