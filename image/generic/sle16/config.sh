@@ -48,6 +48,7 @@ systemctl enable sshd.service
 #--------------------------------------
 systemctl enable suse-migration-mount-system.service
 systemctl enable suse-migration-post-mount-system.service
+systemctl enable suse-migration-ssh-keys
 systemctl enable suse-migration-pre-checks.service
 systemctl enable suse-migration-setup-host-network.service
 systemctl enable suse-migration-prepare.service
