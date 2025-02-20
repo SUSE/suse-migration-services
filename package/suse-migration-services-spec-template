@@ -32,6 +32,9 @@ Source:           suse-migration-services.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildRequires:    fdupes
 BuildRequires:    python-rpm-macros
+%if 0%{?suse_version} >= 1600
+BuildRequires:    %{pythons}-poetry-core
+%endif
 BuildRequires:    %{pythons}-setuptools
 BuildRequires:    %{pythons}-Cerberus
 BuildRequires:    %{pythons}-PyYAML
@@ -69,7 +72,10 @@ Python based implementation for suse major code stream upgrade system
 Summary:          The pre-checks code used with the python migration module
 Group:            System/Management
 Requires:         %{pythons}-migration
+Requires:         %{pythons}-Cerberus
+Requires:         %{pythons}-PyYAML
 Conflicts:        suse-migration-sle15-activation < 2.0.33
+Conflicts:        suse-migration-sle16-activation < 2.0.33
 
 %description -n suse-migration-pre-checks
 Checks to be performed before starting a distribution migration process
@@ -161,8 +167,8 @@ install -D -m 644 systemd/suse-migration-ssh-keys.service \
 install -D -m 644 systemd/suse-migration-console-log.service \
     %{buildroot}%{_unitdir}/suse-migration-console-log.service
 
-install -D -m 644 systemd/systemd/suse-migration-apparmor-selinux.service \
-    %{buildroot}%{_unitdir}/systemd/suse-migration-apparmor-selinux.service
+install -D -m 644 systemd/suse-migration-apparmor-selinux.service \
+    %{buildroot}%{_unitdir}/suse-migration-apparmor-selinux.service
 
 install -D -m 755 tools/migrate \
     %{buildroot}%{_sbindir}/migrate
