@@ -16,7 +16,6 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import logging
-import os
 
 # project
 from suse_migration_services.command import Command
@@ -26,8 +25,6 @@ from suse_migration_services.logger import Logger
 from suse_migration_services.exceptions import (
     DistMigrationWickedMigrationException
 )
-
-
 
 
 def main():
@@ -40,8 +37,10 @@ def main():
 
     try:
         log.info('Running wicked to NetworkManager migration')
-
-        log.info('Change systemd network.service symlink from wicked.service to NetworkManager')
+        log.info(
+            'Change systemd network.service symlink '
+            'from wicked.service to NetworkManager'
+        )
 
         Command.run(
             [
@@ -57,8 +56,9 @@ def main():
                 'wicked.service'
             ]
         )
-
     except Exception as issue:
-        message = 'wicked to NetworkManager migration failed with {0}'.format(issue)
+        message = 'wicked to NetworkManager migration failed with {}'.format(
+            issue
+        )
         log.error(message)
         raise DistMigrationWickedMigrationException(message)
