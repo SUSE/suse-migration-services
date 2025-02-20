@@ -34,6 +34,7 @@ Requires:         grub2
 Requires(post):         util-linux-systemd
 Requires(postun):         util-linux-systemd
 Requires:         product(SLES) >= %{MinSLEVersion}
+Requires(pre):	  sed
 
 %description -n suse-migration-sle16-activation
 Script code to activate the SLE15 migration image to be booted at
@@ -46,6 +47,15 @@ next reboot of the machine.
 install -D -m 755 %{S:0} \
     %{buildroot}/etc/grub.d/99_migration
 
+%pre
+# store snapper pre snapshot if available
+if [ -x /usr/bin/snapper ]; then
+  PRE_SNAPSHOT=$(snapper -c root --machine-readable csv list --disable-used-space --columns subvolume,number,type 2>/dev/null| grep '^/,[^,]*,pre' |sed -e '$!d' -e 's|/,\([^,]*\),pre|\1|g')
+  if [ "x$PRE_SNAPSHOT" != x ]; then
+     echo $PRE_SNAPSHOT > /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
+  fi
+fi
+
 %post
 /usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
 
@@ -56,5 +66,6 @@ install -D -m 755 %{S:0} \
 %defattr(-,root,root,-)
 %dir /etc/grub.d
 /etc/grub.d/*
+%ghost /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
 
 %changelog
