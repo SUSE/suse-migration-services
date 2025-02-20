@@ -33,7 +33,7 @@ BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildRequires:    fdupes
 BuildRequires:    python-rpm-macros
 %if 0%{?suse_version} >= 1600
-BuildRequires:    %{pythons}-poetry
+BuildRequires:    %{pythons}-poetry-core
 %endif
 BuildRequires:    %{pythons}-setuptools
 BuildRequires:    %{pythons}-Cerberus
