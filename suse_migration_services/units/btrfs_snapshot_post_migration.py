@@ -38,27 +38,34 @@ def main():
     root_path = Defaults.get_system_root_path()
 
     try:
-        with open('/run/suse_migration_snapper_btrfs_pre_snapshot_number', 'r') as pre_snapshot_number_file:
+        with open(
+            '/run/suse_migration_snapper_btrfs_pre_snapshot_number'
+        ) as pre_snapshot_number_file:
             pre_snapshot_number = pre_snapshot_number_file.read().strip()
             if not pre_snapshot_number.isdigit():
-                log.error('Invalid snapshot number read from file.')
-                raise ValueError('Invalid snapshot number read from file.')
-            
-        snapper_call = Command.run(
-           [
-               'chroot', root_path, 'snapper', '--no-dbus',
-               'create', '--type', 'single', '--read-only', '--cleanup-algorithm', 'number', '--print-number', '--userdata', 'important=yes', '--description', 'after offline migration'
-           ]
+                message = f'Invalid snapshot number: {pre_snapshot_number}'
+                log.error(message)
+                raise ValueError(message)
+
+        Command.run(
+            [
+                'chroot', root_path, 'snapper',
+                '--no-dbus',
+                'create',
+                '--type', 'single',
+                '--read-only',
+                '--cleanup-algorithm', 'number',
+                '--print-number',
+                '--userdata', 'important=yes',
+                '--description', 'after offline migration'
+            ]
         )
-        log.info('BTRFS post-migration snapshot creation completed successfully.')
+        log.info(
+            'BTRFS post-migration snapshot creation completed successfully.'
+        )
     except Exception as issue:
-        log.error(
-            'BTRFS post-migration snapshot creation failed with {0}'.format(
-                issue
-            )
-        )
+        message = f'BTRFS post-migration snapshot creation failed with {issue}'
+        log.error(message)
         raise DistMigrationBtrfsSnapshotPostMigrationException(
-            'BTRFS post-migration snapshot creation failed with {0}'.format(
-                issue
-            )
+            message
         ) from issue

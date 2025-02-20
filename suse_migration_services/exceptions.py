@@ -158,9 +158,9 @@ class DistMigrationBtrfsSnapshotPreMigrationException(DistMigrationException):
     """
     Exception raised if Btrfs snapshot pre-migration fails
     """
-    
+
+
 class DistMigrationBtrfsSnapshotPostMigrationException(DistMigrationException):
     """
     Exception raised if Btrfs snapshot post-migration fails
     """
-    
