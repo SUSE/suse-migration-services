@@ -74,6 +74,11 @@ class DistMigrationHostNetworkException(DistMigrationException):
     failed for the reason reported by either mount or systemctl
     """
 
+class DistMigrationWickedMigrationException(DistMigrationException):
+    """
+    Exception raised if the wicked migration
+    failed for the reason reported by systemctl
+    """
 
 class DistMigrationZypperMetaDataException(DistMigrationException):
     """
