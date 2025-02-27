@@ -23,28 +23,27 @@ Url:              https://github.com/SUSE/suse-migration-services
 Summary:          SUSE Distribution SLE16 Migration Activation
 License:          GPL-3.0+
 Group:            System/Management
-Source:           99_migration
+Source:           suse-migration-sle16-activation.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildArch:        noarch
 Conflicts:        suse-migration-services
 BuildRequires:    grub2
 Requires:         SLES16-Migration >= 2.1.2
-
 Requires:         grub2
-Requires(post):         util-linux-systemd
-Requires(postun):         util-linux-systemd
+Requires(post):   util-linux-systemd
+Requires(postun): util-linux-systemd
 Requires:         product(SLES) >= %{MinSLEVersion}
 Requires(pre):	  sed
 
 %description -n suse-migration-sle16-activation
-Script code to activate the SLE15 migration image to be booted at
+Script code to activate the SLE16 migration image to be booted at
 next reboot of the machine.
 
 %prep
+%setup -q -n suse_migration_services-%{version}
 
 %install
-
-install -D -m 755 %{S:0} \
+install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
 
 %pre
