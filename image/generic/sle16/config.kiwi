@@ -82,6 +82,5 @@
         <package name="glibc-locale"/>
         <package name="cracklib-dict-full"/>
         <package name="ca-certificates"/>
-        <package name="SLES-release"/>
     </packages>
 </image>
