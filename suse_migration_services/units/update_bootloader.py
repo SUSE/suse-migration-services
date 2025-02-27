@@ -118,7 +118,7 @@ def update_bootloader_config(root_path):
             [
                 'chroot',
                 root_path,
-                '/sbin/update-bootloader',
+                'update-bootloader',
                 '--reinit'
             ]
         )
