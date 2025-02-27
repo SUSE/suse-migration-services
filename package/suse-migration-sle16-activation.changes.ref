@@ -1,0 +1,9 @@
+commit 9c1d0f22bfe3e74975fe76a50b8029d5a7325a52
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Tue Aug 20 11:39:04 2019 +0100
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Tue Aug 20 11:39:04 2019 +0100
+
+    Reference commit for SUSE maintenance
+    
+    Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108)
