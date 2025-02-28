@@ -112,13 +112,13 @@ def update_bootloader_config(root_path):
 
     try:
         log.info(
-            'Running chroot {0} update-bootloader --reinit'.format(root_path)
+            'Running chroot {0} /sbin/update-bootloader --reinit'.format(root_path)
         )
         Command.run(
             [
                 'chroot',
                 root_path,
-                'update-bootloader',
+                '/sbin/update-bootloader',
                 '--reinit'
             ]
         )
