@@ -1,6 +1,6 @@
 [Unit]
 Description=Snapper btrfs snapshot after migration
-After=suse-migration.service
+After=suse-migration.service suse-migration-apparmor-selinux.service suse-migration-wicked-networkmanager.service
 Requisite=suse-migration.service
 Before=suse-migration-grub-setup.service
 ConditionPathExists=/run/suse_migration_snapper_btrfs_pre_snapshot_number
