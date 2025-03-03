@@ -1,8 +1,8 @@
 suse-migration-mount-system -> [
     suse-migration-ssh-keys,
     suse-migration-pre-checks,
-    suse-migration-post-mount-system.service -> suse-migration-setup-host-network -> suse-migration-prepare -> [
+    suse-migration-btrfs-snapshot-pre-migration -> suse-migration-post-mount-system -> suse-migration-setup-host-network -> suse-migration-prepare -> [
         suse-migration-console-log,
-        suse-migration-product-setup -> suse-migration -> suse-migration-apparmor-selinux -> suse-migration-grub-setup -> suse-migration-update-bootloader -> suse-migration-regenerate-initrd -> suse-migration-kernel-load -> suse-migration-reboot
+        suse-migration-product-setup -> suse-migration -> suse-migration-apparmor-selinux -> suse-migration-wicked-networkmanager -> suse-migration-btrfs-snapshot-post-migration -> suse-migration-grub-setup -> suse-migration-update-bootloader -> suse-migration-regenerate-initrd -> suse-migration-kernel-load -> suse-migration-reboot
     ]
 ]
