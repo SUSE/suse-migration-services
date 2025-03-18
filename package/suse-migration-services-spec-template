@@ -74,6 +74,7 @@ Group:            System/Management
 Requires:         %{pythons}-migration
 Requires:         %{pythons}-Cerberus
 Requires:         %{pythons}-PyYAML
+Requires:         %{pythons}-setuptools
 Conflicts:        suse-migration-sle15-activation < 2.0.33
 Conflicts:        suse-migration-sle16-activation < 2.0.33
 
