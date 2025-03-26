@@ -53,7 +53,7 @@ and add repo for testing DMS activation
 
 .. code:: bash
 
-   zypper ar https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_12_SP5 Migration
+   sudo zypper ar https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_12_SP5 Migration
 
 
 1. Testing with kexec based reboot (run_migration)
@@ -61,19 +61,22 @@ and add repo for testing DMS activation
    .. code:: bash
 
       sudo zypper in SLES15-Migration
-      run_migration
+      sudo zypper rr Migration
+      sudo run_migration
 
 2. Testing with grub(loopback) reboot
 
    .. code:: bash
 
       sudo zypper install SLES15-Migration suse-migration-sle15-activation
-      reboot
+      sudo zypper rr Migration
+      sudo reboot
 
 3. [Optional] Testing in online upgrade mode (not officially supported by SUSE):
 
    .. code:: bash
 
       sudo zypper install suse-migration
+      sudo zypper rr Migration
       sudo migrate --product SLES/15.5/x86_64 --reboot
 
