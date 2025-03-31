@@ -114,7 +114,7 @@ class TestUpdateBootloader():
                 [
                     'chroot',
                     '/system-root',
-                    'update-bootloader',
+                    '/sbin/update-bootloader',
                     '--reinit'
                 ]
             )

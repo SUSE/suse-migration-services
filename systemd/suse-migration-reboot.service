@@ -1,6 +1,6 @@
 [Unit]
 Description=Reboot System
-After=suse-migration-kernel-load.service
+After=suse-migration-kernel-load.service suse-migration-update-bootloader.service
 ConditionKernelCommandLine=!migration.noreboot
 
 [Service]
