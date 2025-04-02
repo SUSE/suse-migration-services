@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<product schemeversion="0">
+  <vendor>SUSE</vendor>
+  <name>SLES</name>
+  <version>12.5</version>
+  <baseversion>12</baseversion>
+  <patchlevel>5</patchlevel>
+  <release>0</release>
+  <endoflife>2024-10-31</endoflife>
+  <arch>x86_64</arch>
+  <cpeid>cpe:/o:suse:sles:12:sp5</cpeid>
+  <productline>sles</productline>
+  <codestream>
+    <name>SUSE Linux Enterprise Server 12</name>
+    <endoflife>2030-10-31</endoflife>
+  </codestream>
+  <register>
+      <target>sle-12-x86_64</target>
+    <updates>
+      <repository repoid="obsrepository://build.suse.de/SUSE:Updates:SLE-SERVER:12-SP5:x86_64/update" />
+      <repository repoid="obsrepository://build.suse.de/SUSE:Updates:SLE-SERVER:12-SP5:x86_64/update_debug" />
+      <repository repoid="obsrepository://build.suse.de/SUSE:Updates:SLE-SERVER-INSTALLER:12-SP5:x86_64/update" />
+    </updates>
+  </register>
+  <upgrades/>
+  <updaterepokey>A43242DKD</updaterepokey>
+  <summary>SUSE Linux Enterprise Server 12 SP5</summary>
+  <shortsummary>SLES12-SP5</shortsummary>
+  <description>SUSE Linux Enterprise offers a comprehensive
+        suite of products built on a single code base.
+        The platform addresses business needs from
+        the smallest thin-client devices to the world's
+        most powerful high-performance computing
+        and mainframe servers. SUSE Linux Enterprise
+        offers common management tools and technology
+        certifications across the platform, and
+        each product is enterprise-class.</description>
+  <linguas>
+    <language>cs</language>
+    <language>da</language>
+    <language>de</language>
+    <language>en</language>
+    <language>en_GB</language>
+    <language>en_US</language>
+    <language>es</language>
+    <language>fi</language>
+    <language>fr</language>
+    <language>hu</language>
+    <language>it</language>
+    <language>ja</language>
+    <language>nb</language>
+    <language>nl</language>
+    <language>pl</language>
+    <language>pt</language>
+    <language>pt_BR</language>
+    <language>ru</language>
+    <language>sv</language>
+    <language>zh</language>
+    <language>zh_CN</language>
+    <language>zh_TW</language>
+  </linguas>
+  <urls>
+    <url name="releasenotes">https://www.suse.com/releasenotes/x86_64/SUSE-SLES/12-SP5/release-notes-sles.rpm</url>
+  </urls>
+  <buildconfig>
+    <producttheme>SLES</producttheme>
+  </buildconfig>
+  <installconfig>
+    <defaultlang>en_US</defaultlang>
+    <datadir>suse</datadir>
+    <descriptiondir>suse/setup/descr</descriptiondir>
+    <releasepackage name="sles-release" flag="EQ" version="12.5" release="9.5.2"/>
+    <distribution>SUSE_SLE</distribution>
+  </installconfig>
+  <runtimeconfig/>
+  <productdependency relationship="provides" name="SUSE_SLE" baseversion="12" patchlevel="5" flag="EQ"/>
+  <productdependency relationship="provides" name="SUSE_SLE-SP5" baseversion="12" patchlevel="5" flag="EQ"/>
+</product>
+

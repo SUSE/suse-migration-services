@@ -71,6 +71,8 @@ Python based implementation for suse major code stream upgrade system
 %package          -n suse-migration-pre-checks
 Summary:          The pre-checks code used with the python migration module
 Group:            System/Management
+Requires:         %{pythons}-lxml
+Requires:         %{pythons}-requests
 Requires:         %{pythons}-migration
 Requires:         %{pythons}-Cerberus
 Requires:         %{pythons}-PyYAML
