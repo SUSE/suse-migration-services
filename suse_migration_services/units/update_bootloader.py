@@ -17,7 +17,6 @@
 #
 """systemd service to install the shim package and update the bootloader"""
 import logging
-import os.path
 
 # project
 from suse_migration_services.command import Command
@@ -39,11 +38,10 @@ def main():
 
     root_path = Defaults.get_system_root_path()
 
-    if os.path.exists('/sys/firmware/efi'):
-        log.info('Installing the shim package')
-        install_shim_package(root_path)
-        log.info('Updating the shimbootloader')
-        install_secure_bootloader(root_path)
+    log.info('Installing the shim package')
+    install_shim_package(root_path)
+    log.info('Updating the shimbootloader')
+    install_secure_bootloader(root_path)
     log.info('Updating the bootloader')
     update_bootloader_config(root_path)
 
