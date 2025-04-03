@@ -23,10 +23,6 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 
-from suse_migration_services.exceptions import (
-    DistMigrationCommandException
-)
-
 
 def main():
     """
@@ -46,86 +42,45 @@ def main():
     update_bootloader_config(root_path)
 
 
-def install_shim_package(root_path,):
-    """Function to do instal the "shim" package"""
-
-    log = logging.getLogger(Defaults.get_migration_log_name())
-
-    try:
-        log.info(
-            'Running chroot {0} zypper in shim'.format(root_path)
-        )
-        Command.run(
-            [
-                'chroot',
-                root_path,
-                'zypper',
-                'in',
-                'shim'
-            ]
-        )
-    except Exception as issue:
-        log.error(
-            'Failed to install the shim package: {0}'.format(issue)
-        )
-        raise DistMigrationCommandException(
-            'Failed to install the shim package: {0}'.format(
-                issue
-            )
-        ) from issue
+def install_shim_package(root_path):
+    """
+    Install the shim package
+    """
+    bash_command = ' '.join(
+        [
+            'zypper',
+            '--no-cd',
+            '--non-interactive',
+            '--gpg-auto-import-keys',
+            '--root', root_path,
+            'in',
+            '--auto-agree-with-licenses',
+            '--allow-vendor-change',
+            '--download', 'in-advance',
+            '--replacefiles',
+            '--allow-downgrade',
+            'shim',
+            '&>>', Defaults.get_migration_log_file()
+        ]
+    )
+    Command.run(
+        ['bash', '-c', bash_command]
+    )
 
 
 def install_secure_bootloader(root_path):
-    """Function to run 'shim-install'"""
-
-    log = logging.getLogger(Defaults.get_migration_log_name())
-
-    try:
-        log.info(
-            'Running chroot {0} shim-install --removable'.format(root_path)
-        )
-        Command.run(
-            [
-                'chroot',
-                root_path,
-                'shim-install',
-                '--removable'
-            ]
-        )
-    except Exception as issue:
-        log.error(
-            'Failed to run shim-install: {0}'.format(issue)
-        )
-        raise DistMigrationCommandException(
-            'Failed to run shim-install: {0}'.format(
-                issue
-            )
-        ) from issue
+    """
+    Perform shim-install from inside the upgraded system
+    """
+    Command.run(
+        ['chroot', root_path, 'shim-install', '--removable']
+    )
 
 
 def update_bootloader_config(root_path):
-    """Function run 'update-bootloader"""
-
-    log = logging.getLogger(Defaults.get_migration_log_name())
-
-    try:
-        log.info(
-            'Running chroot {0} /sbin/update-bootloader --reinit'.format(root_path)
-        )
-        Command.run(
-            [
-                'chroot',
-                root_path,
-                '/sbin/update-bootloader',
-                '--reinit'
-            ]
-        )
-    except Exception as issue:
-        log.error(
-            'Failed to run update-bootloader: {0}'.format(issue)
-        )
-        raise DistMigrationCommandException(
-            'Failed to run update-bootloader: {0}'.format(
-                issue
-            )
-        ) from issue
+    """
+    Perform update-bootloader from inside of the upgraded system
+    """
+    Command.run(
+        ['chroot', root_path, '/sbin/update-bootloader', '--reinit']
+    )
