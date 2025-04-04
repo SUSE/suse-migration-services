@@ -24,9 +24,10 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.migration_config import MigrationConfig
 
-import suse_migration_services.prechecks.repos as check_repos  # type: ignore
-import suse_migration_services.prechecks.fs as check_fs  # type: ignore
-import suse_migration_services.prechecks.kernels as check_multi_kernels  # type: ignore
+import suse_migration_services.prechecks.repos as check_repos
+import suse_migration_services.prechecks.fs as check_fs
+import suse_migration_services.prechecks.kernels as check_multi_kernels
+import suse_migration_services.prechecks.ltss as ltss
 
 
 def main():
@@ -79,4 +80,9 @@ def main():
 
     check_repos.remote_repos(migration_system=migration_system_mode)
     check_fs.encryption(migration_system=migration_system_mode)
-    check_multi_kernels.multiversion_and_multiple_kernels(fix=args.fix, migration_system=migration_system_mode)
+    check_multi_kernels.multiversion_and_multiple_kernels(
+        fix=args.fix, migration_system=migration_system_mode
+    )
+    ltss.check_enabled(
+        migration_system=migration_system_mode
+    )

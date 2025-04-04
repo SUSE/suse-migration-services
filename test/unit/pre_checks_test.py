@@ -12,6 +12,7 @@ from suse_migration_services.fstab import Fstab
 import suse_migration_services.prechecks.repos as check_repos
 import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_kernels
+import suse_migration_services.prechecks.ltss as ltss
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
@@ -467,3 +468,13 @@ class TestPreChecks():
         with self._caplog.at_level(logging.INFO):
             check_pre_checks.main()
             assert info_message in self._caplog.text
+
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch('os.path.exists')
+    def test_ltss_check_enabled(
+        self, mock_os_path_exists, mock_get_migration_config_file, mock_log
+    ):
+        mock_os_path_exists.return_value = True
+        with self._caplog.at_level(logging.ERROR):
+            ltss.check_enabled(migration_system=True)
+            assert 'LTSS is enabled' in self._caplog.text
