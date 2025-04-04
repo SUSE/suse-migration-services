@@ -1,9 +1,7 @@
-commit 9c1d0f22bfe3e74975fe76a50b8029d5a7325a52
-Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
-AuthorDate: Tue Aug 20 11:39:04 2019 +0100
-Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
-CommitDate: Tue Aug 20 11:39:04 2019 +0100
+commit 646dc3789a5ff078764332e1b87636b4f37aec80
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Tue Aug 13 13:26:17 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Tue Aug 13 13:26:17 2024 -0400
 
-    Reference commit for SUSE maintenance
-    
-    Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108)
+    Bump version: 2.0.39 → 2.0.40

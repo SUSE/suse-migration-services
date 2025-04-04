@@ -42,7 +42,7 @@ sle15_activation: tar
 		--from grub.d --utc > \
 		dist/suse-migration-sle15-activation.changes
 	helper/update_changelog.py \
-		--file package/suse-migration-sle15-activation.changes >> \
+		--file package/suse-migration-sle15-activation.changes --utc >> \
 		dist/suse-migration-sle15-activation.changes
 	# update package version in spec file
 	cat package/suse-migration-sle15-activation-spec-template \
@@ -60,7 +60,7 @@ sle16_activation: tar
 		--from grub.d --utc > \
 		dist/suse-migration-sle16-activation.changes
 	helper/update_changelog.py \
-		--file package/suse-migration-sle16-activation.changes >> \
+		--file package/suse-migration-sle16-activation.changes --utc >> \
 		dist/suse-migration-sle16-activation.changes
 	# update package version in spec file
 	cat package/suse-migration-sle16-activation-spec-template \

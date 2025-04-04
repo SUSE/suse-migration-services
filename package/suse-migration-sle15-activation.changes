@@ -1,117 +1,662 @@
--------------------------------------------------------------------
-Fri Aug 23 10:08:20 UTC 2019 - Jesús Bermúdez Velázquez <jesusbv@suse.com>
+commit 646dc3789a5ff078764332e1b87636b4f37aec80
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Tue Aug 13 13:26:17 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Tue Aug 13 13:26:17 2024 -0400
 
-- Reference commit for SUSE maintenance
-  
-  Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108) 
+    Bump version: 2.0.39 → 2.0.40
 
--------------------------------------------------------------------
-Wed Jul 17 13:10:22 UTC 2019 - Marcus Schäfer <ms@suse.de>
+commit 38021075c91080de9a0a6f8587ea800021da472c
+Author:     Jana Jaeger <jana.jaeger@suse.com>
+AuthorDate: Tue Aug 13 15:17:08 2024 +0200
+Commit:     Jana Jaeger <jana.jaeger@suse.com>
+CommitDate: Tue Aug 13 15:17:08 2024 +0200
 
-- Partially revert the no bootloader based startup
+    add metadata and revhistory and article ID
 
-  After testing the kexec based implementation to start the
-  migration live image, we found that kexec does not work in
-  all cloud providers. Especially those using Xen like AWS
-  do not work. Thus it's required to keep the alternative
-  bootloader based startup sequence
+commit ec2cb0d6bf883191e125c4a18b61612f225ae40e
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Tue Aug 13 08:04:34 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Tue Aug 13 08:04:34 2024 -0400
 
--------------------------------------------------------------------
-Mon Jul 15 16:26:04 UTC 2019 - Marcus Schäfer <ms@suse.de>
+    SLES12 SP4 no longer a supported migration starting point.
 
-- Avoid bootloader to run the migration
+commit bd515506bcd6e179172623ab8ed1bc9f409dabcd
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Thu Aug 8 08:05:57 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Thu Aug 8 08:09:43 2024 -0400
 
-  Instead of a reboot the customer should run the migration
-  by calling run_migration. This commit adds a service utility
-  to run the migration. The concept is based on kexec and
-  avoids the modification to the bootloader setup. This allows
-  more flexibility for clouds that runs instances not directly
-  through a bootloader and also avoids infinite boot/reboot
-  cycles in case of an early error of the migration mount
-  service. This Fixes #108
+    Switch default target and ISO backing distro SLE 15 SP3
+    
+    Update documentation to reflect new default target.
+    
+    Update image build config.kiwi to build the ISO image based upon
+    SLE 15 SP3.
+    
+    Update unit tests to reflect new default target.
+    
+    Co-Authored-By: yarunachalam <yarunachalam@suse.com>
 
--------------------------------------------------------------------
-Wed May 29 09:37:12 UTC 2019 - Marcus Schäfer <ms@suse.de>
+commit e1334f26e0f7d8e0f9fe7c6dbb714d7ceb793fae
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Thu Aug 8 07:50:30 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Thu Aug 8 07:52:22 2024 -0400
 
-- Fix grub setup if root is on a raid device
+    Remove custom legacy ruby based zypper-migration script
+    
+    The install of the legacy zypper-migration-plugin script was previously
+    removed from the kiwi file.
 
-  If the root filesystem is on a raid device the boot parameter
-  rd.auto must be passed to the boot such that the dracut raid
-  module can setup the raid prior to iso-scan.sh searching
-  through the devices. Related to Issue #96
+commit 1b7ac85f2ac3d6550f0a98074a550d0be8917416
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Wed Apr 10 09:34:31 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Wed Apr 10 09:34:31 2024 -0400
 
--------------------------------------------------------------------
-Tue May 28 13:39:48 UTC 2019 - Tim Serong <tserong@suse.com>
+    Rename overlay zypper-migration plugin with -ruby suffix
 
-- Use `uniq` when finding root device in grub activation script
+commit c765767b92a286b23d09247f864ca7cec81bbc2b
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Wed Apr 3 09:24:17 2024 -0400
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Wed Apr 3 09:29:53 2024 -0400
 
-  If the system is using mdraid on the root disk, the `lsblk` invocation
-  will return two lines matching "/$", e.g.:
+    Fix update-bootloader to run after grub-setup  bsc#1222258
+    
+    Also checked to ensure that the sequencing for all systemd services
+    now matches the ordering specified in helper/system.tree.
 
-  /dev/md1
-  /dev/md1
+commit 423fea07a7e50c8352233df392a2525f169d2626
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Thu Mar 7 09:36:49 2024 -0500
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Thu Mar 7 09:36:49 2024 -0500
 
-  This then breaks the subsequent `blkid` invocations, so $root_uuid and
-  $root_type are set to empty strings.  When you later boot into the
-  migration system, grub gives two errors:
+    Bump version: 2.0.38 → 2.0.39
 
-  error: one argument expected.
-  error: no such device: root.
+commit 6cfe6318378a0f258fff544e19ef8f42fade27fc
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Thu Mar 7 09:06:26 2024 -0500
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Thu Mar 7 09:06:26 2024 -0500
 
-  Adding `uniq` fixes this.
+    Address RPM spec file and config.kiwi dependency issues bsc#1219004
+    
+    Update the syse-migration-services RPM spec file dependencies to use
+    suseconnect-ng rather than the legacy SUSEConnect.  While the existing
+    dependency specification works with zypper dependency resolution, it
+    doesn't work with the build service package resolution mechanism and
+    breaks the build of the SLE 15 SP1 ISO image containing the package.
+    
+    Also update the config.kiwi used to build the SLE 15 SP1 ISO image to
+    explicitly install suseconnect-ng and remove zypper-migration-plugin,
+    which conflicts with suseconnect-ng.
 
--------------------------------------------------------------------
-Thu May  2 15:38:09 CEST 2019 - ms@suse.de
+commit 081b0cb340d254b789e07a5eda9b95da26b36ef2
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Mon Feb 5 15:59:11 2024 -0500
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Mon Feb 5 15:59:11 2024 -0500
 
-- Reference commit for SUSE maintenance
-  
-  This submission creates a reference to fate#327175 and bsc#1133919
-  
--------------------------------------------------------------------
-Mon Mar  4 14:13:57 CET 2019 - ms@suse.de
-  
-- Add rootpart detection to grub activation script
-  
-  The live migration image gets installed to the system again
-  because of the space limitation on /boot. This affects the
-  menuentry created on grub side in a way that we can't use
-  the pre-allocated pointer to the boot device but have to search
-  the root partition like in a real grub root entry. This patch
-  adds the needed code changes to locate the root part, insert
-  the needed filesystem module and initializes the root variable
-  to allow the loopback loading of the image. This Fixes #54
-  
--------------------------------------------------------------------
-Mon Mar  4 13:40:57 CET 2019 - ms@suse.de
-  
-- Revert location change from /usr/share to /boot
-  
-  This reverts commit 66dd8d4943d38f121f4b16b70bf0ab8d0b2ec82d.
-  If there is an extra boot partition and it's too small we
-  are not able to install the migration system and the customer
-  will not be able to use the migration concept. The image is
-  usually around ~300MB of size and that can often be too much
-  for an extra boot partition which is often designed to be small
-  
--------------------------------------------------------------------
-Fri Jan 25 11:12:22 CET 2019 - ms@suse.de
-  
-- Change location for live migration ISO image
-  
-  Instead of /usr/share expect the image in /boot. The reason
-  for this change is because we don't know if the system uses
-  an extra boot partition to load the kernel and initrd from.
-  However the way we add the extra loop boot entry to grub
-  is based on reading the value for ($root) as it was configured
-  on the system. The location ($root) points to in grub could
-  be anywhere but we can trust /boot to be in there.
-  This Fixes the run of the migration in Azure and also
-  stabilizes the concept.
-  
--------------------------------------------------------------------
-Fri Nov 23 09:44:46 CET 2018 - ms@suse.de
-  
-- Set the Migration boot entry to be the default
-  
-  In addition set the boot timeout to 1sec
-  
+    Bump version: 2.0.37 → 2.0.38
+
+commit 8eeedfb26c146baa371c5845ae3e94b6c44f89a5
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Fri Jan 26 17:07:11 2024 -0500
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Fri Feb 2 15:43:34 2024 -0500
+
+    Bind mount the configured certs location bsc#1219004
+    
+    When the migration is running ensure that the correct certs directory
+    is bind mounted from the /system-root into the ISO boot's runtime
+    environment, by retrieving the configured server.certlocation setting
+    from the /system-root/etc/regionserverclnt.cfg file. Default to the
+    new cert location if a cert location cannot be determined.
+    
+    Log a message when no certs are present in the cert location, checking
+    in the system being migrated, and after the bind mount of that path
+    into the ISO runtime environment.
+    
+    Add unit tests for new get_regionsrv_certs_path() function and tweak
+    some existing tests, that depend upon mocking calls to builtin.open(),
+    so that they mock any calls to get_regionsrv_certs_path() so as to
+    avoid triggering additional open() calls that would break those tests.
+
+commit 036bae1a92be1bed5c6e765a472e0c38d756f3ca
+Author:     Fergal Mc Carthy <fmccarthy@suse.com>
+AuthorDate: Thu Feb 1 10:59:56 2024 -0500
+Commit:     Fergal Mc Carthy <fmccarthy@suse.com>
+CommitDate: Thu Feb 1 10:59:56 2024 -0500
+
+    Address nose tests deprecation issues
+    
+    The Python 3.8 CI testing is failing with an error because we haven't
+    addressed the nose tests support deprecation by renaming the setup()
+    method to setup_method().
+
+commit c2f12419e8d43c7b145f159847e703112bf81e56
+Author:     jmoffitt <jeremy.moffitt@suse.com>
+AuthorDate: Mon Oct 2 13:37:34 2023 -0700
+Commit:     jmoffitt <jeremy.moffitt@suse.com>
+CommitDate: Mon Oct 2 13:37:34 2023 -0700
+
+    Remove target information that was confusing customers. Clarify SP4 support timeline
+
+commit 7abe99dbc9070559e0c3f4e058e01f053793243f
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Tue Aug 8 12:09:08 2023 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Tue Aug 8 12:15:26 2023 +0200
+
+    Added mailmap
+    
+    Don't lose contributions of the past ;)
+
+commit 6dec3e5cf87f9ce32bb5a6ff80938e444ddf1f6b
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Thu Jul 27 09:34:57 2023 -0400
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Thu Jul 27 09:34:57 2023 -0400
+
+    Update kiwi config files to match current build versions
+
+commit 0a3d48e5009576654ac93f664e2563812eed211a
+Author:     jmoffitt <jeremy.moffitt@suse.com>
+AuthorDate: Mon Jul 24 11:38:58 2023 -0700
+Commit:     jmoffitt <jeremy.moffitt@suse.com>
+CommitDate: Mon Jul 24 11:38:58 2023 -0700
+
+    Clarify supported versions of SLES
+
+commit bac4e06bad809199651d6838ee56f8263c4ebb3c
+Author:     Frank Sundermeyer <fs@suse.de>
+AuthorDate: Tue Jul 18 17:43:11 2023 +0200
+Commit:     Frank Sundermeyer <fs@suse.de>
+CommitDate: Tue Jul 18 17:43:11 2023 +0200
+
+    Added block marker to listings to increase readability
+
+commit 8c0950b3d0ea1f82c98385953b88e87226b24666
+Author:     Frank Sundermeyer <fs@suse.de>
+AuthorDate: Tue Jul 18 17:33:34 2023 +0200
+Commit:     Frank Sundermeyer <fs@suse.de>
+CommitDate: Tue Jul 18 17:33:34 2023 +0200
+
+    Fixing variablelists that caused validation errors
+
+commit a985c62c0ec42c6c86b714f17044a61914658299
+Author:     jmoffitt <jeremy.moffitt@suse.com>
+AuthorDate: Tue Jul 11 13:24:42 2023 -0700
+Commit:     jmoffitt <jeremy.moffitt@suse.com>
+CommitDate: Wed Jul 12 15:20:31 2023 -0700
+
+    Doc updates to install, migration, and after migration sections
+
+commit 189026b19ee057d0c6c1c4e131baa5ca4f167004
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Mon Jul 10 11:09:44 2023 -0400
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Mon Jul 10 11:24:44 2023 -0400
+
+    update spec file
+
+commit 080e49310707578ca77476f1f8cc89b3a6bf68a1
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Mon Jul 10 08:17:59 2023 -0400
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Mon Jul 10 08:17:59 2023 -0400
+
+    update spec file
+
+commit cac1e7f84429b6b5de4aef381dd736e2c631e36b
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Fri Mar 31 16:42:02 2023 -0400
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Fri Jul 7 16:17:14 2023 -0400
+
+    cache file location debug added
+    add update_bootloader to address bsc#1211240
+    
+    Bump version: 2.0.36 → 2.0.37
+
+commit ad1e296b58d32f4f12e81779bf1df5ce1ffa3e3e
+Author:     jmoffitt <jeremy.moffitt@suse.com>
+AuthorDate: Thu Jun 8 12:43:12 2023 -0700
+Commit:     jmoffitt <jeremy.moffitt@suse.com>
+CommitDate: Thu Jun 8 12:43:12 2023 -0700
+
+    Add clarifying text for partition requirements
+
+commit 83b0828447742afaa495b22dc01d0fb4afb8a826
+Author:     Tom Schraitle <tom_schr@web.de>
+AuthorDate: Thu Jun 1 16:06:14 2023 +0200
+Commit:     Tom Schraitle <tom_schr@web.de>
+CommitDate: Thu Jun 1 16:06:14 2023 +0200
+
+    Use latest SUSE stylesheet (2022 layout)
+
+commit 35b01485359d2a9191885e6a844affab6ac3e500
+Author:     Tom Schraitle <tom_schr@web.de>
+AuthorDate: Thu Jun 1 15:55:25 2023 +0200
+Commit:     Tom Schraitle <tom_schr@web.de>
+CommitDate: Thu Jun 1 15:56:04 2023 +0200
+
+    Add missing metadata for docs.suse.com
+    
+    The Docmanager tags are used for the "Edit source" and
+    "Report bug" links.
+    This change adds the latter.
+
+commit 4d9cf281e49058fc535eede0f98ee49c38cdb220
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Wed Mar 22 12:41:30 2023 -0400
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Thu Mar 23 09:15:49 2023 -0400
+
+    Add fixes to make updatesmtcache work correctly bsc#1209591
+
+commit 0adec944b11c7ce58a6d522c3cc2bd8c7d8f30a4
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Wed Mar 15 14:43:22 2023 -0400
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Wed Mar 15 15:37:16 2023 -0400
+
+    Add option to skip bind mount entries in fstab bsc#1209304
+    
+    Bump version: 2.0.35 → 2.0.36
+
+commit 0adec944b11c7ce58a6d522c3cc2bd8c7d8f30a4
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Wed Mar 15 14:43:22 2023 -0400
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Wed Mar 15 15:37:16 2023 -0400
+
+    Add option to skip bind mount entries in fstab bsc#1209304
+    
+    Bump version: 2.0.35 → 2.0.36
+    
+commit 5a8a68ad3ccfcb051a4815d5bfa8a3a5d8c034eb
+Author:     KeithMnemonic <kberger@suse.com>
+AuthorDate: Thu Dec 8 17:09:29 2022 -0500
+Commit:     KeithMnemonic <kberger@suse.com>
+CommitDate: Tue Jan 3 10:00:31 2023 -0500
+
+    Bump version: 2.0.34 → 2.0.35
+
+    Bump version to 2.0.35 to align with the current version of
+    suse-migration-services    
+
+commit 9c9312aab91a8c3ace6cb56aeed458a27e76146f
+Author:     kberger65 <kberger@suse.com>
+AuthorDate: Fri Apr 29 10:35:21 2022 -0400
+Commit:     kberger65 <kberger@suse.com>
+CommitDate: Tue May 24 17:37:27 2022 -0400
+
+    Add an EnvironmentFile to suse-migration-prepare.service bsc#1199028
+    
+    Bump version: 2.0.32 → 2.0.33
+    
+commit ab619371737a580330db22296024303faa0df49b
+Author:     kberger65 <kberger@suse.com>
+AuthorDate: Fri Apr 1 12:24:26 2022 -0400
+Commit:     kberger65 <kberger@suse.com>
+CommitDate: Mon Apr 11 16:53:30 2022 -0400
+
+    Enable prechecks for SLES15-Migration
+    
+commit 2cc14d430b1734ae95d5f9304c53f870c132fc96
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Thu Jun 10 10:11:03 2021 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Thu Jun 10 10:11:03 2021 +0200
+
+    Setup package conflicts properly
+    
+    migration services and migration activation conflicts.
+    The activation is installed on the host to migrate, the
+    services are installed in the live migration image. There
+    is no situation in which migration services and activation
+    is installed on the same host. As both packages are build
+    from the same python sources they have to conflict
+    
+commit c4769620c5ecdbb6e464977eadda3fea423f567f
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Wed Jun 9 18:38:01 2021 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Wed Jun 9 19:11:39 2021 +0200
+    
+    Fixed migration services package build
+    
+    Several issues fixed in this commit:
+    
+    * Moving the sed original file over the changed one prior
+      calling sdist invalidates the actual change
+    
+    * Fixed spec template for the activation
+      The package builds a python and a grub.d app. Thus the
+      instructions in the spec file to install from the two
+      places needs to be adapted. In addition the %post section
+      now runs a binary which is called in the process of creating
+      an rpm in the checks processing. Thus all python requirements
+      must be in BuildRequires
+
+    * Make sure prechecks are grafted in MANIFEST
+
+commit a97a1eb1e16124c68b48a3ff6eb1866dd81c3ba0
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Wed May 5 16:12:55 2021 +0100
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Wed Jun 9 17:14:44 2021 +0100
+
+    Add pre checks
+
+    This extends the activation package
+
+    - Check no remote repositories
+    - Check filesystem has LUKS encryption
+
+    The checks are kept in their own files and run
+    on the host, before rebooting.
+
+    This Fixes #205
+
+commit 77dc1ce1325bbc03364a18548a3b6911b1dfeddd
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Mon Apr 26 12:36:40 2021 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Mon Apr 26 12:36:40 2021 +0200
+
+    Respect host kernel boot options for migration
+
+    Follow up commit to add a reference to bsc#1182520
+
+commit ff90873e7c4fe108a8ad1a777bb25087d3389a27
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Fri Apr 16 11:12:08 2021 +0200 
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Fri Apr 16 11:19:05 2021 +0200
+
+    Respect host kernel boot options for migration
+    
+    The kernel boot options used on the host to migrate can be
+    important for the migration live environment too. For example
+    if net.ifnames is passed is influences the network interface
+    names to become predictable. As the DMS inherits configuration
+    data from the host e.g the network setup, it's required that
+    also the kernel boot parameters matches.
+
+commit 753d3bdd6a1134db239c77d71227c0c675e60cba
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Mon Apr 12 14:43:55 2021 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Mon Apr 12 16:42:20 2021 +0200
+
+    Fixed loopback root setting
+
+    The root variable for the loopback search in grub was initialized
+    with the assumption that the /usr/share/ location on the system is
+    on the root partition. This assumption could be incorrect and the
+    code should be smart enough to detect this situation.
+    This Fixes #192
+
+commit 328fceb8d3405f42fbed25b1b41aa768beab3c61
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Fri Nov 13 12:23:39 2020 +0000
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Fri Nov 13 15:59:02 2020 +0000
+
+    Set right root type fs
+
+    When root type is extX, insmod is extX and it should be ext2
+    that way grub ext2 module supports all extX fs. 
+
+    This Fixes bsc#1178737
+
+commit 522d53051822625d541fa4e4dfdd499c53daca41
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Fri Jul 10 09:45:53 2020 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Fri Jul 10 09:45:53 2020 +0200
+
+    Mount EFI subvolume prior loopback
+
+    If the efi grub modules lives in a btrfs subvolume it's 
+    required to mount the subvolume to allow module loading
+
+commit 8e755660b4a63fde9e8a825a0c9e84930a2030c4
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Wed Jul 8 16:36:14 2020 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Wed Jul 8 16:36:14 2020 +0200
+
+    Use dynamic loader allocation
+
+    Set linux and initrd loader depending on the grub_platform
+    This is related to bsc#1173532
+
+commit 13c00ac234b95842ec9b971cab82eac1e38d47c1
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Wed Jan 8 16:55:37 2020 +0100
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Wed Jan 8 16:55:37 2020 +0100
+
+    Reference commit for SUSE maintenance
+
+    This submission creates a reference to bsc#1155192 
+
+commit a12748a6cf774bf0dbd803dcc2c1b8871fa5ac21
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Tue Nov 12 14:50:16 2019 +0000
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Tue Nov 12 14:55:28 2019 +0000
+
+    Add requires for minimun version
+
+    Boolean expressions are available with rpm >= 4.13 
+    and SLES_SAP provides product(SLES) = %{version}-%{release}
+
+commit 62a5aae64d3acc106a3f2a685957b4bcbbc13eb4
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Tue Nov 12 13:07:55 2019 +0100
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Tue Nov 12 13:07:55 2019 +0100
+    
+    Disable use of bool expressions in Requires
+    
+    Available with rpm >= 4.13. Thus we can't build for SLE12
+    because rpm is older there 
+    
+commit 2a93ea81e8dd7bd8afec343b24c8d992cff6f8ad
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Tue Nov 12 12:50:10 2019 +0100
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Tue Nov 12 12:50:10 2019 +0100
+
+    Fixed Requires syntax
+
+    According to https://rpm.org/user_doc/more_dependencies.html
+    boolean expressions must be embedded into brackets
+
+commit b819be21b5671a55b30ac00d42e0d734a84ba58d
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Tue Nov 12 09:34:49 2019 +0000
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Tue Nov 12 09:34:49 2019 +0000
+
+    Add or condition properly
+
+commit 69b02d03d9e586eb665b9b6c8601247923eac5ec
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Mon Nov 11 15:51:59 2019 +0000
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Mon Nov 11 15:51:59 2019 +0000
+
+    The minimum migration starting point should be
+
+    SLES 12 SP3
+
+    or
+
+    SLES For SAP 12 SP3.
+
+commit 9c1d0f22bfe3e74975fe76a50b8029d5a7325a52
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Tue Aug 20 11:39:04 2019 +0100
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Tue Aug 20 11:39:04 2019 +0100
+
+    Reference commit for SUSE maintenance
+    
+    Fix BYOS upgrade from 12SP4-SAP to 15 (BSC#1142108)
+
+commit a8ce07cdfde47be48098c8ad592e7926a75ba56c
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Wed Jul 17 15:10:22 2019 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Wed Jul 17 15:10:22 2019 +0200
+
+    Partially revert the no bootloader based startup
+    
+    After testing the kexec based implementation to start the
+    migration live image, we found that kexec does not work in
+    all cloud providers. Especially those using Xen like AWS
+    do not work. Thus it's required to keep the alternative
+    bootloader based startup sequence
+
+commit 3f10a6635711259407eb83a8d33d9037d2154fb7
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Mon Jul 15 18:26:04 2019 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Wed Jul 17 10:56:39 2019 +0200 
+    
+    Avoid bootloader to run the migration
+    
+    Instead of a reboot the customer should run the migration
+    by calling run_migration. This commit adds a service utility
+    to run the migration. The concept is based on kexec and
+    avoids the modification to the bootloader setup. This allows
+    more flexibility for clouds that runs instances not directly
+    through a bootloader and also avoids infinite boot/reboot
+    cycles in case of an early error of the migration mount
+    service. This Fixes #108
+
+commit 129744d5b9c6420523520fca8550668523532ea7
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Wed May 29 11:37:12 2019 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Wed May 29 11:37:12 2019 +0200
+
+    Fix grub setup if root is on a raid device
+
+    If the root filesystem is on a raid device the boot parameter
+    rd.auto must be passed to the boot such that the dracut raid
+    module can setup the raid prior to iso-scan.sh searching
+    through the devices. Related to Issue #96
+
+commit d2acf65781fb44bd8cc696c9e4909e68503054c6
+Author:     Tim Serong <tserong@suse.com>
+AuthorDate: Tue May 28 15:39:48 2019 +0200
+Commit:     Tim Serong <tserong@suse.com>
+CommitDate: Tue May 28 15:40:06 2019 +0200
+
+    Use `uniq` when finding root device in grub activation script
+
+    If the system is using mdraid on the root disk, the `lsblk` invocation
+    will return two lines matching "/$", e.g.:
+
+    /dev/md1
+    /dev/md1
+
+    This then breaks the subsequent `blkid` invocations, so $root_uuid and
+    $root_type are set to empty strings.  When you later boot into the
+    migration system, grub gives two errors:
+
+    error: one argument expected.
+    error: no such device: root.
+
+    Adding `uniq` fixes this.
+
+commit 497e5a821dbba2e329ee5806b97845a2205cb033
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Thu May 2 15:38:09 2019 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Thu May 2 15:38:59 2019 +0200
+
+    Reference commit for SUSE maintenance
+
+    This submission creates a reference to fate#327175 and bsc#1133919
+
+commit 72378fbfe5f6e82c6fbde9d40942acf78defad66
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Mon Mar 4 14:13:57 2019 +0100
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Mon Mar 4 14:24:36 2019 +0100
+
+    Add rootpart detection to grub activation script
+
+    The live migration image gets installed to the system again
+    because of the space limitation on /boot. This affects the
+    menuentry created on grub side in a way that we can't use
+    the pre-allocated pointer to the boot device but have to search
+    the root partition like in a real grub root entry. This patch
+    adds the needed code changes to locate the root part, insert
+    the needed filesystem module and initializes the root variable
+    to allow the loopback loading of the image. This Fixes #54
+
+commit 8efee0e1fbb818cdef0ee3c808576a4c52c15045
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com> 
+AuthorDate: Mon Mar 4 13:40:57 2019 +0100
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Mon Mar 4 13:40:57 2019 +0100
+
+    Revert location change from /usr/share to /boot
+    
+    This reverts commit 66dd8d4943d38f121f4b16b70bf0ab8d0b2ec82d.
+    If there is an extra boot partition and it's too small we
+    are not able to install the migration system and the customer
+    will not be able to use the migration concept. The image is
+    usually around ~300MB of size and that can often be too much
+    for an extra boot partition which is often designed to be small
+
+commit 66dd8d4943d38f121f4b16b70bf0ab8d0b2ec82d
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Fri Jan 25 11:12:22 2019 +0100
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Fri Jan 25 11:12:22 2019 +0100
+
+    Change location for live migration ISO image
+
+    Instead of /usr/share expect the image in /boot. The reason
+    for this change is because we don't know if the system uses
+    an extra boot partition to load the kernel and initrd from.
+    However the way we add the extra loop boot entry to grub
+    is based on reading the value for ($root) as it was configured
+    on the system. The location ($root) points to in grub could
+    be anywhere but we can trust /boot to be in there.
+    This Fixes the run of the migration in Azure and also
+    stabilizes the concept.
+
+commit 3e89f5140941d289cfc3c18663ae202d6b80ed2b
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Fri Nov 23 09:44:46 2018 +0100
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Fri Nov 23 09:44:46 2018 +0100
+
+    Set the Migration boot entry to be the default
+
+    In addition set the boot timeout to 1sec
+
+commit 7994f7cbc222a7bfb26bd5abfeb2530f453bc691 
+Author:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+AuthorDate: Thu Nov 22 17:54:59 2018 +0000
+Commit:     Jesus Bermudez Velazquez <jesus.bv@suse.com>
+CommitDate: Thu Nov 22 17:54:59 2018 +0000
+
+    Refactor get_cmdline
+
+    More generic parameter name and better search
+    of target kernel command line options.
