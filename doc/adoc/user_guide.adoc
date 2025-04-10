@@ -118,6 +118,7 @@ These incompatibilities include:
 1. Encrypted file systems
 2. Invalid repository types
 3. multiversion.kernels enabled and multiple kernels installed
+4. Unsupported upgrade path with enabled products
 
 This script is run during the install of SLES15-Migration. It can
 also be run anytime using
@@ -130,21 +131,6 @@ A `-f/--fix` option that will remediate the following issues:
 
 1. Set multiversion.kernels to the correct value and remove all
 old (not currently running) kernels.
-
-Example output from running suse-migration-pre-checks:
-
-[listing]
-----
-Running suse-migration-pre-checks with options: fix: False
-Calling: ['blkid', '-s', 'TYPE', '-o', 'value', '/dev/disk/by-uuid/e35ee7fd-7985-4e86-ae79-32c8077e2006']
-Calling: ['blkid', '-s', 'TYPE', '-o', 'value', '/dev/disk/by-uuid/8da89821-e427-4375-8c9b-f142903e2ff8']
-Calling: ['blkid', '-s', 'TYPE', '-o', 'value', '/dev/disk/cloud/azure_resource-part1']
-Calling: ['blkid', '-s', 'TYPE', '-o', 'value', '/dev/disk/by-uuid/B04E-7E9D']
-The config option 'multiversion' in /etc/zypp/zypp.conf includes the keyword 'kernel.' The current value is set as
-'multiversion = provides:multiversion(kernel)'.
-Checking the config option 'multiversion.kernels' to see if multiple kernels are also enabled
-Calling: ['rpm', '-qa', 'kernel-default']
-----
 
 == Installation
 The distribution migration system is available from the Public Cloud module.
