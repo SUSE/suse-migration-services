@@ -71,7 +71,7 @@
         <package name="cloud-regionsrv-client-plugin-azure"/>
         <package name="cloud-regionsrv-client-plugin-ec2"/>
         <package name="cloud-regionsrv-client-plugin-gce"/>
-        <package name="python3-gcemetadata"/>
+        <package name="python-gcemetadata"/>
         <package name="python3-ec2metadata"/>
         <package name="python3-azuremetadata"/>
     </packages>
