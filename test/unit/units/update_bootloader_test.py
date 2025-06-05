@@ -34,7 +34,7 @@ class TestUpdateBootloader:
                 [
                     'chroot', '/system-root',
                     'shim-install', '--removable'
-                ]
+                ], raise_on_error=False
             ),
             call(
                 [

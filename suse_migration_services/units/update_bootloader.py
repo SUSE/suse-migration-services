@@ -70,10 +70,15 @@ def install_shim_package(root_path):
 
 def install_secure_bootloader(root_path):
     """
-    Perform shim-install from inside the upgraded system
+    Perform shim-install from inside the upgraded system.
+    If the system is not suitable to be setup for shim e.g.
+    not EFI based, we don't consider it as a fatal error
+    and continue while keeping the log information about the
+    attempt.
     """
     Command.run(
-        ['chroot', root_path, 'shim-install', '--removable']
+        ['chroot', root_path, 'shim-install', '--removable'],
+        raise_on_error=False
     )
 
 
