@@ -160,6 +160,16 @@ def get_migration_target():
             'version': '15.3',
             'arch': platform.machine()
         }
+    sles16_migration = Command.run(
+        ['rpm', '-q', 'SLES16-Migration'], raise_on_error=False
+    )
+    if sles16_migration.returncode == 0:
+        # return default migration target
+        return {
+            'identifier': 'SLES',
+            'version': '16.0',
+            'arch': platform.machine()
+        }
     return {}
 
 
