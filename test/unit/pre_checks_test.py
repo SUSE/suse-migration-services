@@ -710,11 +710,11 @@ class TestPreChecks():
     ):
         mock_platform_machine.return_value = 'x86_64'
         sles15_migration_not_found = Mock()
-        sles15_migration_not_found.returncode = 1 # SLES15-Migration not found
+        sles15_migration_not_found.returncode = 1  # SLES15-Migration not found
         sles16_migration_found = Mock()
-        sles16_migration_found.returncode = 0 # SLES16-Migration found
+        sles16_migration_found.returncode = 0  # SLES16-Migration found
         mock_Command_run.side_effect = [sles15_migration_not_found, sles16_migration_found]
-        mock_os_path_isfile.return_value = False # No /etc/sle-migration-service.yml
+        mock_os_path_isfile.return_value = False  # No /etc/sle-migration-service.yml
         assert check_scc.get_migration_target() == {
             'identifier': 'SLES',
             'version': '16.0',
