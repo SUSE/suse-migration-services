@@ -108,14 +108,29 @@ class Defaults:
     @staticmethod
     def get_os_release():
         with open('/etc/os-release', 'r') as handle:
-            keys, values = zip(
-                *[
-                    (key.lower(), value.strip('\'"')) for (key, value) in (
-                        line.strip().split('=', 1) for line in
-                        handle.read().strip().split(os.linesep)
-                    )
-                ]
-            )
+            valid_pairs = []
+            # Read the whole file, strip leading/trailing whitespace from the content,
+            # then split into lines.
+            raw_lines = handle.read().strip().split(os.linesep)
+
+            for line_text in raw_lines:
+                stripped_line = line_text.strip()
+
+                # Skip empty lines and lines that are comments
+                if not stripped_line or stripped_line.startswith('#'):
+                    continue
+
+                parts = stripped_line.split('=', 1)
+                if len(parts) == 2:
+                    key, value = parts
+                    valid_pairs.append((key.lower(), value.strip('\'"')))
+                # else: malformed line (e.g., no '='), ignore it as per os-release behavior
+
+            if not valid_pairs:
+                # Handle cases where /etc/os-release is empty or contains only comments/invalid lines
+                return namedtuple('OSRelease', [])()
+
+            keys, values = zip(*valid_pairs)
             return namedtuple('OSRelease', keys)(*values)
 
     @staticmethod
