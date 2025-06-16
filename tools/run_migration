@@ -55,7 +55,12 @@ function get_boot_options {
     # """
     local boot_options
     local host_boot_option
-    boot_options="iso-scan/filename=$1 root=live:CDLABEL=CDROM rd.live.image"
+    local migration_iso=$1
+    local is_sles16_migration=false
+    if [[ "${migration_iso}" == *SLES16*-Migration*.iso ]]; then
+        is_sles16_migration=true
+    fi
+    boot_options="iso-scan/filename=${migration_iso} root=live:CDLABEL=CDROM rd.live.image"
     if mdadm --detail "$(get_system_root_device)" &>/dev/null; then
         boot_options="${boot_options} rd.auto"
     fi
@@ -66,6 +71,12 @@ function get_boot_options {
             ;;
             quiet)
                 continue
+            ;;
+            security=apparmor)
+            if ${is_sles16_migration}; then
+                boot_options="${boot_options} security=selinux"
+                continue
+            fi
             ;;
         esac
         boot_options="${boot_options} ${host_boot_option}"
