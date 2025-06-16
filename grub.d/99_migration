@@ -15,6 +15,10 @@ else
 fi
 
 migration_iso=$(echo /migration-image/*-Migration.*.iso)
+is_sles16_migration=false
+if [[ "${migration_iso}" == *SLES16*-Migration*.iso ]]; then
+    is_sles16_migration=true
+fi
 
 root_device=$(findmnt -n -v -o SOURCE /)
 
@@ -41,6 +45,12 @@ for host_boot_option in $(xargs -n1 < /proc/cmdline);do
         ;;
         quiet)
             continue
+        ;;
+        security=apparmor)
+            if ${is_sles16_migration}; then
+                boot_options="${boot_options} security=selinux"
+                continue
+            fi
         ;;
     esac
     boot_options="${boot_options} ${host_boot_option}"
