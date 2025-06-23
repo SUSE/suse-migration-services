@@ -53,6 +53,77 @@ class TestDefaults(object):
             file_handle.read.return_value = os_release_content
             assert self.defaults.get_os_release() == os_release_result
 
+    def test_get_os_release_with_comments_and_blanks(self):
+        os_release_content = (
+            'NAME="openSUSE Tumbleweed"\n'
+            '# VERSION="20250505"\n'
+            '\n'
+            'ID="opensuse-tumbleweed"\n'
+            'ID_LIKE=opensuse suse\n'  # Value not in quotes
+            'VERSION_ID="20250505"\n'
+            '#PRETTY_NAME="openSUSE Tumbleweed"\n'
+            '  # ANSI_COLOR="0;32" with leading space comment\n'
+            'MALFORMED_LINE_NO_EQUALS\n'  # This line will be skipped
+        )
+        # Expected order of fields based on valid lines in os_release_content
+        ordered_os_release_tuple = namedtuple(
+            'OSRelease', ['name', 'id', 'id_like', 'version_id']
+        )
+        expected_result = ordered_os_release_tuple(
+            name='openSUSE Tumbleweed', id='opensuse-tumbleweed',
+            id_like='opensuse suse', version_id='20250505'
+        )
+
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open_os_release = MagicMock(spec=io.IOBase)
+
+            def open_file(filename, mode):
+                if filename == '/etc/os-release':
+                    return mock_open_os_release.return_value
+                # Fallback for other open calls if any, though not expected here
+                return MagicMock(spec=io.IOBase)
+
+            mock_open.side_effect = open_file
+            file_handle = \
+                mock_open_os_release.return_value.__enter__.return_value
+            file_handle.read.return_value = os_release_content
+            parsed_result = self.defaults.get_os_release()
+            assert parsed_result == expected_result
+            assert parsed_result._fields == ('name', 'id', 'id_like', 'version_id')
+
+    def test_get_os_release_empty_file(self):
+        os_release_content = ""
+        expected_empty_tuple = namedtuple('OSRelease', [])()
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open_os_release = MagicMock(spec=io.IOBase)
+
+            def open_file(filename, mode):
+                if filename == '/etc/os-release':
+                    return mock_open_os_release.return_value
+                return MagicMock(spec=io.IOBase)
+
+            mock_open.side_effect = open_file
+            file_handle = \
+                mock_open_os_release.return_value.__enter__.return_value
+            file_handle.read.return_value = os_release_content
+            assert self.defaults.get_os_release() == expected_empty_tuple
+
+    def test_get_os_release_only_comments(self):
+        os_release_content = "# This is a comment\n# Another comment"
+        expected_empty_tuple = namedtuple('OSRelease', [])()
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open_os_release = MagicMock(spec=io.IOBase)
+
+            def open_file(filename, mode):
+                if filename == '/etc/os-release':
+                    return mock_open_os_release.return_value
+                return MagicMock(spec=io.IOBase)
+            mock_open.side_effect = open_file
+            file_handle = \
+                mock_open_os_release.return_value.__enter__.return_value
+            file_handle.read.return_value = os_release_content
+            assert self.defaults.get_os_release() == expected_empty_tuple
+
     def test_get_proxy_path(self):
         assert self.defaults.get_proxy_path() == \
             '/etc/sysconfig/proxy'
