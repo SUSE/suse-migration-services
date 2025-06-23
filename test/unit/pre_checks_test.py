@@ -2,6 +2,7 @@ import io
 import argparse
 import logging
 import os
+import subprocess
 from unittest.mock import (
     patch, call, Mock, MagicMock
 )
@@ -13,6 +14,7 @@ import suse_migration_services.prechecks.repos as check_repos
 import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_kernels
 import suse_migration_services.prechecks.scc as check_scc
+import suse_migration_services.prechecks.ha as check_ha
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
@@ -725,3 +727,78 @@ class TestPreChecks():
         with self._caplog.at_level(logging.ERROR):
             check_pre_checks.main()
             assert 'pre-checks requires root permissions' in self._caplog.text
+
+    @patch('subprocess.run')
+    @patch('os.access')
+    def test_check_ha_in_migration_system(
+        self,
+        mock_os_access, mock_subprocess_run,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = False
+        with self._caplog.at_level(logging.INFO):
+            check_ha.check_ha(migration_system=True)
+            assert 'Skipped checks for high availablity extension' in self._caplog.text
+        mock_os_access.assert_not_called()
+        mock_subprocess_run.assert_not_called()
+
+    @patch('subprocess.run')
+    @patch('os.access')
+    def test_check_ha_not_intialzied(
+        self,
+        mock_os_access, mock_subprocess_run,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = False
+        with self._caplog.at_level(logging.INFO):
+            check_ha.check_ha(migration_system=False)
+            assert 'Skipped checks for high availablity extension' in self._caplog.text
+        mock_subprocess_run.assert_not_called()
+
+    @patch('subprocess.run')
+    @patch('os.access')
+    def test_check_ha_not_installed(
+        self,
+        mock_os_access, mock_subprocess_run,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = True
+        mock_subprocess_run.side_effect = FileNotFoundError()
+        with self._caplog.at_level(logging.INFO):
+            check_ha.check_ha(migration_system=False)
+            assert 'Skipped checks for high availablity extension' in self._caplog.text
+        mock_subprocess_run.assert_called_once()
+
+    @patch('subprocess.run')
+    @patch('os.access')
+    def test_check_ha_unexpected_exception_when_calling_crmsh(
+        self,
+        mock_os_access, mock_subprocess_run,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = True
+        mock_subprocess_run.side_effect = PermissionError()
+        with self._caplog.at_level(logging.WARNING):
+            check_ha.check_ha(migration_system=False)
+            assert 'Skipped checks for high availablity extension' in self._caplog.text
+        mock_subprocess_run.assert_called_once()
+
+    @patch('subprocess.run')
+    @patch('os.access')
+    def test_check_ha(
+        self,
+        mock_os_access, mock_subprocess_run,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = True
+        mock_subprocess_run.return_value = Mock(returncode=0, stdout=b'crm cluster health hawk2|sles16')
+        with self._caplog.at_level(logging.INFO):
+            check_ha.check_ha(migration_system=False)
+            assert 'Skipped checks for high availablity extension.' not in self._caplog.text
+        mock_subprocess_run.assert_has_calls([
+            call(
+                ['crm', 'help', 'cluster', 'health'],
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            ),
+            call(['crm', 'cluster', 'health', 'sles16', '--local']),
+        ])

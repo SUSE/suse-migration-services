@@ -24,6 +24,7 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.migration_config import MigrationConfig
 
+import suse_migration_services.prechecks.ha as check_ha
 import suse_migration_services.prechecks.repos as check_repos
 import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_multi_kernels
@@ -112,4 +113,8 @@ def main():
     check_scc.migration(
         migration_system=migration_system_mode
     )
+    log.info('Done')
+
+    log.info('--> Checking high availability extension...')
+    check_ha.check_ha()
     log.info('Done')
