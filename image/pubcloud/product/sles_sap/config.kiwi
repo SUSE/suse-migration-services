@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<image schemaversion="6.8" name="SLES15-SAP-Migration">
+<image schemaversion="6.8" name="SLES15-SAP_Migration">
     <description type="system">
         <author>Public Cloud Team</author>
         <contact>public-cloud-dev@susecloud.net</contact>
