@@ -11,7 +11,7 @@
     </description>
     <preferences>
         <type image="iso" primary="true" flags="overlay" firmware="efi" boottimeout="1"/>
-        <version>2.1.11</version>
+        <version>2.1.15</version>
         <packagemanager>zypper</packagemanager>
         <locale>en_US</locale>
         <keytable>us</keytable>
@@ -87,6 +87,7 @@
         <package name="bind-utils"/>
         <package name="util-linux"/>
         <package name="suse-migration-services"/>
+        <package name="suse-migration-pre-checks"/>
         <package name="dialog"/>
         <package name="sudo"/>
         <package name="mdadm"/>

@@ -52,6 +52,7 @@ systemctl enable suse-migration-post-mount-system
 systemctl enable suse-migration-ssh-keys
 systemctl enable suse-migration-pre-checks
 systemctl enable suse-migration-setup-host-network
+systemctl enable suse-migration-setup-name-resolver
 systemctl enable suse-migration-prepare
 systemctl enable suse-migration
 systemctl enable suse-migration-console-log
@@ -70,7 +71,7 @@ sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' \
 
 # Remove the password for root and migration user
 # Note the string matches the password set in the config file
-sed -i 's/$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0/*/' /etc/shadow
+# sed -i 's/$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0/*/' /etc/shadow
 
 # Setup ownership for migration user data
 chown -R migration:users /home/migration
