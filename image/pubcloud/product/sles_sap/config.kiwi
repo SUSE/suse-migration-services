@@ -6,7 +6,7 @@
         <contact>public-cloud-dev@susecloud.net</contact>
         <specification>
             SLES15 Distribution Migration Live System to upgrade
-            SLES12-SP4+ SAP instances to SLES15 SP3
+            SLES12-SP4+ SAP instances to SLES15 SP4
         </specification>
     </description>
     <preferences>
@@ -25,6 +25,12 @@
     </users>
     <repository type="rpm-md" >
         <source path='obsrepositories:/'/>
+    </repository>
+    <repository type="rpm-md">
+     <source path="obs://SUSE:SLE-15-SP4:Update/standard"/>
+    </repository>
+    <repository type="rpm-md">
+     <source path="obs://SUSE:SLE-15-SP4:GA/standard"/>
     </repository>
     <repository type="rpm-md">
 	 <source path="obs://SUSE:SLE-15-SP3:Update/standard"/>
