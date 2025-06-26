@@ -67,6 +67,14 @@ sle16_activation: tar
 		| sed -e s'@%%VERSION@${version}@' \
 		> dist/suse-migration-sle16-activation.spec
 
+suse-migration-rpm: clean check test
+	mkdir -p dist
+	tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
+		-czf dist/suse-migration-rpm.tar.gz \
+		-C image/package suse-migration-rpm
+	cp image/package/suse-migration-rpm.spec dist/suse-migration-rpm.spec
+	cp image/package/suse-migration-rpm.changes dist/suse-migration-rpm.changes
+
 setup:
 	poetry install --all-extras
 
