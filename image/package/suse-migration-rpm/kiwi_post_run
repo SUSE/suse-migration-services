@@ -73,3 +73,4 @@ fi
 # a "non-standard result file for KIWI"
 mkdir -p $TOPDIR/OTHER
 mv $TOPDIR/RPMS/$ARCH/$NAME-$VERSION-$RELEASE.$ARCH.rpm $TOPDIR/OTHER/
+mv $TOPDIR/SRPMS/$NAME-$VERSION-$RELEASE.src.rpm $TOPDIR/OTHER/
