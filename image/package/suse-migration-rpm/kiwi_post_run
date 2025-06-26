@@ -7,10 +7,15 @@ set -u
 
 IMAGE_DIR=$TOPDIR/KIWI
 BUILD_DIR=/usr/lib/build
+BUILD_DISTURL=
 
+# To get BUILD_DISTURL
+test -f /.buildenv && . /.buildenv
+
+[ -d $IMAGE_DIR ] || exit 0
 cd $IMAGE_DIR
 
-ARCH=$(rpm --eval '%{_arch}')
+ARCH="$(uname -m)"
 IMAGE=$(echo *.iso)
 NAME=$(echo $IMAGE | cut -f1 -d.)
 VERSION=$(echo $IMAGE | cut -f3 -d-)
@@ -56,7 +61,13 @@ if [ ! -f $TOPDIR/RPMS/$ARCH ]; then
   mkdir -p $TOPDIR/RPMS/$ARCH
 fi
 
-rpmbuild -ba $BUILD_DIR/image.spec
+echo "Starting build"
+
+if [ -z "$BUILD_DISTURL" ]; then
+  rpmbuild --target $ARCH -ba $BUILD_DIR/image.spec
+else
+  rpmbuild --target $ARCH -ba --define "disturl $BUILD_DISTURL" $BUILD_DIR/image.spec
+fi
 
 # required for the BS to find the rpm, because it is
 # a "non-standard result file for KIWI"
