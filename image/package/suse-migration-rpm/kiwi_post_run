@@ -40,6 +40,9 @@ sed -e "s/__NAME__/$NAME/g" \
     < $BUILD_DIR/image.spec.in \
     > $BUILD_DIR/image.spec
 
+cp /.build-changelog $BUILD_DIR/image.changes
+$BUILD_DIR/changelog2spec --target rpm --file $BUILD_DIR/image.changes >> $BUILD_DIR/image.spec
+
 # Local builds have the file already in place, that's not true on IBS
 if [ ! -f $TOPDIR/SOURCES/$IMAGE ]; then
   ln $IMAGE $TOPDIR/SOURCES
