@@ -39,7 +39,7 @@ function get_migration_image {
     # """
     # Search for migration ISO file
     # """
-    echo /migration-image/*-Migration.*.iso
+    echo /migration-image/*-*Migration.*.iso
 }
 
 function get_system_root_device {
@@ -57,7 +57,7 @@ function get_boot_options {
     local host_boot_option
     local migration_iso=$1
     local is_sles16_migration=false
-    if [[ "${migration_iso}" == *SLES16*-Migration*.iso ]]; then
+    if [[ "${migration_iso}" == *SLES16*-*Migration*.iso ]]; then
         is_sles16_migration=true
     fi
     boot_options="iso-scan/filename=${migration_iso} root=live:CDLABEL=CDROM rd.live.image"
