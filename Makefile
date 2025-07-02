@@ -75,6 +75,16 @@ suse-migration-rpm: clean check test
 	cp image/package/suse-migration-rpm.spec dist/suse-migration-rpm.spec
 	cp image/package/suse-migration-rpm.changes dist/suse-migration-rpm.changes
 
+SLES16-Migration: clean check test
+	mkdir -p dist
+	tar --sort=name --owner=0 --group=0 --numeric-owner \
+		--transform 's,^\./,,' \
+		-czf dist/root.tar.gz \
+		-C image/generic/sle16/root .
+	cp image/generic/sle16/config.kiwi dist/config.kiwi
+	cp image/generic/sle16/config.sh dist/config.sh
+	cp image/generic/sle16/SLES16-Migration.changes dist/SLES16-Migration.changes
+
 setup:
 	poetry install --all-extras
 
