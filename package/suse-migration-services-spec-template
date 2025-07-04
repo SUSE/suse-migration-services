@@ -19,7 +19,6 @@
 %else
 %define pythons python3
 %endif
-%global _sitelibdir %{%{pythons}_sitelib}
 
 Name:             suse-migration-services
 Version:          %%VERSION
@@ -57,6 +56,8 @@ Requires:         suse-migration-services = %{version}-%{release}
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
+%define python_subpackage_only 1
+%python_subpackages
 
 %description
 Systemd services to prepare and run a distribution migration process.
@@ -64,6 +65,10 @@ Systemd services to prepare and run a distribution migration process.
 %package          -n %{pythons}-migration
 Summary:          The systemd services for the python migration module
 Group:            System/Management
+%if 0%{?suse_version} >= 1600
+Obsoletes:        python3-migration
+Provides:         python3-migration = %{version}-%{release}
+%endif
 
 %description -n %{pythons}-migration
 Python based implementation for suse major code stream upgrade system
@@ -94,21 +99,22 @@ BuildArch:        noarch
 The migrate tool to start the migration as container based process
 
 %prep
-%setup -q -n suse_migration_services-%{version}
+%autosetup -p1 -n suse_migration_services-%{version}
 
 %build
 %if 0%{?suse_version} >= 1600
 %pyproject_wheel
 %else
-%{pythons} setup.py build
+%python_build
 %endif
 
 %install
 %if 0%{?suse_version} >= 1600
 %pyproject_install
 %else
-%{pythons} setup.py install --prefix=%{_prefix} --root=%{buildroot}
+%python_install
 %endif
+%python_expand %fdupes %{buildroot}%{python_sitelib}/
 
 install -D -m 755 tools/run_migration \
     %{buildroot}%{_sbindir}/run_migration
@@ -234,7 +240,8 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-wicked-networkmanager.service
 
 %files -n %{pythons}-migration
-%{python_sitelib}/*
+%{python_sitelib}/suse_migration_services
+%{python_sitelib}/suse_migration_services-%{version}*-info
 
 %files -n suse-migration-pre-checks
 %{_bindir}/suse-migration-pre-checks
