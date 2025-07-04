@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jul  2 12:55:06 UTC 2025 - Frederic Crozat <fcrozat@suse.com>
+
+- Add build and perl(Date::Parse) to ensure we can append changelog
+  entries to generated package.
+
+-------------------------------------------------------------------
 Wed Oct 30 13:21:08 UTC 2024 - Marcus Schäfer <marcus.schaefer@gmail.com>
 
 - Install migration live image to /migration-image
