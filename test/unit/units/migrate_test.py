@@ -4,7 +4,7 @@ from unittest.mock import (
 )
 from pytest import raises
 
-from suse_migration_services.units.migrate import main
+from suse_migration_services.units.migrate import main, is_single_rpmtrans_requested
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.exceptions import (
@@ -256,3 +256,35 @@ class TestMigration(object):
                 '&>> /system-root/var/log/distro_migration.log'
             ], raise_on_error=False
         )
+
+    @patch('builtins.open', new_callable=MagicMock)
+    def test_is_single_rpmtrans_requested(self, mock_open):
+        # Test case 1: migration.single_rpmtrans is not present
+        mock_open.return_value.__enter__.return_value.read.return_value = \
+            'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default root=/dev/sda2'
+        assert is_single_rpmtrans_requested() == '0'
+
+        # Test case 2: migration.single_rpmtrans=true
+        mock_open.return_value.__enter__.return_value.read.return_value = \
+            'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=true'
+        assert is_single_rpmtrans_requested() == '1'
+
+        # Test case 3: migration.single_rpmtrans=1
+        mock_open.return_value.__enter__.return_value.read.return_value = \
+            'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=1'
+        assert is_single_rpmtrans_requested() == '1'
+
+        # Test case 4: migration.single_rpmtrans=false
+        mock_open.return_value.__enter__.return_value.read.return_value = \
+            'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=false'
+        assert is_single_rpmtrans_requested() == '0'
+
+        # Test case 5: migration.single_rpmtrans=0
+        mock_open.return_value.__enter__.return_value.read.return_value = \
+            'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=0'
+        assert is_single_rpmtrans_requested() == '0'
+
+        # Test case 6: migration.single_rpmtrans with unexpected value
+        mock_open.return_value.__enter__.return_value.read.return_value = \
+            'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=unexpected'
+        assert is_single_rpmtrans_requested() == '0'
