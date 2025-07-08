@@ -26,6 +26,8 @@ Url:            https://github.com/SUSE/suse-migration-services
 Source:         %{name}.tar.gz
 BuildRequires:  filesystem
 Requires:       suse-migration-services
+Requires:       build
+Requires:       perl(Date::Parse)
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
