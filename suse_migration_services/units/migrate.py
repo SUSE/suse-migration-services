@@ -86,6 +86,7 @@ def main():
         if migration_config.is_zypp_solver_test_case_requested():
             solver_case = '--debug-solver'
         os.environ['ZYPP_SINGLE_RPMTRANS'] = is_single_rpmtrans_requested()
+        os.environ['ZYPP_NO_USRMERGE_PROTECT'] = is_single_rpmtrans_requested()
 
         if migration_config.is_zypper_migration_plugin_requested():
             bash_command = ' '.join(
