@@ -17,6 +17,7 @@
 #
 import logging
 import os
+import re
 
 # project
 from suse_migration_services.migration_config import MigrationConfig
@@ -31,6 +32,25 @@ from suse_migration_services.exceptions import (
     DistMigrationZypperException,
     DistMigrationCommandException
 )
+
+
+def is_single_rpmtrans_requested() -> str:
+    """
+    Return the value of single_rpmtrans
+
+    The value is read from the kernel command line argument:
+    migration.single_rpmtrans=<value>
+    """
+    # The default is 0
+    single_rpmtrans = '0'
+    with open('/proc/cmdline', 'r') as f:
+        cmdline = f.read()
+    match = re.search(r'migration.single_rpmtrans=([\w]+)', cmdline)
+    if match:
+        value = match.group(1).lower()
+        if value == 'true' or value == '1':
+            single_rpmtrans = '1'
+    return single_rpmtrans
 
 
 def main():
@@ -65,6 +85,9 @@ def main():
         solver_case = Defaults.get_zypp_gen_solver_test_case()
         if migration_config.is_zypp_solver_test_case_requested():
             solver_case = '--debug-solver'
+        os.environ['ZYPP_SINGLE_RPMTRANS'] = is_single_rpmtrans_requested()
+        os.environ['ZYPP_NO_USRMERGE_PROTECT'] = is_single_rpmtrans_requested()
+
         if migration_config.is_zypper_migration_plugin_requested():
             bash_command = ' '.join(
                 [
