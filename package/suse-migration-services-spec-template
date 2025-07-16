@@ -176,6 +176,9 @@ install -D -m 644 systemd/suse-migration-apparmor-selinux.service \
 install -D -m 644 systemd/suse-migration-wicked-networkmanager.service \
     %{buildroot}%{_unitdir}/suse-migration-wicked-networkmanager.service
 
+install -D -m 644 systemd/suse-migration-ha.service \
+    %{buildroot}%{_unitdir}/suse-migration-ha.service
+
 install -D -m 644 systemd/suse-migration-btrfs-snapshot-pre-migration.service \
     %{buildroot}%{_unitdir}/suse-migration-btrfs-snapshot-pre-migration.service
 
@@ -210,6 +213,7 @@ install -D -m 755 tools/migrate \
 %{_bindir}/suse-migration-kernel-load
 %{_bindir}/suse-migration-reboot
 %{_bindir}/suse-migration-wicked-networkmanager
+%{_bindir}/suse-migration-ha
 %{_unitdir}/suse-migration-ssh-keys.service
 %{_unitdir}/suse-migration-btrfs-snapshot-pre-migration.service
 %{_unitdir}/suse-migration-mount-system.service
@@ -232,6 +236,7 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-kernel-load.service
 %{_unitdir}/suse-migration-reboot.service
 %{_unitdir}/suse-migration-wicked-networkmanager.service
+%{_unitdir}/suse-migration-ha.service
 
 %files -n %{pythons}-migration
 %{python_sitelib}/*

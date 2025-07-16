@@ -63,6 +63,7 @@ systemctl enable suse-migration-product-setup.service
 systemctl enable suse-migration-regenerate-initrd.service
 systemctl enable suse-migration-kernel-load.service
 systemctl enable suse-migration-wicked-networkmanager.service
+systemctl enable suse-migration-ha.service
 systemctl enable suse-migration-reboot.service
 systemctl enable NetworkManager.service
 # needed for network setup migration
