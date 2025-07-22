@@ -6,7 +6,7 @@ Run SLE12 test image (simple disk layout)
 
 .. code:: bash
 
-   osc getbinaries home:marcus.schaefer:dms suse-migration-test-vm images_sle12 x86_64
+   osc getbinaries home:marcus.schaefer:dms suse-migration-test-vm-12 images_sle12 x86_64
    qemu-kvm \
        -m 4096 \
        -netdev user,id=user0,hostfwd=tcp::10022-:22 \
