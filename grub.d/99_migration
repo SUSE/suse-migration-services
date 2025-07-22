@@ -56,9 +56,11 @@ for host_boot_option in $(xargs -n1 < /proc/cmdline);do
     boot_options="${boot_options} ${host_boot_option}"
 done
 
+ARCH=$(uname -m)
+
 if grub_file_is_not_garbage "${migration_iso}"; then
-    kernel="(loop)/boot/x86_64/loader/linux"
-    initrd="(loop)/boot/x86_64/loader/initrd"
+    kernel="(loop)/boot/${ARCH}/loader/linux"
+    initrd="(loop)/boot/${ARCH}/loader/initrd"
     boot_device_id="$(grub_get_device_id "${GRUB_DEVICE_BOOT}")"
     printf "menuentry '%s' %s \${menuentry_id_option} '%s' {\n" \
         "${OS}" "${CLASS}" "Migration-${boot_device_id}"
@@ -74,10 +76,12 @@ if grub_file_is_not_garbage "${migration_iso}"; then
         "${migration_iso}"
     printf "    set linux=linux\n"
     printf "    set initrd=initrd\n"
-    printf "    if [ \"\${grub_platform}\" = \"efi\" ]; then\n"
-    printf "        set linux=linuxefi\n"
-    printf "        set initrd=initrdefi\n"
-    printf "    fi\n"
+    if [ "$ARCH" = "x86_64" ]; then
+       printf "    if [ \"\${grub_platform}\" = \"efi\" ]; then\n"
+       printf "        set linux=linuxefi\n"
+       printf "        set initrd=initrdefi\n"
+       printf "    fi\n"
+    fi
     printf "    loopback loop (\$root)\$isofile\n"
     printf "    \$linux %s iso-scan/filename=\$isofile %s\n" \
         "${kernel}" "${boot_options}"
