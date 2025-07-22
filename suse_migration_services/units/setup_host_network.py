@@ -27,7 +27,6 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 
 from suse_migration_services.exceptions import (
-    DistMigrationNameResolverException,
     DistMigrationHostNetworkException
 )
 
@@ -37,8 +36,8 @@ def main():
     DistMigration activate host network setup
 
     Setup and activate the network as it is setup on the host
-    to become migrated. This includes the import of the resolver
-    and network configuration from the migration host
+    to become migrated. This includes the import of the network
+    configuration from the migration host
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
@@ -49,13 +48,6 @@ def main():
         Defaults.get_system_mount_info_file()
     )
 
-    resolv_conf = os.sep.join(
-        [root_path, 'etc', 'resolv.conf']
-    )
-    if not os.path.exists(resolv_conf):
-        raise DistMigrationNameResolverException(
-            'Could not find {0} on migration host'.format(resolv_conf)
-        )
     sysconfig_network_providers = os.sep.join(
         [root_path, 'etc', 'sysconfig', 'network', 'providers']
     )
@@ -81,22 +73,6 @@ def main():
         Command.run(
             ['systemctl', 'reload', 'network']
         )
-        if has_host_resolv_setup(resolv_conf):
-            log.info('Copying {}'.format(resolv_conf))
-            shutil.copy(
-                resolv_conf, '/etc/resolv.conf'
-            )
-        else:
-            log.info('Empty {0}, bind mounting /etc/resolv.conf to {0}'.format(resolv_conf))
-            Command.run(
-                [
-                    'mount', '--bind', '/etc/resolv.conf',
-                    resolv_conf
-                ]
-            )
-            system_mount.add_entry(
-                '/etc/resolv.conf', resolv_conf
-            )
         system_mount.export(
             Defaults.get_system_mount_info_file()
         )
@@ -151,12 +127,3 @@ def log_network_details():
                 ).output
             )
         )
-
-
-def has_host_resolv_setup(resolv_conf_path):
-    with open(resolv_conf_path, 'r') as resolv:
-        for line in resolv:
-            # check there is useful information in the remaining lines
-            if line.startswith('search') or line.startswith('nameserver'):
-                return True
-    return False

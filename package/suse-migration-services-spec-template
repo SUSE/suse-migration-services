@@ -132,6 +132,9 @@ install -D -m 644 systemd/suse-migration-post-mount-system.service \
 install -D -m 644 systemd/suse-migration-setup-host-network.service \
     %{buildroot}%{_unitdir}/suse-migration-setup-host-network.service
 
+install -D -m 644 systemd/suse-migration-setup-name-resolver.service \
+    %{buildroot}%{_unitdir}/suse-migration-setup-name-resolver.service
+
 install -D -m 644 systemd/suse-migration-prepare.service \
     %{buildroot}%{_unitdir}/suse-migration-prepare.service
 
@@ -211,6 +214,7 @@ install -D -m 755 tools/migrate \
 %{_bindir}/suse-migration-mount-system
 %{_bindir}/suse-migration-post-mount-system
 %{_bindir}/suse-migration-setup-host-network
+%{_bindir}/suse-migration-setup-name-resolver
 %{_bindir}/suse-migration-prepare
 %{_bindir}/suse-migration
 %{_bindir}/suse-migration-grub-setup
@@ -226,6 +230,7 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-mount-system.service
 %{_unitdir}/suse-migration-post-mount-system.service
 %{_unitdir}/suse-migration-setup-host-network.service
+%{_unitdir}/suse-migration-setup-name-resolver.service
 %{_unitdir}/suse-migration-prepare.service
 %{_unitdir}/suse-migration.service
 %{_unitdir}/suse-migration-container.service

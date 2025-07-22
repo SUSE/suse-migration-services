@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup Migration Name Resolver
+After=suse-migration-setup-host-network.service network-online.target
+Requires=suse-migration-setup-host-network.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-setup-name-resolver
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

@@ -65,6 +65,7 @@ suseInsertService suse-migration-post-mount-system
 suseInsertService suse-migration-ssh-keys
 suseInsertService suse-migration-pre-checks
 suseInsertService suse-migration-setup-host-network
+suseInsertService suse-migration-setup-name-resolver
 suseInsertService suse-migration-prepare
 suseInsertService suse-migration
 suseInsertService suse-migration-console-log
