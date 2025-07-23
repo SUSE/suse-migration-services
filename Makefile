@@ -85,6 +85,15 @@ SLES16-Migration: clean check test
 	cp image/generic/sle16/config.sh dist/config.sh
 	cp image/generic/sle16/SLES16-Migration.changes dist/SLES16-Migration.changes
 
+SLES15-Migration: clean check test
+	mkdir -p dist
+	tar --sort=name --owner=0 --group=0 --numeric-owner \
+		--transform 's,^\./,,' \
+		-czf dist/root.tar.gz \
+		-C image/pubcloud/sle15/root .
+	cp image/pubcloud/sle15/config.kiwi dist/config.kiwi
+	cp image/pubcloud/sle15/config.sh dist/config.sh
+
 setup:
 	poetry install --all-extras
 

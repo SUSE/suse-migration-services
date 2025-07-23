@@ -5,18 +5,19 @@ DefaultDependencies=no
 After=systemd-vconsole-setup.service suse-migration-prepare.service
 Wants=systemd-vconsole-setup.service
 Conflicts=emergency.service emergency.target
+ConditionPathExists=/dev/tty8
 
 [Service]
-ExecStart=/usr/bin/dialog --tailbox /system-root/var/log/distro_migration.log 60 75
-Type=simple
-Restart=on-failure
-RestartSec=2
-StandardInput=tty-force
-StandardOutput=inherit
-StandardError=inherit
-KillMode=process
-IgnoreSIGPIPE=no
-KillSignal=SIGHUP
+ExecStart=/bin/bash -c "/usr/bin/dialog --tailbox /system-root/var/log/distro_migration.log 60 75; chvt 1"
+ExecStartPre=/usr/bin/chvt 8
+Type=idle
+Restart=always
+RestartSec=10
+StandardInput=tty
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/tty8
+TTYReset=yes
 
 [Install]
 WantedBy=multi-user.target

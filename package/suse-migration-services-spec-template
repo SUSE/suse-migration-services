@@ -51,6 +51,7 @@ Requires:         util-linux
 Requires:         kexec-tools
 Requires:         ca-certificates
 Requires:         dialog
+Requires:         kbd
 Requires:         rsync
 Requires:         suseconnect-ng
 Requires:         suse-migration-services = %{version}-%{release}
