@@ -21,16 +21,15 @@ import re
 
 # project
 from suse_migration_services.migration_config import MigrationConfig
-from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
+from suse_migration_services.zypper import Zypper
 from suse_migration_services.units.post_mount_system import (
     update_env, log_env
 )
 
 from suse_migration_services.exceptions import (
     DistMigrationZypperException,
-    DistMigrationCommandException
 )
 
 
@@ -89,9 +88,9 @@ def main():
         os.environ['ZYPP_NO_USRMERGE_PROTECT'] = is_single_rpmtrans_requested()
 
         if migration_config.is_zypper_migration_plugin_requested():
-            bash_command = ' '.join(
+            Zypper.run(
                 [
-                    'zypper', 'migration',
+                    'migration',
                     verbose_migration,
                     solver_case,
                     '--non-interactive',
@@ -102,17 +101,12 @@ def main():
                     '--strict-errors-dist-migration',
                     '--replacefiles',
                     '--product', migration_config.get_migration_product(),
-                    '--root', root_path,
-                    '&>>', Defaults.get_migration_log_file()
+                    '--root', root_path
                 ]
             )
-            Command.run(
-                ['bash', '-c', bash_command]
-            )
         else:
-            bash_command = ' '.join(
+            zypper_call = Zypper.run(
                 [
-                    'zypper',
                     '--no-cd',
                     '--non-interactive',
                     '--gpg-auto-import-keys',
@@ -122,19 +116,10 @@ def main():
                     '--allow-vendor-change',
                     '--download', 'in-advance',
                     '--replacefiles',
-                    '--allow-downgrade',
-                    '&>>', Defaults.get_migration_log_file()
-                ]
-            )
-            zypper_call = Command.run(
-                ['bash', '-c', bash_command], raise_on_error=False
-            )
-            if zypper_has_failed(zypper_call.returncode):
-                raise DistMigrationCommandException(
-                    '{0} failed with: {1}: {2}'.format(
-                        bash_command, zypper_call.output, zypper_call.error
-                    )
-                )
+                    '--allow-downgrade'
+                ],
+                raise_on_error=False)
+            zypper_call.raise_if_failed()
         # report success(0) return code
         with open(exit_code_file, 'w') as exit_code:
             exit_code.write('0{}'.format(os.linesep))
@@ -158,38 +143,3 @@ def main():
         raise DistMigrationZypperException(
             'Migration failed with {0}'.format(issue)
         )
-
-
-def zypper_has_failed(returncode):
-    """
-    Evaluate given result return code
-
-    In zypper any return code == 0 or >= 100 is considered success.
-    Any return code different from 0 and < 100 is treated as an
-    error we care for. Return codes >= 100 indicates an issue
-    like 'new kernel needs reboot of the system' or similar which
-    we don't care in the scope of image building
-
-    :param int returncode: return code number
-
-    :return: True|False
-
-    :rtype: boolean
-    """
-    error_codes = [
-        104,  # ZYPPER_EXIT_INF_CAP_NOT_FOUND
-        105,  # ZYPPER_EXIT_ON_SIGNAL
-        106,  # ZYPPER_EXIT_INF_REPOS_SKIPPED
-    ]
-
-    if returncode == 0:
-        # All is good
-        return False
-    elif returncode in error_codes:
-        return True
-    elif returncode >= 100:
-        # Treat all other 100 codes as non error codes
-        return False
-
-    # Treat any other error code as error
-    return True

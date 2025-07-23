@@ -22,10 +22,28 @@ import re
 # project
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
+from suse_migration_services.zypper import Zypper
 
 from suse_migration_services.exceptions import (
     DistMigrationAppArmorMigrationException
 )
+
+
+def install_patterns_base_selinux(root_path):
+    """Install patterns-base-selinux"""
+    Zypper.run([
+        '--no-cd',
+        '--non-interactive',
+        '--gpg-auto-import-keys',
+        '--root', root_path,
+        'install',
+        '--auto-agree-with-licenses',
+        '--allow-vendor-change',
+        '--download', 'in-advance',
+        '--replacefiles',
+        '--allow-downgrade',
+        'patterns-base-selinux'
+    ])
 
 
 def main():
@@ -36,6 +54,8 @@ def main():
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
+
+    root_path = Defaults.get_system_root_path()
 
     try:
         log.info('Running AppArmor to SELinux migration')
@@ -49,6 +69,9 @@ def main():
         ) as finput:
             for line in finput:
                 print(re.sub(pattern, "security=selinux", line), end='')
+
+            log.info('Installing patterns-base-selinux')
+            install_patterns_base_selinux(root_path)
     except Exception as issue:
         message = 'Apparmor to SELinux migration failed with {0}'.format(issue)
         log.error(message)
