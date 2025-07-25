@@ -22,6 +22,7 @@ import logging
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
+from suse_migration_services.zypper import Zypper
 
 
 def main():
@@ -46,9 +47,8 @@ def install_shim_package(root_path):
     """
     Install the shim package
     """
-    bash_command = ' '.join(
+    Zypper.run(
         [
-            'zypper',
             '--no-cd',
             '--non-interactive',
             '--gpg-auto-import-keys',
@@ -60,11 +60,7 @@ def install_shim_package(root_path):
             '--replacefiles',
             '--allow-downgrade',
             'shim',
-            '&>>', Defaults.get_migration_log_file()
         ]
-    )
-    Command.run(
-        ['bash', '-c', bash_command]
     )
 
 
