@@ -45,7 +45,7 @@ BuildRequires:    systemd-rpm-macros
 Requires:         %{pythons}-Cerberus
 Requires:         %{pythons}-PyYAML
 Requires:         %{pythons}-setuptools
-Requires:         python3-migration
+Requires:         python3-suse-migration-services = %{version}-%{release}
 Requires:         util-linux
 Requires:         kexec-tools
 Requires:         ca-certificates
@@ -56,17 +56,16 @@ Requires:         suseconnect-ng
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
-%define python_subpackage_only 1
-%python_subpackages
 
 %description
 Systemd services to prepare and run a distribution migration process.
 
-%package          -n python3-migration
+%package          -n python3-suse-migration-services
 Summary:          The systemd services for the python migration module
 Group:            System/Management
+Obsoletes:	  python3-migration <= %{version}
 
-%description -n python3-migration
+%description -n python3-suse-migration-services
 Python based implementation for suse major code stream upgrade system
 
 %package          -n suse-migration-pre-checks
@@ -74,7 +73,7 @@ Summary:          The pre-checks code used with the python migration module
 Group:            System/Management
 Requires:         %{pythons}-lxml
 Requires:         %{pythons}-requests
-Requires:         python3-migration = %{version}
+Requires:         python3-suse-migration-services = %{version}-%{release}
 Requires:         %{pythons}-Cerberus
 Requires:         %{pythons}-PyYAML
 Requires:         %{pythons}-setuptools
@@ -240,7 +239,7 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-wicked-networkmanager.service
 %{_unitdir}/suse-migration-ha.service
 
-%files -n python3-migration
+%files -n python3-suse-migration-services
 %{python_sitelib}/suse_migration_services
 %{python_sitelib}/suse_migration_services-%{version}*-info
 
