@@ -54,7 +54,6 @@ Requires:         dialog
 Requires:         kbd
 Requires:         rsync
 Requires:         suseconnect-ng
-Requires:         suse-migration-services = %{version}-%{release}
 Requires(preun):  systemd
 Requires(postun): systemd
 BuildArch:        noarch
