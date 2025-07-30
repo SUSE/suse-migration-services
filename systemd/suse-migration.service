@@ -1,6 +1,6 @@
 [Unit]
 Description=Run Zypper Migration
-After=suse-migration-product-setup.service
+After=suse-migration-product-setup.service suse-migration-pre-checks.service
 Requisite=suse-migration-product-setup.service
 
 [Service]
