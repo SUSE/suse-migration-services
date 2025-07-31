@@ -34,14 +34,14 @@ class TestMigration(object):
 
     @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.zypper.Zypper.run')
     @patch('suse_migration_services.units.migrate.log_env')
     @patch('suse_migration_services.units.migrate.update_env')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin_raises(
         self, mock_MigrationConfig, mock_get_system_root_path,
-        mock_update_env, mock_log_env, mock_Command_run, mock_logger_setup,
+        mock_update_env, mock_log_env, mock_Zypper_run, mock_logger_setup,
         mock_is_single_rpmtrans_requested
     ):
         migration_config = Mock()
@@ -49,7 +49,7 @@ class TestMigration(object):
         migration_config.is_zypper_migration_plugin_requested.return_value = \
             True
         mock_MigrationConfig.return_value = migration_config
-        mock_Command_run.side_effect = Exception
+        mock_Zypper_run.side_effect = Exception
         mock_get_system_root_path.return_value = '../data'
         mock_is_single_rpmtrans_requested.return_value = '0'
         with patch('builtins.open', create=True) as mock_open:
@@ -73,14 +73,14 @@ class TestMigration(object):
 
     @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.zypper.Zypper.run')
     @patch('suse_migration_services.units.migrate.log_env')
     @patch('suse_migration_services.units.migrate.update_env')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_dup_raises(
         self, mock_MigrationConfig, mock_get_system_root_path,
-        mock_update_env, mock_log_env, mock_Command_run, mock_logger_setup,
+        mock_update_env, mock_log_env, mock_Zypper_run, mock_logger_setup,
         mock_is_single_rpmtrans_requested
     ):
         migration_config = Mock()
@@ -88,53 +88,24 @@ class TestMigration(object):
             False
         mock_MigrationConfig.return_value = migration_config
         zypper_call = Mock()
-        zypper_call.returncode = 0
-        mock_Command_run.return_value = zypper_call
+        mock_Zypper_run.return_value = zypper_call
         mock_get_system_root_path.return_value = '../data'
         mock_is_single_rpmtrans_requested.return_value = '0'
+        zypper_call.raise_if_failed.side_effect = Exception
         with patch('builtins.open', create=True):
-            # zypper exit code is 0, all ok
-            main()
-
-        with patch('builtins.open', create=True):
-            # zypper exit code is 1, error
-            zypper_call.returncode = 1
             with raises(DistMigrationZypperException):
                 main()
-
-        with patch('builtins.open', create=True):
-            # zypper exit code is 104, error
-            zypper_call.returncode = 104
-            with raises(DistMigrationZypperException):
-                main()
-
-        with patch('builtins.open', create=True):
-            # zypper exit code is 105, error
-            zypper_call.returncode = 105
-            with raises(DistMigrationZypperException):
-                main()
-
-        with patch('builtins.open', create=True):
-            # zypper exit code is 106, error
-            zypper_call.returncode = 106
-            with raises(DistMigrationZypperException):
-                main()
-
-        with patch('builtins.open', create=True):
-            # zypper exit code is 107, all ok
-            zypper_call.returncode = 107
-            main()
 
     @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.zypper.Zypper.run')
     @patch('suse_migration_services.units.migrate.log_env')
     @patch('suse_migration_services.units.migrate.update_env')
     @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin(
         self, mock_MigrationConfig, mock_get_system_root_path,
-        mock_update_env, mock_log_env, mock_Command_run, mock_logger_setup,
+        mock_update_env, mock_log_env, mock_Zypper_run, mock_logger_setup,
         mock_is_single_rpmtrans_requested
     ):
         mock_MigrationConfig.return_value = self.migration_config
@@ -149,35 +120,33 @@ class TestMigration(object):
             '/var/log/distro_migration.exitcode', 'w'
         )
         file_handle.write.assert_called_once_with('0\n')
-        mock_Command_run.assert_called_once_with(
+        mock_Zypper_run.assert_called_once_with(
             [
-                'bash', '-c',
-                'zypper migration '
-                '--no-verbose '
-                ' '
-                '--non-interactive '
-                '--gpg-auto-import-keys '
-                '--no-selfupdate '
-                '--auto-agree-with-licenses '
-                '--allow-vendor-change '
-                '--strict-errors-dist-migration '
-                '--replacefiles '
-                '--product SLES/15/x86_64 '
-                '--root /system-root '
-                '&>> /system-root/var/log/distro_migration.log'
+                'migration',
+                '--no-verbose',
+                '',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--no-selfupdate',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--strict-errors-dist-migration',
+                '--replacefiles',
+                '--product', 'SLES/15/x86_64',
+                '--root', '/system-root'
             ]
         )
 
     @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.zypper.Zypper.run')
     @patch('suse_migration_services.units.migrate.log_env')
     @patch('suse_migration_services.units.migrate.update_env')
     @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin_verbose(
         self, mock_MigrationConfig, mock_get_system_root_path,
-        mock_update_env, mock_log_env, mock_Command_run, mock_logger_setup,
+        mock_update_env, mock_log_env, mock_Zypper_run, mock_logger_setup,
         mock_is_single_rpmtrans_requested
     ):
         mock_MigrationConfig.return_value = self.migration_config_verbose
@@ -185,35 +154,33 @@ class TestMigration(object):
         mock_is_single_rpmtrans_requested.return_value = '0'
         with patch('builtins.open', create=True):
             main()
-        mock_Command_run.assert_called_once_with(
+        mock_Zypper_run.assert_called_once_with(
             [
-                'bash', '-c',
-                'zypper migration '
-                '--verbose '
-                ' '
-                '--non-interactive '
-                '--gpg-auto-import-keys '
-                '--no-selfupdate '
-                '--auto-agree-with-licenses '
-                '--allow-vendor-change '
-                '--strict-errors-dist-migration '
-                '--replacefiles '
-                '--product SLES/15/x86_64 '
-                '--root /system-root '
-                '&>> /system-root/var/log/distro_migration.log'
+                'migration',
+                '--verbose',
+                '',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--no-selfupdate',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--strict-errors-dist-migration',
+                '--replacefiles',
+                '--product', 'SLES/15/x86_64',
+                '--root', '/system-root'
             ]
         )
 
     @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.zypper.Zypper.run')
     @patch('suse_migration_services.units.migrate.log_env')
     @patch('suse_migration_services.units.migrate.update_env')
     @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin_solver_case(
         self, mock_MigrationConfig, mock_get_system_root_path,
-        mock_update_env, mock_log_env, mock_Command_run, mock_logger_setup,
+        mock_update_env, mock_log_env, mock_Zypper_run, mock_logger_setup,
         mock_is_single_rpmtrans_requested
     ):
         mock_MigrationConfig.return_value = self.migration_config_solver_case
@@ -221,59 +188,55 @@ class TestMigration(object):
         mock_is_single_rpmtrans_requested.return_value = '0'
         with patch('builtins.open', create=True):
             main()
-        mock_Command_run.assert_called_once_with(
+        mock_Zypper_run.assert_called_once_with(
             [
-                'bash', '-c',
-                'zypper migration '
-                '--no-verbose '
-                '--debug-solver '
-                '--non-interactive '
-                '--gpg-auto-import-keys '
-                '--no-selfupdate '
-                '--auto-agree-with-licenses '
-                '--allow-vendor-change '
-                '--strict-errors-dist-migration '
-                '--replacefiles '
-                '--product SLES/15/x86_64 '
-                '--root /system-root '
-                '&>> /system-root/var/log/distro_migration.log'
+                'migration',
+                '--no-verbose',
+                '--debug-solver',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--no-selfupdate',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--strict-errors-dist-migration',
+                '--replacefiles',
+                '--product', 'SLES/15/x86_64',
+                '--root', '/system-root'
             ]
         )
 
     @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.zypper.Zypper.run')
     @patch('suse_migration_services.units.migrate.log_env')
     @patch('suse_migration_services.units.migrate.update_env')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_dup(
         self, mock_MigrationConfig, mock_update_env,
-        mock_log_env, mock_Command_run, mock_logger_setup,
+        mock_log_env, mock_Zypper_run, mock_logger_setup,
         mock_is_single_rpmtrans_requested
     ):
         mock_MigrationConfig.return_value = self.migration_config_dup
         zypper_call = Mock()
-        zypper_call.returncode = 0
-        mock_Command_run.return_value = zypper_call
+        mock_Zypper_run.return_value = zypper_call
         mock_is_single_rpmtrans_requested.return_value = '0'
         with patch('builtins.open', create=True):
             main()
-        mock_Command_run.assert_called_once_with(
+        mock_Zypper_run.assert_called_once_with(
             [
-                'bash', '-c',
-                'zypper --no-cd --non-interactive '
-                '--gpg-auto-import-keys '
-                '--root /system-root '
-                'dup '
-                '--auto-agree-with-licenses '
-                '--allow-vendor-change '
-                '--download in-advance '
-                '--replacefiles '
-                '--allow-downgrade '
-
-                '&>> /system-root/var/log/distro_migration.log'
+                '--no-cd',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--root', '/system-root',
+                'dup',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download', 'in-advance',
+                '--replacefiles',
+                '--allow-downgrade'
             ], raise_on_error=False
         )
+        zypper_call.raise_if_failed.assert_called_once()
 
     @patch('builtins.open', new_callable=MagicMock)
     def test_is_single_rpmtrans_requested(self, mock_open):
