@@ -117,28 +117,29 @@ for line_data in log_lines:
         if commit_message:
             commit_message.pop(0)
             message_header = commit_message.pop(0).lstrip()
-            message_body = []
-            for line in commit_message:
-                message_line = line.lstrip()
-                if not message_line:
-                    message_body.append(os.linesep)
-                else:
-                    message_body.append(
-                        '  {0}{1}'.format(message_line, os.linesep)
-                    )
-            log_data[log_date] = ''.join(
-                [
-                    log_start,
-                    '{0} - {1}{2}{2}'.format(
-                        log_date.astimezone(
-                            tz.UTC if arguments['--utc'] else tz.tzlocal()
-                        ).strftime(date_format), log_author, os.linesep
-                    ),
-                    '- {0}{1}'.format(
-                        message_header, os.linesep
-                    )
-                ] + message_body
-            )
+            if not message_header.startswith('fixup!'):
+                message_body = []
+                for line in commit_message:
+                    message_line = line.lstrip()
+                    if not message_line:
+                        message_body.append(os.linesep)
+                    else:
+                        message_body.append(
+                            '  {0}{1}'.format(message_line, os.linesep)
+                        )
+                log_data[log_date] = ''.join(
+                    [
+                        log_start,
+                        '{0} - {1}{2}{2}'.format(
+                            log_date.astimezone(
+                                tz.UTC if arguments['--utc'] else tz.tzlocal()
+                            ).strftime(date_format), log_author, os.linesep
+                        ),
+                        '- {0}{1}'.format(
+                            message_header, os.linesep
+                        )
+                    ] + message_body
+                )
             commit_message = []
     elif line.startswith('Author:'):
         log_author = line.replace('Author:', '').strip()
