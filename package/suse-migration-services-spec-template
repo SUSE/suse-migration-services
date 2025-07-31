@@ -29,7 +29,8 @@ Url:              https://github.com/SUSE/suse-migration-services
 Summary:          SUSE Distribution Migration Services
 License:          GPL-3.0+
 Group:            System/Management
-Source:           suse-migration-services.tar.gz
+Source0:          suse-migration-services.tar.gz
+Source1:          suse-migration-services-rpmlintrc
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildRequires:    fdupes
 BuildRequires:    python-rpm-macros
