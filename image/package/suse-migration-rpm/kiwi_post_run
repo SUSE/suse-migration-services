@@ -29,7 +29,7 @@ IMAGE=${ISO##*/}
 ARCH="$(uname -m)"
 NAME=$(echo $IMAGE | cut -f1 -d.)
 VERSION=$(echo $IMAGE | cut -f3 -d-)
-RELEASE=$(echo $IMAGE | cut -f4 -d- | sed -e "s@Build@@" | cut -f1 -d.)
+RELEASE=$(echo $IMAGE | cut -f4 -d- | sed -e "s@Build@@" | sed -e 's@.iso$@@')
 
 echo "Attempting to wrap $IMAGE in a containment rpm ..."
 
