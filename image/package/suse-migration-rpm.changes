@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug  1 09:22:31 UTC 2025 - Frederic Crozat <fcrozat@suse.com>
+
+- Exit silently if no migration iso is found. 
+
+-------------------------------------------------------------------
 Wed Jul  2 12:55:06 UTC 2025 - Frederic Crozat <fcrozat@suse.com>
 
 - Add build and perl(Date::Parse) to ensure we can append changelog
