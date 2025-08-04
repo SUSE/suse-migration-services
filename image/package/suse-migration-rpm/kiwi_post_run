@@ -15,17 +15,21 @@ test -f /.buildenv && . /.buildenv
 [ -d $IMAGE_DIR ] || exit 0
 cd $IMAGE_DIR
 
-ARCH="$(uname -m)"
-IMAGE=$(echo *.iso)
-NAME=$(echo $IMAGE | cut -f1 -d.)
-VERSION=$(echo $IMAGE | cut -f3 -d-)
-RELEASE=$(echo $IMAGE | cut -f4 -d- | sed -e "s@Build@@" | cut -f1 -d.)
+set +e # we have set -e, so on Minimal VMs this needs to fail silently
+ISO=`ls -1 /usr/src/packages/KIWI/SLE*Migration*.iso 2>/dev/null`
+set -e
 
-if [ -z "$IMAGE" ]; then
-    echo "Couldn't find anything in $IMAGE_DIR matching *.iso"
+if [ -z "$ISO" ]; then
+    echo "Couldn't find anything in $IMAGE_DIR matching SLE*Migration*.iso"
     echo "Will skip containment rpm wrapping steps."
     exit 0
 fi
+
+IMAGE=${ISO##*/}
+ARCH="$(uname -m)"
+NAME=$(echo $IMAGE | cut -f1 -d.)
+VERSION=$(echo $IMAGE | cut -f3 -d-)
+RELEASE=$(echo $IMAGE | cut -f4 -d- | sed -e "s@Build@@" | sed -e 's@.iso$@@')
 
 echo "Attempting to wrap $IMAGE in a containment rpm ..."
 
