@@ -54,7 +54,7 @@ systemctl enable suse-migration-btrfs-snapshot-post-migration.service
 systemctl enable suse-migration-ssh-keys
 systemctl enable suse-migration-pre-checks.service
 systemctl enable suse-migration-setup-host-network.service
-systemctl enable suse-migration-setup-namer-resolver.service
+systemctl enable suse-migration-setup-name-resolver.service
 systemctl enable suse-migration-prepare.service
 systemctl enable suse-migration.service
 systemctl enable suse-migration-console-log.service
