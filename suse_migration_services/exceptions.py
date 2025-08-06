@@ -63,8 +63,7 @@ class DistMigrationSystemMountException(DistMigrationException):
 
 class DistMigrationNameResolverException(DistMigrationException):
     """
-    Exception raised if the migration host system does not provide
-    an /etc/resolv.conf file
+    Exception raised if the setup of /etc/resolv.conf failed
     """
 
 
