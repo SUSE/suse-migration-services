@@ -49,11 +49,6 @@ def main():
     resolv_conf = os.sep.join(
         [root_path, 'etc', 'resolv.conf']
     )
-    if not os.path.exists(resolv_conf):
-        raise DistMigrationNameResolverException(
-            'Could not find {0} on migration host'.format(resolv_conf)
-        )
-
     try:
         log.info('Running setup resolver service')
         if has_host_resolv_setup(resolv_conf):
