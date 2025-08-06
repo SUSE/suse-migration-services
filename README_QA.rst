@@ -80,3 +80,29 @@ and add repo for testing DMS activation
       sudo zypper rr Migration
       sudo migrate --product SLES/15.5/x86_64 --reboot
 
+
+Run SLE15 test image (simple disk layout)
+-----------------------------------------
+
+.. code:: bash
+
+   osc getbinaries home:marcus.schaefer:dms suse-migration-test-vm-15 images_sle15 x86_64
+   qemu-kvm \
+       -cpu Broadwell-v2 \
+       -m 4096 \
+       -netdev user,id=user0,hostfwd=tcp::10022-:22 \
+       -device virtio-net-pci,netdev=user0,mac=52:54:00:6a:40:f8 \
+       -serial stdio \
+   binaries/kiwi-test-image-disk-simple*.qcow2
+   zypper ar https://download.opensuse.org/distribution/leap/16.0/repo/oss Leap
+   zypper refresh
+
+1. Testing in offline mode with grub(loopback) reboot
+
+   .. code:: bash
+
+      # Add repo for testing DMS activation:
+      zypper ar https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_15_SP7 Migration
+      zypper install suse-migration-sle16-activation
+      zypper rr Migration
+      reboot
