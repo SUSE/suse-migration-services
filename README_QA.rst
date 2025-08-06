@@ -1,5 +1,5 @@
-Testing on local system (zypper dup mode)
-=========================================
+Testing on local system (zypper dup mode) code 12
+=================================================
 
 Run SLE12 test image (simple disk layout)
 -----------------------------------------
@@ -45,8 +45,8 @@ Run SLE12 test image (simple disk layout)
    - Also test settings possible in `/etc/sle-migration-service.yml`
 
 
-Testing in the cloud (zypper migration plugin)
-==============================================
+Testing in the cloud (zypper migration plugin) code 12
+======================================================
 
 Run SLE12 on demand instance in some cloud e.g. AWS
 and add repo for testing DMS activation
@@ -80,6 +80,9 @@ and add repo for testing DMS activation
       sudo zypper rr Migration
       sudo migrate --product SLES/15.5/x86_64 --reboot
 
+
+Testing on local system (zypper dup mode) code 15
+=================================================
 
 Run SLE15 test image (simple disk layout)
 -----------------------------------------
