@@ -18,4 +18,4 @@
 """
 Global version information used in suse-migration-services and the package
 """
-__VERSION__ = '2.1.14'
+__VERSION__ = '2.1.15'
