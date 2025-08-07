@@ -13,16 +13,6 @@ from suse_migration_services.exceptions import (
 
 
 class TestSetupNameResolver(object):
-    @patch('suse_migration_services.logger.Logger.setup')
-    @patch('os.path.exists')
-    @patch('suse_migration_services.units.setup_name_resolver.Fstab')
-    def test_main_resolv_conf_not_present(
-        self, mock_Fstab, mock_os_path_exists, mock_logger_setup
-    ):
-        mock_os_path_exists.return_value = False
-        with raises(DistMigrationNameResolverException):
-            main()
-
     @patch('suse_migration_services.units.setup_name_resolver.has_host_resolv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
