@@ -75,6 +75,16 @@ suse-migration-rpm: clean check test
 	cp image/package/suse-migration-rpm.spec dist/suse-migration-rpm.spec
 	cp image/package/suse-migration-rpm.changes dist/suse-migration-rpm.changes
 
+SLES15-SAP_Migration: clean check test
+	mkdir -p dist
+	tar --sort=name --owner=0 --group=0 --numeric-owner \
+		--transform 's,^\./,,' \
+		-czf dist/root.tar.gz \
+		-C image/pubcloud/product/sles_sap/root .
+	cp image/pubcloud/product/sles_sap/config.kiwi dist/config.kiwi
+	cp image/pubcloud/product/sles_sap/config.sh dist/config.sh
+	cp image/pubcloud/product/sles_sap/SLES15-SAP_Migration.changes dist/SLES15-SAP_Migration.changes
+
 SLES16-Migration: clean check test
 	mkdir -p dist
 	tar --sort=name --owner=0 --group=0 --numeric-owner \
