@@ -14,9 +14,9 @@ else
     ) ${CLASS}"
 fi
 
-migration_iso=$(echo /migration-image/*-Migration.*.iso)
+migration_iso=$(echo /migration-image/*-*Migration.*.iso)
 is_sles16_migration=false
-if [[ "${migration_iso}" == *SLES16*-Migration*.iso ]]; then
+if [[ "${migration_iso}" == *SLES16*-*Migration*.iso ]]; then
     is_sles16_migration=true
 fi
 
