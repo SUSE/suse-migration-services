@@ -10,7 +10,7 @@ Release:        __RELEASE__
 Group:          System/Management
 License:        SUSE-EULA
 Source0:        __SOURCE__
-Requires:       product(SLES) >= %{MinSLEVersion}
+Requires:       __PRODUCT__
 Requires:       suse-migration-pre-checks
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
