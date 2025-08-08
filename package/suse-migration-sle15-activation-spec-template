@@ -14,8 +14,6 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-%global           MinSLEVersion 12.3
-
 Name:             suse-migration-sle15-activation
 Version:          %%VERSION
 Release:          0
@@ -31,7 +29,6 @@ BuildRequires:    grub2
 Requires:         SLES15-Migration >= 2.1.2
 
 Requires:         grub2
-Requires:         product(SLES) >= %{MinSLEVersion}
 
 %description -n suse-migration-sle15-activation
 Script code to activate the SLE15 migration image to be booted at

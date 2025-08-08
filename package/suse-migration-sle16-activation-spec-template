@@ -14,8 +14,6 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-%global           MinSLEVersion 15.6
-
 Name:             suse-migration-sle16-activation
 Version:          %%VERSION
 Release:          0
@@ -32,7 +30,6 @@ Requires:         SLES16-Migration >= 2.1.2
 Requires:         grub2
 Requires(post):   util-linux-systemd
 Requires(postun): util-linux-systemd
-Requires:         product(SLES) >= %{MinSLEVersion}
 Requires(pre):	  sed
 
 %description -n suse-migration-sle16-activation

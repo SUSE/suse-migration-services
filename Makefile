@@ -110,6 +110,7 @@ setup:
 check: setup
 	# shell code checks
 	bash -c 'shellcheck -e ${sc_disable} tools/* grub.d/* -s bash'
+	bash -c 'shellcheck image/package/suse-migration-rpm/kiwi_post_run -s bash'
 	# python flake tests
 	poetry run flake8 --statistics -j auto --count suse_migration_services
 	poetry run flake8 --statistics -j auto --count test/unit

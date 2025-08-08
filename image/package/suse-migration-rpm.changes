@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Aug  8 09:43:03 UTC 2025 - Marcus Schäfer <marcus.schaefer@suse.com>
+
+- Add product requirement according to image name.
+  This is based on the migration live image naming policy
+  SLES[CODE]-[PRODUCT]_Migration. CODE is a number, 12, 15
+  PRODUCT is optional and specifies a name used to identify
+  a product that is not just SLES
+
+-------------------------------------------------------------------
 Fri Aug  1 09:22:31 UTC 2025 - Frederic Crozat <fcrozat@suse.com>
 
 - Exit silently if no migration iso is found. 
