@@ -38,6 +38,7 @@ def main():
     root_path = Defaults.get_system_root_path()
 
     try:
+        log.info('Running Post-migration btrfs snapshot creation')
         with open(
             '/run/suse_migration_snapper_btrfs_pre_snapshot_number'
         ) as pre_snapshot_number_file:

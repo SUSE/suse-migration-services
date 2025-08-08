@@ -29,6 +29,7 @@ def main():
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
+
     log.info('Running migration for high availability extension')
     log.info('chroot to %s', root_path)
     os.chroot(root_path)

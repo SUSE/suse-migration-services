@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-import logging
 import os
 import glob
 from xml.etree.ElementTree import ElementTree
@@ -27,11 +26,10 @@ from suse_migration_services.exceptions import (
     DistMigrationSUSEBaseProductException
 )
 
-log = logging.getLogger(Defaults.get_migration_log_name())
-
 
 class SUSEBaseProduct:
-    def __init__(self):
+    def __init__(self, log):
+        self.log = log
         root_path = Defaults.get_system_root_path()
         self.products_metadata = os.sep.join(
             [root_path, 'etc', 'products.d']
@@ -85,7 +83,7 @@ class SUSEBaseProduct:
                 self.base_product, encoding="UTF-8", xml_declaration=True
             )
         except Exception as issue:
-            log.error(
+            self.log.error(
                 'Could not delete target registration with {0}'.format(issue)
             )
 
@@ -96,7 +94,7 @@ class SUSEBaseProduct:
         In case migration fails and the migration rolls back to the
         previous state. The rollback restores this info back in place.
         """
-        log.info('Creating backup of Product data')
+        self.log.info('Creating backup of Product data')
         Command.run(
             [
                 'rsync', '-zav', '--delete', self.products_metadata + os.sep,
@@ -114,7 +112,7 @@ class SUSEBaseProduct:
         except Exception as issue:
             # if we are here, it means no potentially no migration
             # product is defined
-            log.warning(
+            self.log.warning(
                 'Parsing XML file {0} failed with: {1}'
                 .format(self.base_product, issue)
             )
@@ -130,7 +128,7 @@ class SUSEBaseProduct:
                     [name, self.get_default_target_version(), arch]
                 )
         except Exception as issue:
-            log.error(
+            self.log.error(
                 'Base product could not be detected: {0}.'.format(issue)
             )
 

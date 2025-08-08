@@ -40,6 +40,7 @@ def main():
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Running setup baseproduct for migration')
     try:
         # Note:
         # zypper implements a handling for the distro_target attribute.
@@ -55,7 +56,7 @@ def main():
         # to delete the target specification in the baseproduct
         # registration if present.
         log.info('Updating Base Product to be suitable for migration')
-        SUSEBaseProduct().delete_target_registration()
+        SUSEBaseProduct(log).delete_target_registration()
     except Exception as issue:
         message = 'Base Product update failed with: {0}'.format(issue)
         log.error(message)

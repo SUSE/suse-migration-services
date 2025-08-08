@@ -40,6 +40,7 @@ def main():
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Running kernel load service')
     if not MigrationConfig().is_soft_reboot_requested():
         log.info('skipping kexec --load (hard reboot requested)')
         return
@@ -54,7 +55,6 @@ def main():
         target_initrd, kexec_boot_data
     )
     try:
-        log.info('Running kernel load service')
         log.info('Loading the target kernel')
         Command.run(
             [

@@ -42,6 +42,7 @@ def main():
     root_path = Defaults.get_system_root_path()
 
     try:
+        log.info('Running Pre-migration btrfs snapshot creation')
         # we want pre snapshot to be created before we installed
         # migration-activation package, if it was installed
         pre_migration_activation_package_snapshot_number = 0
