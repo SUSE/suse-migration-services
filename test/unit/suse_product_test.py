@@ -1,5 +1,7 @@
 from xml.etree.ElementTree import ElementTree
-from unittest.mock import patch
+from unittest.mock import (
+    patch, Mock
+)
 
 from pytest import raises
 
@@ -17,7 +19,7 @@ class TestSUSEProduct(object):
         self, method, mock_get_system_root_path
     ):
         mock_get_system_root_path.return_value = '../data/'
-        self.suse_product = SUSEBaseProduct()
+        self.suse_product = SUSEBaseProduct(Mock())
 
     @patch.object(Defaults, 'get_system_root_path')
     def test_baseproduct_raises(
@@ -26,7 +28,7 @@ class TestSUSEProduct(object):
         mock_ElementTree_parse.return_value.parse.side_effect = Exception
         mock_get_system_root_path.return_value = '../data'
         with raises(DistMigrationSUSEBaseProductException):
-            SUSEBaseProduct()
+            SUSEBaseProduct(Mock())
 
     @patch.object(SUSEBaseProduct, 'backup_products_metadata')
     def test_delete_target_registration_raises(

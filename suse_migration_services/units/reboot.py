@@ -44,6 +44,7 @@ def main():
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Running reboot service')
     try:
         migration_config = MigrationConfig()
         migration_config.update_migration_config_file()

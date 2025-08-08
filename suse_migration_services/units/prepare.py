@@ -53,6 +53,8 @@ def main():
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Running prepare for migration')
+
     root_path = Defaults.get_system_root_path()
     suse_connect_setup = os.sep.join(
         [root_path, 'etc', 'SUSEConnect']
@@ -170,7 +172,6 @@ def main():
     try:
         # log network info as network-online.target is done at this point
         log_network_details()
-        log.info('Running prepare service')
         system_mount = Fstab()
         system_mount.read(
             Defaults.get_system_mount_info_file()
@@ -240,7 +241,7 @@ def main():
             )
         )
         if migration_config.is_zypper_migration_plugin_requested():
-            if not SUSEConnect.is_registered():
+            if not SUSEConnect.is_registered(log):
                 message = 'System not registered. Aborting migration.'
                 log.error(message)
                 raise DistMigrationSystemNotRegisteredException(

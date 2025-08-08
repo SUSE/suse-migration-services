@@ -84,7 +84,7 @@ class MigrationConfig:
         # check for a custom migration product
         migration_product = self.config_data.get('migration_product')
         if not migration_product:
-            migration_product = SUSEBaseProduct().get_product_name()
+            migration_product = SUSEBaseProduct(log).get_product_name()
             if not migration_product:
                 # auto detection went wrong
                 message = (
