@@ -83,9 +83,10 @@ def request_migration_offer(
             uri, json=data, auth=(user, secret), headers=headers
         )
         offline_migrations = response.json()
-        result_error = offline_migrations.get('error')
-        if result_error:
-            log.error(result_error)
+        if isinstance(offline_migrations, dict):
+            result_error = offline_migrations.get('error')
+            if result_error:
+                log.error(result_error)
     except Exception as issue:
         log.error(
             'Post request to {} failed with {}'.format(
