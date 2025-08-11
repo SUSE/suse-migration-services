@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-
+from typing import List
 
 # project
 from suse_migration_services.command import Command
@@ -31,7 +31,7 @@ class Zypper:
     """
 
     @staticmethod
-    def run(args: list[str], raise_on_error=True):
+    def run(args: List[str], raise_on_error=True):
         """
         Invoke zypper and block the caller. The return value is a `ZypperCall` instance
         containing the result of invocation.
@@ -55,7 +55,7 @@ class Zypper:
 
 
 class ZypperCall:
-    def __init__(self, args: list[str], command, result):
+    def __init__(self, args: List[str], command, result):
         self.args = args
         self.command = command
         self.output = result.output
