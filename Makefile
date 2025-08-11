@@ -95,6 +95,16 @@ SLES16-Migration: clean check test
 	cp image/generic/sle16/config.sh dist/config.sh
 	cp image/generic/sle16/SLES16-Migration.changes dist/SLES16-Migration.changes
 
+SLES16-SAP_Migration: clean check test
+	mkdir -p dist
+	tar --sort=name --owner=0 --group=0 --numeric-owner \
+		--transform 's,^\./,,' \
+		-czf dist/root.tar.gz \
+		-C image/product/sle16/sles_sap/root .
+	cp image/product/sle16/sles_sap/config.kiwi dist/config.kiwi
+	cp image/product/sle16/sles_sap/config.sh dist/config.sh
+	cp image/product/sle16/sles_sap/SLES16-SAP_Migration.changes dist/SLES16-SAP_Migration.changes
+
 SLES15-Migration: clean check test
 	mkdir -p dist
 	tar --sort=name --owner=0 --group=0 --numeric-owner \

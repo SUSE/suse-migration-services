@@ -1,0 +1,7 @@
+Migration System:
+
+If no progress is shown on this terminal watch via
+
+    tail -f /system-root/var/log/distro_migration.log
+
+Have a lot of fun :-)
