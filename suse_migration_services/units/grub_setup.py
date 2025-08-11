@@ -44,7 +44,7 @@ def main():
     try:
         log.info('Running grub setup service')
         migration_packages = [
-            'SLE*-Migration',
+            'SLE*Migration',
             'suse-migration-*-activation'
         ]
         log.info(
