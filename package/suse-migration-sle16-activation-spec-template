@@ -26,7 +26,7 @@ BuildRoot:        %{_tmppath}/%{name}-%{version}-build
 BuildArch:        noarch
 Conflicts:        suse-migration-services
 BuildRequires:    grub2
-Requires:         SLES16-Migration >= 2.1.2
+Requires:         Migration >= 2.1.2
 Requires:         grub2
 Requires(post):   util-linux-systemd
 Requires(postun): util-linux-systemd
