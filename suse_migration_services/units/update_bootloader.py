@@ -32,6 +32,7 @@ def main():
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Running update bootloader service')
 
     root_path = Defaults.get_system_root_path()
 

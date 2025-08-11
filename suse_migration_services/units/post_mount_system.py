@@ -37,6 +37,7 @@ def main():
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
+    log.info('Running post mount actions')
 
     migration_config = MigrationConfig()
     preserve_info = migration_config.get_preserve_info()

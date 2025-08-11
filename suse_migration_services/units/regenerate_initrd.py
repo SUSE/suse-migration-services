@@ -37,6 +37,7 @@ def main():
     """
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Running initrd creation service')
 
     if MigrationConfig().is_host_independent_initd_requested():
         log.info('Creating a new host independent initrd')
