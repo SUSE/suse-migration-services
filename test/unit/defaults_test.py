@@ -1,6 +1,7 @@
 from unittest.mock import (
     patch, MagicMock
 )
+from pytest import raises
 import io
 from collections import namedtuple
 
@@ -18,6 +19,20 @@ class TestDefaults(object):
     def test_get_grub_default_file(self):
         assert self.defaults.get_grub_default_file() == \
             '/system-root/etc/default/grub'
+
+    def test_get_target_kernel(self):
+        with patch('platform.machine') as mock_platform_machine:
+            mock_platform_machine.return_value = 'x86_64'
+            assert self.defaults.get_target_kernel() == 'boot/vmlinuz'
+            mock_platform_machine.return_value = 'aarch64'
+            assert self.defaults.get_target_kernel() == 'boot/Image'
+            mock_platform_machine.return_value = 'ppc64le'
+            assert self.defaults.get_target_kernel() == 'boot/vmlinux'
+            mock_platform_machine.return_value = 's390x'
+            assert self.defaults.get_target_kernel() == 'boot/image'
+            mock_platform_machine.return_value = 'unknown_platform'
+            with raises(NotImplementedError):
+                self.defaults.get_target_kernel()
 
     def test_get_os_release(self):
         os_release_tuple = namedtuple(
