@@ -28,6 +28,7 @@ BuildRequires:  filesystem
 Requires:       suse-migration-services
 Requires:       build
 Requires:       perl(Date::Parse)
+Requires:       p7zip-full
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
