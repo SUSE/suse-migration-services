@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
+import platform
 from collections import namedtuple
 
 
@@ -69,7 +70,18 @@ class Defaults:
 
     @staticmethod
     def get_target_kernel():
-        return 'boot/vmlinuz'
+        machine = platform.machine()
+        if machine == "x86_64":
+            return 'boot/vmlinuz'
+        elif machine == "aarch64":
+            return 'boot/Image'
+        elif machine == "ppc64le":
+            return 'boot/vmlinux'
+        elif machine == "s390x":
+            return 'boot/image'
+        else:
+            raise NotImplementedError(
+                f'get_target_kernel not implemented for machine type {machine}')
 
     @staticmethod
     def get_target_initrd():
