@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!-- OBS-ExclusiveArch: x86_64 -->
+
 <image schemaversion="6.8" name="SLES15-SAP_Migration">
     <description type="system">
         <author>Public Cloud Team</author>
