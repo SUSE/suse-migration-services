@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- OBS-ExclusiveArch: ppc64le x86_64 s390x -->
+<!-- OBS-ExclusiveArch: ppc64le x86_64 -->
 
 <image schemaversion="7.4" name="SLES16-SAP_Migration">
     <description type="system">
