@@ -18,6 +18,7 @@ class TestPostMountSystem(object):
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
+    @patch('glob.glob')
     @patch('os.path.exists')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
@@ -26,12 +27,22 @@ class TestPostMountSystem(object):
     @patch('shutil.copy')
     def test_main(
         self, mock_shutil_copy, mock_get_system_root_path, mock_Command_run,
-        mock_logger_setup, mock_get_migration_config_file, mock_os_path_exists
+        mock_logger_setup, mock_get_migration_config_file, mock_os_path_exists,
+        mock_glob
     ):
         mock_get_system_root_path.return_value = '../data'
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
         mock_os_path_exists.side_effect = [True, False, True, False]
+
+        def mock_glob_patterns(glob):
+            if '*' in glob:
+                ret = [glob.replace('*', 'a'), glob.replace('*', 'b')]
+            else:
+                ret = [glob]
+            return ret
+        mock_glob.side_effect = mock_glob_patterns
+
         main()
         assert mock_shutil_copy.call_args_list == [
             call('../data/etc/udev/rules.d/a.rules', '/etc/udev/rules.d'),

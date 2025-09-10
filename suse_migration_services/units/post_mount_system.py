@@ -18,6 +18,7 @@
 import logging
 import os
 import shutil
+import glob
 
 # project
 from suse_migration_services.defaults import Defaults
@@ -44,20 +45,23 @@ def main():
     if preserve_info:
         for _, preserve_files in preserve_info.items():
             for preserve_file in preserve_files:
-                target_dir = os.path.dirname(preserve_file)
-                source_file = os.path.normpath(
+                source_glob = os.path.normpath(
                     os.sep.join([root_path, preserve_file])
                 )
-                log.info(
-                    'Copy file: {0} to: {1}'.format(
-                        source_file, target_dir
+                for source_file in glob.glob(source_glob):
+                    target_dir = os.path.dirname(source_file)[len(root_path):]
+                    if not target_dir.startswith(os.sep):
+                        target_dir = os.sep + target_dir
+                    log.info(
+                        'Copy file: {0} to: {1}'.format(
+                            source_file, target_dir
+                        )
                     )
-                )
-                if not os.path.exists(target_dir):
-                    Command.run(
-                        ['mkdir', '-p', target_dir]
-                    )
-                shutil.copy(source_file, target_dir)
+                    if not os.path.exists(target_dir):
+                        Command.run(
+                            ['mkdir', '-p', target_dir]
+                        )
+                    shutil.copy(source_file, target_dir)
         if 'rules' in preserve_info.keys():
             Command.run(
                 ['udevadm', 'control', '--reload']
