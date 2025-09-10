@@ -50,8 +50,6 @@ def main():
                 )
                 for source_file in glob.glob(source_glob):
                     target_dir = os.path.dirname(source_file)[len(root_path):]
-                    if not target_dir.startswith(os.sep):
-                        target_dir = os.sep + target_dir
                     log.info(
                         'Copy file: {0} to: {1}'.format(
                             source_file, target_dir

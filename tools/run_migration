@@ -104,6 +104,27 @@ function extract_kernel_and_initrd {
     fi
 }
 
+function setup_wicked_to_NetworkManager_prereqs {
+    # """
+    # Set up required files for wicked to NetworkManager migration
+    #
+    # Only applies for SLE16
+    # """
+    local migration_iso=$1
+    if [[ "${migration_iso}" != *SLES16*-*Migration*.iso ]]; then
+        return
+    fi
+    if [ -x "$(command -v wicked)" ]; then
+        mkdir -p /var/cache/wicked_config
+        wicked show-config > /var/cache/wicked_config/config.xml
+        cp /etc/sysconfig/network/{config,dhcp} /var/cache/wicked_config/
+    fi
+    if [ -f /etc/udev/rules.d/70-persistent-net.rules ]; then
+        mkdir -p /var/cache/udev_rules
+        sed -e 's/KERNEL=="eth\*"/KERNEL=="e\*"/g' -e 's/KERNEL=="wlan\*"/KERNEL=="w\*"/g' /etc/udev/rules.d/70-persistent-net.rules > /var/cache/udev_rules/70-migration-persistent-net.rules
+    fi
+}
+
 # Check on permissions
 if (( EUID != 0 )); then
     echo "Migration startup requires root permissions"
@@ -122,6 +143,9 @@ if [ ! -e "${migration_iso}" ];then
     echo "Migration image ISO file not found: ${migration_iso}"
     exit 1
 fi
+
+# Setup wicked to NetworkManager migration files
+setup_wicked_to_NetworkManager_prereqs "${migration_iso}"
 
 # Extract kexec boot data from migration ISO image
 boot_dir=$(extract_kernel_and_initrd "${migration_iso}")

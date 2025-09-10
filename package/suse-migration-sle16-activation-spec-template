@@ -51,6 +51,15 @@ if [ -x /usr/bin/snapper ]; then
      echo $PRE_SNAPSHOT > /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
   fi
 fi
+if [ -x "$(command -v wicked)" ]; then
+  mkdir -p /var/cache/wicked_config
+  wicked show-config > /var/cache/wicked_config/config.xml
+  cp /etc/sysconfig/network/{config,dhcp} /var/cache/wicked_config/
+fi
+if [ -f /etc/udev/rules.d/70-persistent-net.rules ]; then
+  mkdir -p /var/cache/udev_rules
+  sed -e 's/KERNEL=="eth\*"/KERNEL=="e\*"/g' -e 's/KERNEL=="wlan\*"/KERNEL=="w\*"/g' /etc/udev/rules.d/70-persistent-net.rules > /var/cache/udev_rules/70-migration-persistent-net.rules
+fi
 
 %post
 /usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg

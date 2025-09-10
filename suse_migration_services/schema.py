@@ -46,5 +46,15 @@ schema = {
     'debug_solver': {
         'required': False,
         'type': 'boolean'
+    },
+    'network': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'wicked2nm-continue-migration': {
+                'required': False,
+                'type': 'boolean'
+            }
+        }
     }
 }
