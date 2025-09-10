@@ -27,8 +27,8 @@ BuildArch:        noarch
 Conflicts:        suse-migration-services
 BuildRequires:    grub2
 Requires:         Migration >= 2.1.2
-
 Requires:         grub2
+ExclusiveArch:    aarch64 x86_64
 
 %description -n suse-migration-sle15-activation
 Script code to activate the SLE15 migration image to be booted at
