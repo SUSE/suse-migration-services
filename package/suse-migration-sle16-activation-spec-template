@@ -51,6 +51,7 @@ if [ -x /usr/bin/snapper ]; then
      echo $PRE_SNAPSHOT > /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
   fi
 fi
+# Setup wicked to NetworkManager migration files
 if [ -x "$(command -v wicked)" ]; then
   mkdir -p /var/cache/wicked_config
   wicked show-config > /var/cache/wicked_config/config.xml
