@@ -12,7 +12,11 @@ from suse_migration_services.exceptions import (
 @patch('suse_migration_services.logger.Logger.setup')
 class TestMigrationWicked(object):
     @patch('suse_migration_services.command.Command.run')
-    def test_main(self, mock_Command_run, mock_logger_setup):
+    @patch('glob.iglob')
+    def test_main(self, mock_iglob, mock_Command_run, mock_logger_setup):
+        mock_iglob.return_value = [
+            '/etc/NetworkManager/system-connections/some.nmconnection'
+        ]
         main()
         assert mock_Command_run.call_args_list == [
             call(
@@ -35,7 +39,9 @@ class TestMigrationWicked(object):
             ),
             call(
                 [
-                    'cp', '/system-root/etc/NetworkManager/system-connections/'
+                    'cp',
+                    '/etc/NetworkManager/system-connections/some.nmconnection',
+                    '/system-root/etc/NetworkManager/system-connections'
                 ]
             )
         ]
