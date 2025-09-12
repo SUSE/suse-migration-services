@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import os
 import logging
 import glob
 
@@ -56,12 +57,18 @@ def main():
         )
 
         log.info('Copy connections to migrated system')
-        Command.run(
-            ['mkdir', '-p', root_path + '/etc/NetworkManager/system-connections']
+        nm_connection_pattern = \
+            '/etc/NetworkManager/system-connections/*.nmconnection'
+        nm_connections_path = os.path.normpath(
+            os.sep.join([root_path, 'etc/NetworkManager/system-connections'])
         )
         Command.run(
-            ['cp'] + glob.glob('/etc/NetworkManager/system-connections/*.nmconnection') + [root_path + '/etc/NetworkManager/system-connections/']
+            ['mkdir', '-p', nm_connections_path]
         )
+        for connection in sorted(glob.iglob(nm_connection_pattern)):
+            Command.run(
+                ['cp', connection, nm_connections_path]
+            )
     except Exception as issue:
         message = 'wicked to NetworkManager migration failed with {}'.format(
             issue
