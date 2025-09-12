@@ -55,7 +55,6 @@ and add repo for testing DMS activation
 
    sudo zypper ar https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_12_SP5 Migration
 
-
 1. Testing with kexec based reboot (run_migration)
 
    .. code:: bash
@@ -100,7 +99,13 @@ Run SLE15 test image (simple disk layout)
    zypper ar https://download.opensuse.org/distribution/leap/16.0/repo/oss Leap
    zypper refresh
 
-1. Testing in offline mode with grub(loopback) reboot
+1. Testing in offline mode with kexec based reboot (run_migration)
+
+   .. code:: bash
+
+      run_migration
+
+2. Testing in offline mode with grub(loopback) reboot
 
    .. code:: bash
 
@@ -109,3 +114,47 @@ Run SLE15 test image (simple disk layout)
       zypper install suse-migration-sle16-activation
       zypper rr Migration
       reboot
+
+3. [Optional] Testing in online upgrade mode (not officially supported by SUSE)
+
+   .. code:: bash
+
+      migrate --use-zypper-dup \
+          --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle16/migration:latest \
+          --reboot
+
+Testing in the cloud (zypper migration plugin) code 15
+======================================================
+
+Run SLE15 on demand instance in some cloud e.g. AWS
+and add repo for testing DMS activation
+
+.. code:: bash
+
+   sudo zypper ar https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_15_SP7 Migration
+
+1. Testing with kexec based reboot (run_migration)
+
+   .. code:: bash
+
+      sudo zypper in SLES16-Migration
+      sudo zypper rr Migration
+      sudo run_migration
+
+2. Testing with grub(loopback) reboot
+
+   .. code:: bash
+
+      sudo zypper install SLES16-Migration suse-migration-sle16-activation
+      sudo zypper rr Migration
+      sudo reboot
+
+3. [Optional] Testing in online upgrade mode (not officially supported by SUSE):
+
+   .. code:: bash
+
+      sudo zypper install suse-migration
+      sudo zypper rr Migration
+      sudo migrate --product SLES/16.0/x86_64 \
+          --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle16/migration:latest \
+          --reboot
