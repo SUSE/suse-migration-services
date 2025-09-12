@@ -21,6 +21,7 @@ set +o noglob
 
 logfile=/var/log/migration_startup.log
 
+
 function setup_logging {
     rm -f "${logfile}"
     exec 2>>"${logfile}"
@@ -56,10 +57,7 @@ function get_boot_options {
     local boot_options
     local host_boot_option
     local migration_iso=$1
-    local is_sles16_migration=false
-    if [[ "${migration_iso}" == *SLES16*-*Migration*.iso ]]; then
-        is_sles16_migration=true
-    fi
+    local is_sles16_migration=$2
     boot_options="iso-scan/filename=${migration_iso} root=live:CDLABEL=CDROM rd.live.image"
     if mdadm --detail "$(get_system_root_device)" &>/dev/null; then
         boot_options="${boot_options} rd.auto"
@@ -110,10 +108,6 @@ function setup_wicked_to_NetworkManager_prereqs {
     #
     # Only applies for SLE16
     # """
-    local migration_iso=$1
-    if [[ "${migration_iso}" != *SLES16*-*Migration*.iso ]]; then
-        return
-    fi
     if [ -x "$(command -v wicked)" ]; then
         mkdir -p /var/cache/wicked_config
         wicked show-config > /var/cache/wicked_config/config.xml
@@ -122,6 +116,20 @@ function setup_wicked_to_NetworkManager_prereqs {
     if [ -f /etc/udev/rules.d/70-persistent-net.rules ]; then
         mkdir -p /var/cache/udev_rules
         sed -e 's/KERNEL=="eth\*"/KERNEL=="e\*"/g' -e 's/KERNEL=="wlan\*"/KERNEL=="w\*"/g' /etc/udev/rules.d/70-persistent-net.rules > /var/cache/udev_rules/70-migration-persistent-net.rules
+    fi
+}
+
+function store_snapper_pre_snapshot {
+    if [ -x /usr/bin/snapper ]; then
+        PRE_SNAPSHOT=$(
+            snapper -c root \
+                --machine-readable csv list \
+                --disable-used-space \
+                --columns subvolume,number,type 2>/dev/null| grep '^/,[^,]*,pre' |sed -e '$!d' -e 's|/,\([^,]*\),pre|\1|g'
+        )
+        if [ "x$PRE_SNAPSHOT" != x ]; then
+            echo "${PRE_SNAPSHOT}" > /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
+        fi
     fi
 }
 
@@ -144,8 +152,19 @@ if [ ! -e "${migration_iso}" ];then
     exit 1
 fi
 
-# Setup wicked to NetworkManager migration files
-setup_wicked_to_NetworkManager_prereqs "${migration_iso}"
+# Helper to identify migration target
+is_sles16_migration=false
+if [[ "${migration_iso}" == *SLES16*-*Migration*.iso ]]; then
+    is_sles16_migration=true
+fi
+
+if ${is_sles16_migration}; then
+    # store snapper pre snapshot if available
+    store_snapper_pre_snapshot
+
+    # Setup wicked to NetworkManager migration files
+    setup_wicked_to_NetworkManager_prereqs
+fi
 
 # Extract kexec boot data from migration ISO image
 boot_dir=$(extract_kernel_and_initrd "${migration_iso}")
@@ -159,5 +178,5 @@ kexec \
     --load "${boot_dir}/linux" \
     --initrd "${boot_dir}/initrd" \
     --kexec-file-syscall \
-    --command-line "$(get_boot_options "${migration_iso}")"
+    --command-line "$(get_boot_options "${migration_iso}" "${is_sles16_migration}")"
 systemctl kexec
