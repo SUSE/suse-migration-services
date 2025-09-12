@@ -14,6 +14,9 @@ Requires:       __PRODUCT__
 Requires:       suse-migration-pre-checks
 Provides:       Migration = __VERSION__
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+%ifarch s390x
+BuildRequires:  p7zip-full
+%endif
 
 %description
 This package contains the Migration Live System.
@@ -27,6 +30,10 @@ install -d -m 755 $RPM_BUILD_ROOT/migration-image
 install -d -m 755 $RPM_BUILD_ROOT/%{_sbindir}
 cp %{SOURCE0} $RPM_BUILD_ROOT/migration-image
 cp %{_sbindir}/run_migration $RPM_BUILD_ROOT/%{_sbindir}
+%ifarch s390x
+# Workaround for s390x grub loopback issues
+7z e %{SOURCE0} -o$RPM_BUILD_ROOT/migration-image boot/s390x/loader/linux boot/s390x/loader/initrd
+%endif
 
 %post
 /usr/bin/suse-migration-pre-checks
