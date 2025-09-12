@@ -1,0 +1,10 @@
+[Unit]
+Description=Snapper btrfs snapshot before
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-btrfs-snapshot-pre-migration
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

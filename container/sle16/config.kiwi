@@ -58,6 +58,8 @@
         <package name="python-gcemetadata"/>
         <package name="python-ec2metadata"/>
         <package name="python-azuremetadata"/>
+        <package name="wicked2nm"/>
+        <package name="NetworkManager-config-server"/>
     </packages>
     <packages type="bootstrap">
         <package name="zypper"/>
