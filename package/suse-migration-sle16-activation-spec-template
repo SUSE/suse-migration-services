@@ -31,6 +31,7 @@ Requires:         grub2
 Requires(post):   util-linux-systemd
 Requires(postun): util-linux-systemd
 Requires(pre):	  sed
+ExclusiveArch:    aarch64 ppc64le x86_64
 
 %description -n suse-migration-sle16-activation
 Script code to activate the SLE16 migration image to be booted at
