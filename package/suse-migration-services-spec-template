@@ -192,6 +192,9 @@ install -D -m 644 systemd/suse-migration-ha.service \
 install -D -m 644 systemd/suse-migration-btrfs-snapshot-pre-migration.service \
     %{buildroot}%{_unitdir}/suse-migration-btrfs-snapshot-pre-migration.service
 
+install -D -m 644 systemd/suse-migration-container-btrfs-snapshot-pre-migration.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-btrfs-snapshot-pre-migration.service
+
 install -D -m 644 systemd/suse-migration-btrfs-snapshot-post-migration.service \
     %{buildroot}%{_unitdir}/suse-migration-btrfs-snapshot-post-migration.service
 
@@ -238,6 +241,7 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-container-product-setup.service
 %{_unitdir}/suse-migration-container-reboot.service
 %{_unitdir}/suse-migration-container-emergency.service
+%{_unitdir}/suse-migration-container-btrfs-snapshot-pre-migration.service
 %{_unitdir}/suse-migration-console-log.service
 %{_unitdir}/suse-migration-apparmor-selinux.service
 %{_unitdir}/suse-migration-grub-setup.service
