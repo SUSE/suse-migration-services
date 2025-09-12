@@ -29,6 +29,7 @@ import suse_migration_services.prechecks.repos as check_repos
 import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_multi_kernels
 import suse_migration_services.prechecks.scc as check_scc
+import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 
 
 def main():
@@ -117,4 +118,8 @@ def main():
 
     log.info('--> Checking high availability extension...')
     check_ha.check_ha()
+    log.info('Done')
+
+    log.info('--> Checking wicked to NetworkManager migration...')
+    check_wicked2nm.check_wicked2nm(migration_system=migration_system_mode)
     log.info('Done')

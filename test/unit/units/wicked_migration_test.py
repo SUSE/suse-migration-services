@@ -26,6 +26,17 @@ class TestMigrationWicked(object):
                     'systemctl', '--root', '/system-root',
                     'mask', 'wicked.service'
                 ]
+            ),
+            call(
+                [
+                    'mkdir', '-p',
+                    '/system-root/etc/NetworkManager/system-connections'
+                ]
+            ),
+            call(
+                [
+                    'cp', '/system-root/etc/NetworkManager/system-connections/'
+                ]
             )
         ]
 

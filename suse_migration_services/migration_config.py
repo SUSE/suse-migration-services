@@ -107,6 +107,12 @@ class MigrationConfig:
         """
         return self.config_data.get('preserve', False)
 
+    def get_network_info(self):
+        """
+        Return dictionary of network config.
+        """
+        return self.config_data.get('network', False)
+
     def update_migration_config_file(self):
         """
         Update the default migration configuration with custom values

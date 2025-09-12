@@ -15,6 +15,7 @@ import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_kernels
 import suse_migration_services.prechecks.scc as check_scc
 import suse_migration_services.prechecks.ha as check_ha
+import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
@@ -802,3 +803,114 @@ class TestPreChecks():
             ),
             call(['crm', 'cluster', 'health', 'sles16', '--local']),
         ])
+
+    @patch('subprocess.check_output')
+    @patch('os.access')
+    def test_check_wicked2nm_in_migration_system(
+        self,
+        mock_os_access, mock_subprocess_check_output,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = True
+        mock_subprocess_check_output.return_value = Mock(returncode=0, stdout=b'')
+
+        check_wicked2nm.check_wicked2nm(migration_system=True)
+        mock_subprocess_check_output.assert_called_once_with(
+            [
+                'wicked2nm', 'migrate', '--dry-run',
+                '--netconfig-path', '/system-root//var/cache/wicked_config/config',
+                '--netconfig-dhcp-path', '/system-root//var/cache/wicked_config/dhcp',
+                '/system-root//var/cache/wicked_config/config.xml'
+            ],
+            stderr=-2
+        )
+
+    @patch('subprocess.check_output')
+    @patch('os.access')
+    def test_check_wicked2nm_in_migration_system_failure(
+        self,
+        mock_os_access, mock_subprocess_check_output,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = True
+        mock_subprocess_check_output.side_effect = subprocess.CalledProcessError(returncode=1, cmd=[], output=b'[ERROR] wicked2nm failed')
+
+        with self._caplog.at_level(logging.ERROR):
+            check_wicked2nm.check_wicked2nm(migration_system=True)
+            assert '[ERROR] wicked2nm failed' in self._caplog.text
+        mock_subprocess_check_output.assert_called_once_with(
+            [
+                'wicked2nm', 'migrate', '--dry-run',
+                '--netconfig-path', '/system-root//var/cache/wicked_config/config',
+                '--netconfig-dhcp-path', '/system-root//var/cache/wicked_config/dhcp',
+                '/system-root//var/cache/wicked_config/config.xml'
+            ],
+            stderr=-2
+        )
+
+    @patch('shutil.which')
+    @patch('subprocess.Popen')
+    @patch('subprocess.check_output')
+    @patch('os.access')
+    def test_check_wicked2nm_in_host_system(
+        self,
+        mock_os_access, mock_subprocess_check_output, mock_subprocess_Popen, mock_shutil_which,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = False
+        mock_shutil_which.return_value = True
+        mock_subprocess_check_output.return_value = Mock(returncode=0, stdout=b'')
+
+        check_wicked2nm.check_wicked2nm(migration_system=False)
+        mock_subprocess_Popen.assert_called_once_with(
+            ['wicked', 'show-config'],
+            stdout=subprocess.PIPE
+        )
+        mock_subprocess_check_output.assert_called_once_with(
+            [
+                'wicked2nm', 'migrate', '--dry-run', '-'
+            ],
+            stdin=mock_subprocess_Popen().stdout, stderr=-2
+        )
+
+    @patch('shutil.which')
+    @patch('subprocess.check_output')
+    @patch('os.access')
+    def test_check_wicked2nm_in_host_system_prereq_not_installed(
+        self,
+        mock_os_access, mock_subprocess_check_output, mock_shutil_which,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = False
+        mock_shutil_which.return_value = False
+
+        with self._caplog.at_level(logging.INFO):
+            check_wicked2nm.check_wicked2nm(migration_system=False)
+            assert 'No wicked setup available' in self._caplog.text
+
+    @patch('shutil.which')
+    @patch('subprocess.Popen')
+    @patch('subprocess.check_output')
+    @patch('os.access')
+    def test_check_wicked2nm_in_host_system_failure(
+        self,
+        mock_os_access, mock_subprocess_check_output, mock_subprocess_Popen, mock_shutil_which,
+        mock_os_getuid, mock_log,
+    ):
+        mock_os_access.return_value = False
+        mock_shutil_which.return_value = True
+        mock_subprocess_check_output.side_effect = subprocess.CalledProcessError(returncode=1, cmd=[], output=b'[ERROR] wicked2nm failed')
+
+        with self._caplog.at_level(logging.ERROR):
+            check_wicked2nm.check_wicked2nm(migration_system=False)
+            assert '[ERROR] wicked2nm failed' in self._caplog.text
+        mock_subprocess_Popen.assert_called_once_with(
+            ['wicked', 'show-config'],
+            stdout=subprocess.PIPE
+        )
+        mock_subprocess_check_output.assert_called_once_with(
+            [
+                'wicked2nm', 'migrate', '--dry-run', '-'
+            ],
+            stdin=mock_subprocess_Popen().stdout, stderr=-2
+        )

@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import logging
+import glob
 
 # project
 from suse_migration_services.command import Command
@@ -37,11 +38,8 @@ def main():
 
     try:
         log.info('Running wicked to NetworkManager migration')
-        log.info(
-            'Change systemd network.service symlink '
-            'from wicked.service to NetworkManager'
-        )
 
+        log.info('Enabling NetworkManager in migrated system')
         Command.run(
             [
                 'systemctl', '--root', root_path, 'enable',
@@ -55,6 +53,14 @@ def main():
                 'systemctl', '--root', root_path, 'mask',
                 'wicked.service'
             ]
+        )
+
+        log.info('Copy connections to migrated system')
+        Command.run(
+            ['mkdir', '-p', root_path + '/etc/NetworkManager/system-connections']
+        )
+        Command.run(
+            ['cp'] + glob.glob('/etc/NetworkManager/system-connections/*.nmconnection') + [root_path + '/etc/NetworkManager/system-connections/']
         )
     except Exception as issue:
         message = 'wicked to NetworkManager migration failed with {}'.format(
