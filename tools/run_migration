@@ -104,6 +104,23 @@ function extract_kernel_and_initrd {
     fi
 }
 
+function store_snapper_pre_snapshot {
+    # """
+    # Store snapper pre snapshot if available
+    # """
+    if [ -x /usr/bin/snapper ]; then
+	PRE_SNAPSHOT=$(\
+		       snapper -c root --machine-readable csv list --disable-used-space\
+			       --columns subvolume,number,type 2>/dev/null |\
+			   grep '^/,[^,]*,pre' |\
+			   sed -e '$!d' -e 's|/,\([^,]*\),pre|\1|g'\
+		    )
+	if [ "$PRE_SNAPSHOT" != "" ]; then
+	    echo "$PRE_SNAPSHOT" > /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
+	fi
+    fi
+}
+
 # Check on permissions
 if (( EUID != 0 )); then
     echo "Migration startup requires root permissions"
@@ -129,6 +146,9 @@ if [ ! -e "${boot_dir}" ];then
     echo "Failed to extract boot files"
     exit 1
 fi
+
+# Store snapper pre snapshot for rollback
+store_snapper_pre_snapshot
 
 # Run Migration
 kexec \

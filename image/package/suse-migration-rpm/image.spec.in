@@ -38,5 +38,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 /migration-image
 %{_sbindir}/run_migration
+%ghost /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
 
 %changelog
