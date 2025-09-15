@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep 15 09:58:33 UTC 2025 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Bump version: 2.1.21
+
+-------------------------------------------------------------------
 Wed Aug  6 13:27:00 UTC 2025 - Marcus Schäfer <marcus.schaefer@suse.com>
 
 - Added .ssh directory for migration user
