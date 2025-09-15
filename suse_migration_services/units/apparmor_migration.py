@@ -42,6 +42,7 @@ def install_patterns_base_selinux(root_path):
         '--download', 'in-advance',
         '--replacefiles',
         '--allow-downgrade',
+        '--no-recommends',
         'patterns-base-selinux'
     ])
 
