@@ -13,6 +13,22 @@ tar: clean check test
 	# build the sdist source tarball
 	poetry build --format=sdist
 
+image_changelog:
+	for changelog in `find image -name "*Migration.changes"`; do \
+		pushd `dirname $$changelog` ;\
+		osc vc -m "Bump version: ${version}" ;\
+		popd ;\
+	done
+
+patch: image_changelog
+	poetry run bumpversion --allow-dirty patch
+
+minor: image_changelog
+	poetry run bumpversion --allow-dirty minor
+
+major: image_changelog
+	poetry run bumpversion --allow-dirty major
+
 build: tar
 	# provide rpm source tarball
 	mv dist/suse_migration_services-${version}.tar.gz \
