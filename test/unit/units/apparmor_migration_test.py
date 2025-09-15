@@ -35,6 +35,7 @@ class TestAppArmorMigration(object):
                 '--download', 'in-advance',
                 '--replacefiles',
                 '--allow-downgrade',
+                '--no-recommends',
                 'patterns-base-selinux'
             ]
         )
