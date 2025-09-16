@@ -31,6 +31,7 @@ Requires:         grub2
 Requires(post):   util-linux-systemd
 Requires(postun): util-linux-systemd
 Requires(pre):	  sed
+Requires(pre):	  zypper
 
 %description -n suse-migration-sle16-activation
 Script code to activate the SLE16 migration image to be booted at
@@ -44,6 +45,14 @@ install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
 
 %pre
+# Prevent installation for CPUs that are too old
+# SLE16 image panics on CPUs older than x86_64_v1 (i.e. x86_64) (bsc#1249593), so we need to block migration before getting into the image.
+# We need the ZYPP_READONLY_HACK here since we are running inside a zypper transaction; without this the invocation of zypper will fail due to locking issues.
+if [ "$(ZYPP_READONLY_HACK=1 zypper system-architecture)" == "x86_64" ]; then
+   echo "CPU Architecture too old. Aborting installation."
+   exit 1
+fi
+
 # store snapper pre snapshot if available
 if [ -x /usr/bin/snapper ]; then
   PRE_SNAPSHOT=$(snapper -c root --machine-readable csv list --disable-used-space --columns subvolume,number,type 2>/dev/null| grep '^/,[^,]*,pre' |sed -e '$!d' -e 's|/,\([^,]*\),pre|\1|g')
