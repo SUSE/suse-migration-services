@@ -166,7 +166,25 @@ def wicked2nm_migrate(root_path):
     if net_info and 'wicked2nm-continue-migration' in net_info and net_info['wicked2nm-continue-migration']:
         log.info('Ignoring wicked2nm warnings')
         wicked2nm_cmd = wicked2nm_cmd + ['--continue-migration']
-    Command.run(wicked2nm_cmd)
+    try:
+        Command.run(wicked2nm_cmd)
+    except Exception as issue:
+        wicked2nm_cmd = [
+            'wicked2nm', 'show',
+            '--netconfig-path', os.sep.join([wicked_config_path, 'config']),
+            '--netconfig-dhcp-path', os.sep.join([wicked_config_path, 'dhcp']),
+            os.sep.join([wicked_config_path, 'config.xml'])
+        ]
+        log.info(
+            'wicked2nm config {0}{1}'.format(
+                os.linesep, Command.run(
+                    wicked2nm_cmd, raise_on_error=False
+                ).output
+            )
+        )
+        log_network_details()
+
+        raise DistMigrationHostNetworkException('Migration from wicked to NetworkManager failed with {0}'.format(issue))
 
     # Wait for NetworkManager online to fix dhcp race condition
     Command.run(

@@ -254,3 +254,34 @@ class TestSetupHostNetwork(object):
                 ['udevadm', 'settle']
             )
         ]
+
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
+    @patch('os.path.exists')
+    def test_wicked2nm_migrate_failure(
+            self, mock_os_path_exists, mock_MigrationConfig, mock_Command_run, mock_logger_setup
+    ):
+        mock_os_path_exists.return_value = True
+        migration_config = Mock()
+        migration_config.get_network_info.return_value = False
+        mock_MigrationConfig.return_value = migration_config
+
+        def mock_Command_side_effect(command, custom_env=None, raise_on_error=True):
+            if 'wicked2nm' in command and 'migrate' in command:
+                raise Exception
+            return Mock(self, returncode=0, output="")
+        mock_Command_run.side_effect = mock_Command_side_effect
+
+        with raises(DistMigrationHostNetworkException):
+            wicked2nm_migrate(root_path='/system-root')
+
+        assert call(
+            [
+                'wicked2nm', 'show',
+                '--netconfig-path', '/system-root/var/cache/wicked_config/config',
+                '--netconfig-dhcp-path', '/system-root/var/cache/wicked_config/dhcp',
+                '/system-root/var/cache/wicked_config/config.xml'
+            ],
+            raise_on_error=False
+        ) in mock_Command_run.call_args_list
