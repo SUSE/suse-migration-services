@@ -13,20 +13,16 @@ tar: clean check test
 	# build the sdist source tarball
 	poetry build --format=sdist
 
-image_changelog:
-	for changelog in `find image -name "*Migration.changes"`; do \
-		pushd `dirname $$changelog` ;\
-		osc vc -m "Bump version: ${version}" ;\
-		popd ;\
-	done
-
-patch: image_changelog
+patch:
+	poetry run helper/image_changelog.sh patch
 	poetry run bumpversion --allow-dirty patch
 
-minor: image_changelog
+minor:
+	poetry run helper/image_changelog.sh minor
 	poetry run bumpversion --allow-dirty minor
 
-major: image_changelog
+major:
+	poetry run helper/image_changelog.sh major
 	poetry run bumpversion --allow-dirty major
 
 build: tar
