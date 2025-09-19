@@ -23,7 +23,6 @@ License:          GPL-3.0+
 Group:            System/Management
 Source:           suse-migration-sle16-activation.tar.gz
 BuildRoot:        %{_tmppath}/%{name}-%{version}-build
-BuildArch:        noarch
 Conflicts:        suse-migration-services
 BuildRequires:    grub2
 Requires:         Migration >= 2.1.2
