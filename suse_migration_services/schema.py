@@ -21,6 +21,11 @@ schema = {
                 'type': 'list',
                 'nullable': False
             },
+            'sysctl': {
+                'required': False,
+                'type': 'list',
+                'nullable': False
+            }
         }
     },
     'soft_reboot': {
