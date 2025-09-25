@@ -83,6 +83,9 @@ Requires:         %{pythonpkgname} = %{version}-%{release}
 Requires:         %{pythons}-Cerberus
 Requires:         %{pythons}-PyYAML
 Requires:         %{pythons}-setuptools
+%if 0%{?suse_version} >= 1500
+Requires:         wicked2nm
+%endif
 Conflicts:        suse-migration-sle15-activation < 2.0.33
 Conflicts:        suse-migration-sle16-activation < 2.0.33
 
