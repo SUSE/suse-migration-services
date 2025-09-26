@@ -111,7 +111,6 @@ function setup_wicked_to_NetworkManager_prereqs {
     if [ -x "$(command -v wicked)" ]; then
         mkdir -p /var/cache/wicked_config
         wicked show-config > /var/cache/wicked_config/config.xml
-        cp /etc/sysconfig/network/{config,dhcp} /var/cache/wicked_config/
     fi
     if [ -f /etc/udev/rules.d/70-persistent-net.rules ]; then
         mkdir -p /var/cache/udev_rules

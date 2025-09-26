@@ -818,9 +818,8 @@ class TestPreChecks():
         mock_subprocess_check_output.assert_called_once_with(
             [
                 'wicked2nm', 'migrate', '--dry-run',
-                '--netconfig-path', '/system-root//var/cache/wicked_config/config',
-                '--netconfig-dhcp-path', '/system-root//var/cache/wicked_config/dhcp',
-                '/system-root//var/cache/wicked_config/config.xml'
+                '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
+                '/system-root/var/cache/wicked_config/config.xml'
             ],
             stderr=-2
         )
@@ -841,9 +840,8 @@ class TestPreChecks():
         mock_subprocess_check_output.assert_called_once_with(
             [
                 'wicked2nm', 'migrate', '--dry-run',
-                '--netconfig-path', '/system-root//var/cache/wicked_config/config',
-                '--netconfig-dhcp-path', '/system-root//var/cache/wicked_config/dhcp',
-                '/system-root//var/cache/wicked_config/config.xml'
+                '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
+                '/system-root/var/cache/wicked_config/config.xml'
             ],
             stderr=-2
         )
@@ -899,11 +897,16 @@ class TestPreChecks():
     ):
         mock_os_access.return_value = False
         mock_shutil_which.return_value = True
-        mock_subprocess_check_output.side_effect = subprocess.CalledProcessError(returncode=1, cmd=[], output=b'[ERROR] wicked2nm failed')
+        mock_subprocess_check_output.side_effect = subprocess.CalledProcessError(
+            returncode=1,
+            cmd=[],
+            output=b'[ERROR] Migration failed because of warnings, use the `--continue-migration` flag to ignore'
+        )
 
         with self._caplog.at_level(logging.ERROR):
             check_wicked2nm.check_wicked2nm(migration_system=False)
-            assert '[ERROR] wicked2nm failed' in self._caplog.text
+            assert '[ERROR] Migration failed' in self._caplog.text
+            assert 'wicked2nm-continue-migration: true' in self._caplog.text
         mock_subprocess_Popen.assert_called_once_with(
             ['wicked', 'show-config'],
             stdout=subprocess.PIPE
