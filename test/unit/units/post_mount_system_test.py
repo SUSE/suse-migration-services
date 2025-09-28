@@ -33,7 +33,7 @@ class TestPostMountSystem(object):
         mock_get_system_root_path.return_value = '../data'
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
-        mock_os_path_exists.side_effect = [True, False, True, False]
+        mock_os_path_exists.side_effect = [True, False, True, False, True]
 
         def mock_glob_patterns(glob):
             if '*' in glob:
@@ -47,14 +47,16 @@ class TestPostMountSystem(object):
         assert mock_shutil_copy.call_args_list == [
             call('../data/etc/udev/rules.d/a.rules', '/etc/udev/rules.d'),
             call('../data/etc/udev/rules.d/b.rules', '/etc/udev/rules.d'),
-            call('../data/etc/sysconfig/proxy', '/etc/sysconfig')
+            call('../data/etc/sysconfig/proxy', '/etc/sysconfig'),
+            call('../data/etc/sysctl.conf', '/etc')
         ]
         assert mock_Command_run.call_args_list == [
             call(['mkdir', '-p', '/etc/udev/rules.d']),
             call(['mkdir', '-p', '/etc/sysconfig']),
             call(['udevadm', 'control', '--reload']),
             call(['udevadm', 'trigger', '--type=subsystems', '--action=add']),
-            call(['udevadm', 'trigger', '--type=devices', '--action=add'])
+            call(['udevadm', 'trigger', '--type=devices', '--action=add']),
+            call(['sysctl', '--system'])
         ]
 
     @patch.dict(os.environ, {'foo': 'bar', 'a': 'b'}, clear=True)

@@ -81,7 +81,6 @@ chown -R migration:users /home/migration
 # Add s390 specific network rules to migration config
 if [ "$(arch)" = "s390x" ]; then
     cat <<EOF >> /etc/migration-config.yml
-preserve:
   rules:
     - /etc/udev/rules.d/*qeth*.rules
     - /etc/udev/rules.d/*-cio-ignore*.rules

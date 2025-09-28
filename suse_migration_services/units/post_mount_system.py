@@ -70,6 +70,10 @@ def main():
             Command.run(
                 ['udevadm', 'trigger', '--type=devices', '--action=add']
             )
+        if 'sysctl' in preserve_info.keys():
+            Command.run(
+                ['sysctl', '--system']
+            )
 
 
 def update_env(preserve_info):
