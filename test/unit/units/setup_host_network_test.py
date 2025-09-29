@@ -226,24 +226,24 @@ class TestSetupHostNetwork(object):
         setup_interfaces(root_path='/system-root')
         mock_os_path_exists.assert_called_once()
 
+    @patch('os.makedirs')
     @patch('shutil.copy')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.exists')
     def test_setup_interfaces_create_dir(
-            self, mock_os_path_exists, mock_Command_run, mock_shutil_copy
+            self, mock_os_path_exists, mock_Command_run, mock_shutil_copy, mock_os_makedirs
     ):
-        mock_os_path_exists.side_effect = [True, False]
+        mock_os_path_exists.side_effect = [True]
 
         setup_interfaces(root_path='/system-root')
         assert mock_os_path_exists.call_args_list == [
             call('/system-root/var/cache/udev_rules/70-migration-persistent-net.rules'),
-            call('/etc/udev/rules.d'),
+        ]
+        assert mock_os_makedirs.call_args_list == [
+            call('/etc/udev/rules.d', exist_ok=True),
         ]
         mock_shutil_copy.assert_called()
         assert mock_Command_run.call_args_list == [
-            call(
-                ['mkdir', '-p', '/etc/udev/rules.d']
-            ),
             call(
                 ['udevadm', 'control', '--reload']
             ),

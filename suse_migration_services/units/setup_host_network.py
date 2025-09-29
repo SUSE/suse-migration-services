@@ -210,10 +210,7 @@ def setup_interfaces(root_path):
 
     target_file = '/etc/udev/rules.d/70-migration-persistent-net.rules'
     log.info('Copying migration udev rules')
-    if not os.path.exists(os.path.dirname(target_file)):
-        Command.run(
-            ['mkdir', '-p', os.path.dirname(target_file)]
-        )
+    os.makedirs(os.path.dirname(target_file), exist_ok=True)
     shutil.copy(migration_udev_rules, target_file)
 
     log.info('Running udevadm to apply network udev rules')
