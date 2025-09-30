@@ -96,6 +96,7 @@ Checks to be performed before starting a distribution migration process
 Summary:          The migrate tool for a container based upgrade
 Group:            System/Management
 Requires:         podman
+Requires:         sysvinit-tools
 Requires:         sudo
 BuildArch:        noarch
 
