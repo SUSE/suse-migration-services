@@ -882,23 +882,48 @@ class TestPreChecks():
         )
 
     @patch('suse_migration_services.command.Command.run')
-    def test_check_x86_64_version_v2(
-            self, mock_Command_run,
+    @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
+    def test_check_x86_64_v2(
+            self, mock_get_migration_target, mock_Command_run,
             mock_os_getuid, mock_log
     ):
+        mock_get_migration_target.return_value = {
+            'version': '16.0'
+        }
         mock_Command_run.return_value.output = 'x86_64_v2'
 
         check_cpu_arch.cpu_arch()
+        assert 'SLE16 requires x86_64_v2 at minimum' not in self._caplog.text
         mock_Command_run.assert_called_once_with(['zypper', 'system-architecture'])
 
     @patch('suse_migration_services.command.Command.run')
-    def test_check_x86_64_old(
-            self, mock_Command_run,
+    @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
+    def test_check_x86_64_v1(
+            self, mock_get_migration_target, mock_Command_run,
             mock_os_getuid, mock_log
     ):
+        mock_get_migration_target.return_value = {
+            'version': '16.0'
+        }
         mock_Command_run.return_value.output = 'x86_64'
 
         with self._caplog.at_level(logging.ERROR):
             check_cpu_arch.cpu_arch()
-            assert 'SLE16 requires x86_64_v1 at minimum' in self._caplog.text
+            assert 'SLE16 requires x86_64_v2 at minimum' in self._caplog.text
         mock_Command_run.assert_called_once_with(['zypper', 'system-architecture'])
+
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
+    def test_check_x86_64_v1_sle15(
+            self, mock_get_migration_target, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+        mock_get_migration_target.return_value = {
+            'version': '15.0'
+        }
+        mock_Command_run.return_value.output = 'x86_64'
+
+        with self._caplog.at_level(logging.ERROR):
+            check_cpu_arch.cpu_arch()
+            assert 'SLE16 requires x86_64_v2 at minimum' not in self._caplog.text
+        mock_Command_run.assert_not_called()

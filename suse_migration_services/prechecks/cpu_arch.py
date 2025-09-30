@@ -22,18 +22,25 @@ import os
 
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.command import Command
+from suse_migration_services.migration_target import MigrationTarget
 
 
 def x86_64_version():
     """Function to check whether current CPU architecture is new enough to support SLE16"""
+    target = MigrationTarget.get_migration_target()
+
+    if target.get('version') != '16.0':
+        # This check is only necessary for migration to SLE16
+        return
+
     log = logging.getLogger(Defaults.get_migration_log_name())
-    os.environ['ZYPPER_READONLY_HACK'] = '1'
+    os.environ['ZYPP_READONLY_HACK'] = '1'
     zypper_call = Command.run(['zypper', 'system-architecture'])
     arch = zypper_call.output
 
     if arch.strip().lower() == "x86_64":
         log.error(
-            'SLE16 requires x86_64_v1 at minimum. The architecture version '
+            'SLE16 requires x86_64_v2 at minimum. The architecture version '
             'of this system is too old.'
         )
 

@@ -15,15 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>#
 from lxml import etree
-import platform
 import requests
 import yaml
 import logging
 import os
 import glob
 
-from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.migration_target import MigrationTarget
 
 log = logging.getLogger(Defaults.get_migration_log_name())
 
@@ -43,7 +42,7 @@ def migration(migration_system=False):
         return
 
     installed_products = get_installed_products()
-    installed_products['target_base_product'] = get_migration_target()
+    installed_products['target_base_product'] = MigrationTarget.get_migration_target()
 
     if installed_products.get('installed_products') and \
        installed_products.get('target_base_product'):
@@ -127,51 +126,6 @@ def get_registration_server_url():
                 suseconnect_config, type(issue).__name__, issue
             )
             log.error(message)
-
-
-def get_migration_target():
-    migration_config = '/etc/sle-migration-service.yml'
-    config_data = {}
-    if os.path.isfile(migration_config):
-        try:
-            with open(migration_config, 'r') as config:
-                config_data = yaml.safe_load(config) or {}
-        except Exception as issue:
-            message = 'Loading {0} failed: {1}: {2}'.format(
-                migration_config, type(issue).__name__, issue
-            )
-            log.error(message)
-            return {}
-
-    migration_product = config_data.get('migration_product')
-    if migration_product:
-        product = migration_product.split('/')
-        return {
-            'identifier': product[0],
-            'version': product[1],
-            'arch': product[2]
-        }
-    sles15_migration = Command.run(
-        ['rpm', '-q', 'SLES15-Migration'], raise_on_error=False
-    )
-    if sles15_migration.returncode == 0:
-        # return default migration target
-        return {
-            'identifier': 'SLES',
-            'version': '15.3',
-            'arch': platform.machine()
-        }
-    sles16_migration = Command.run(
-        ['rpm', '-q', 'SLES16-Migration'], raise_on_error=False
-    )
-    if sles16_migration.returncode == 0:
-        # return default migration target
-        return {
-            'identifier': 'SLES',
-            'version': '16.0',
-            'arch': platform.machine()
-        }
-    return {}
 
 
 def get_installed_products():
