@@ -1,0 +1,14 @@
+[Unit]
+Description=Snapper btrfs snapshot after migration
+After=suse-migration-container.service suse-migration-container-apparmor-selinux.service suse-migration-container-wicked-networkmanager.service
+Requisite=suse-migration-container.service
+Before=suse-migration-container-grub-setup.service
+ConditionPathExists=/run/suse_migration_snapper_btrfs_pre_snapshot_number
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-btrfs-snapshot-post-migration
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

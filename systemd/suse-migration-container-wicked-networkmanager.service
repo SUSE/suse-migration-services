@@ -1,0 +1,13 @@
+[Unit]
+Description=Wicked to NetworkManager migration
+After=suse-migration-container.service
+Requisite=suse-migration-container.service
+Before=suse-migration-container-regenerate-initrd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-wicked-networkmanager
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

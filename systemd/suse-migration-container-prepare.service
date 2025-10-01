@@ -4,7 +4,9 @@ OnFailure=suse-migration-container-emergency.service
 
 [Service]
 Type=oneshot
+EnvironmentFile=-/etc/sysconfig/proxy
 ExecStart=/usr/bin/suse-migration-prepare
+RemainAfterExit=true
 
 [Install]
 WantedBy=multi-user.target

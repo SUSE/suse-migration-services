@@ -1,0 +1,13 @@
+[Unit]
+Description=High availability extension migration
+After=suse-migration-container.service
+Requisite=suse-migration-container.service
+Before=suse-migration-container-regenerate-initrd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-ha
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

@@ -145,21 +145,6 @@ install -D -m 644 systemd/suse-migration-prepare.service \
 install -D -m 644 systemd/suse-migration.service \
     %{buildroot}%{_unitdir}/suse-migration.service
 
-install -D -m 644 systemd/suse-migration-container.service \
-    %{buildroot}%{_unitdir}/suse-migration-container.service
-
-install -D -m 644 systemd/suse-migration-container-prepare.service \
-    %{buildroot}%{_unitdir}/suse-migration-container-prepare.service
-
-install -D -m 644 systemd/suse-migration-container-product-setup.service \
-    %{buildroot}%{_unitdir}/suse-migration-container-product-setup.service
-
-install -D -m 644 systemd/suse-migration-container-reboot.service \
-    %{buildroot}%{_unitdir}/suse-migration-container-reboot.service
-
-install -D -m 644 systemd/suse-migration-container-emergency.service \
-    %{buildroot}%{_unitdir}/suse-migration-container-emergency.service
-
 install -D -m 644 systemd/suse-migration-grub-setup.service \
     %{buildroot}%{_unitdir}/suse-migration-grub-setup.service
 
@@ -195,6 +180,39 @@ install -D -m 644 systemd/suse-migration-ha.service \
 
 install -D -m 644 systemd/suse-migration-btrfs-snapshot-pre-migration.service \
     %{buildroot}%{_unitdir}/suse-migration-btrfs-snapshot-pre-migration.service
+
+install -D -m 644 systemd/suse-migration-container.service \
+    %{buildroot}%{_unitdir}/suse-migration-container.service
+
+install -D -m 644 systemd/suse-migration-container-prepare.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-prepare.service
+
+install -D -m 644 systemd/suse-migration-container-product-setup.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-product-setup.service
+
+install -D -m 644 systemd/suse-migration-container-reboot.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-reboot.service
+
+install -D -m 644 systemd/suse-migration-container-emergency.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-emergency.service
+
+install -D -m 644 systemd/suse-migration-container-apparmor-selinux.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-apparmor-selinux.service
+
+install -D -m 644 systemd/suse-migration-container-btrfs-snapshot-post-migration.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-btrfs-snapshot-post-migration.service
+
+install -D -m 644 systemd/suse-migration-container-grub-setup.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-grub-setup.service
+
+install -D -m 644 systemd/suse-migration-container-ha.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-ha.service
+
+install -D -m 644 systemd/suse-migration-container-regenerate-initrd.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-regenerate-initrd.service
+
+install -D -m 644 systemd/suse-migration-container-wicked-networkmanager.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-wicked-networkmanager.service
 
 install -D -m 644 systemd/suse-migration-container-btrfs-snapshot-pre-migration.service \
     %{buildroot}%{_unitdir}/suse-migration-container-btrfs-snapshot-pre-migration.service
@@ -246,6 +264,12 @@ install -D -m 755 tools/migrate \
 %{_unitdir}/suse-migration-container-reboot.service
 %{_unitdir}/suse-migration-container-emergency.service
 %{_unitdir}/suse-migration-container-btrfs-snapshot-pre-migration.service
+%{_unitdir}/suse-migration-container-apparmor-selinux.service
+%{_unitdir}/suse-migration-container-btrfs-snapshot-post-migration.service
+%{_unitdir}/suse-migration-container-grub-setup.service
+%{_unitdir}/suse-migration-container-ha.service
+%{_unitdir}/suse-migration-container-regenerate-initrd.service
+%{_unitdir}/suse-migration-container-wicked-networkmanager.service
 %{_unitdir}/suse-migration-console-log.service
 %{_unitdir}/suse-migration-apparmor-selinux.service
 %{_unitdir}/suse-migration-grub-setup.service
