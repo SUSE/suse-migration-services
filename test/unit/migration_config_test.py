@@ -1,5 +1,5 @@
 from unittest.mock import (
-    patch, MagicMock
+    patch, MagicMock, call
 )
 from pytest import raises
 import io
@@ -15,12 +15,15 @@ from suse_migration_services.exceptions import (
 
 
 class TestMigrationConfig(object):
+    @patch.object(Defaults, 'get_migration_config_dir')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(Defaults, 'get_system_migration_custom_config_file')
     def setup_method(
         self, method, mock_get_system_migration_config_custom_file,
-        mock_get_migration_config_file
+        mock_get_migration_config_file, mock_get_migration_config_dir
     ):
+        mock_get_migration_config_dir.return_value = \
+            '../data/migration-config.d'
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
         mock_get_system_migration_config_custom_file.return_value = \
@@ -209,3 +212,90 @@ class TestMigrationConfig(object):
         mock_yaml_dump.assert_called_once_with(
             self.config.config_data, default_flow_style=False
         )
+
+    @patch.object(Defaults, 'get_migration_config_dir')
+    @patch.object(Defaults, 'get_migration_config_file')
+    def test_get_migration_missing_dropin_dir(
+        self,
+        mock_get_migration_config_file, mock_get_migration_config_dir
+    ):
+        mock_get_migration_config_dir.return_value = \
+            '../data/DOES_NOT_EXISTS'
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        self.config = MigrationConfig()
+
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    @patch.object(MigrationConfig, '_parse_config_file')
+    @patch.object(Defaults, 'get_migration_config_dir')
+    @patch.object(Defaults, 'get_migration_config_file')
+    def test_get_migration_config_merge_file_order(
+        self,
+        mock_get_migration_config_file, mock_get_migration_config_dir,
+        mock_parse_config_file,
+        mock_get_system_migration_config_custom_file,
+        mock_write_config_file,
+    ):
+        mock_get_migration_config_dir.return_value = \
+            '../data/migration-config.d'
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_get_system_migration_config_custom_file.return_value = \
+            '../data/custom-migration-config.yml'
+
+        self.config = MigrationConfig()
+        self.config.update_migration_config_file()
+
+        assert mock_parse_config_file.call_args_list == [
+            call('../data/migration-config.yml'),
+            call('../data/migration-config.d/10-enable-wicked2nm-continue-migration.yml'),
+            call('../data/migration-config.d/10-s390.yml'),
+            call('../data/migration-config.d/20-migration-config-duplicates.yml'),
+            call('../data/migration-config.d/50-disable-wicked2nm-continue-migration.yml'),
+            call('../data/custom-migration-config.yml'),
+        ]
+
+    @patch.object(MigrationConfig, '_write_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    @patch.object(Defaults, 'get_migration_config_dir')
+    @patch.object(Defaults, 'get_migration_config_file')
+    def test_get_migration_config_merge(
+        self,
+        mock_get_migration_config_file, mock_get_migration_config_dir,
+        mock_get_system_migration_config_custom_file,
+        mock_write_config_file,
+    ):
+        mock_get_migration_config_dir.return_value = \
+            '../data/migration-config.d'
+        mock_get_migration_config_file.return_value = \
+            '../data/migration-config.yml'
+        mock_get_system_migration_config_custom_file.return_value = \
+            '../data/custom-migration-config.yml'
+
+        self.config = MigrationConfig()
+        self.config.update_migration_config_file()
+
+        # Check values get successful overwritten in correct order
+        assert self.config.config_data.get('network', {}).get('wicked2nm-continue-migration') is False
+        # Check list get appended without including duplicates
+        preserve = self.config.config_data.get('preserve', {})
+        assert preserve.get('rules', []) == [
+            '/etc/udev/rules.d/*.rules',
+            '/etc/udev/rules.d/*qeth*.rules',
+            '/etc/udev/rules.d/*-cio-ignore*.rules'
+        ]
+        assert preserve.get('sysctl', []) == ['/etc/sysctl.conf']
+        assert preserve.get('static', []) == ['/etc/sysconfig/proxy']
+
+        # Changes from custom-migration-config.yml
+        assert self.config.is_debug_requested()
+        assert self.config.get_migration_product() == "SLES/15.3/x86_64"
+
+        # Check no other key's exists
+        assert list(self.config.config_data.keys()) == [
+            'preserve',
+            'network',
+            'debug',
+            'migration_product'
+        ]

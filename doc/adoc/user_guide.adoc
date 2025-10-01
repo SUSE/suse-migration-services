@@ -244,11 +244,14 @@ Preserve custom data file(s) e.g. udev rules from the system
 to be migrated into the upgrade live system and make sure
 they will become effective.
 +
-Under preserve section, there are two subsections: rules and static.
-The difference between 'rules' and 'static' sections is that files preserved as
-udev rules will also make the DMS to reload udev and its rules to make the new
-rule set effective, while the files in the static section are copied with no
-further action.
+The `preserve` section has three subsections that govern file
+preservation and system actions:
+* `static`: Files in this subsection are copied into the DMS
+  directly, with no further processing.
+* `rules`: If this subsection contains files, they are preserved, and
+  the DMS reloads udev to make these rules effective.
+* `sysctl`: Preserving these files triggers sysctl --system to apply
+  the configuration changes.
 +
 [listing]
 ----
@@ -258,7 +261,7 @@ preserve:
     - /etc/udev/rules.d/b.rules
   static:
     - /etc/sysconfig/proxy
-    - /path/to/be/preserved/file
+    - /path/to/be/preserved/*.suffix
 ----
 +
 [NOTE]
@@ -266,6 +269,11 @@ udev rules that require custom drivers will not have the desired effect
 as the migration system will not include these drivers and therefore
 execution of those rules will fail. Rules with such properties should
 not be listed.
+
+[NOTE]
+The DMS provides a set of default preservable files that vary based on
+the target version and architecture. User-defined values will supplement
+this default list.
 
 Enable Debug Mode::
 If enabled, prevents the upgrade system from rewinding the setup

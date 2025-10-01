@@ -35,6 +35,10 @@ class Defaults:
         return '/etc/migration-config.yml'
 
     @staticmethod
+    def get_migration_config_dir():
+        return '/etc/migration-config.d'
+
+    @staticmethod
     def get_migration_log_name():
         return 'suse-migration'
 
