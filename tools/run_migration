@@ -139,14 +139,6 @@ if (( EUID != 0 )); then
     exit 1
 fi
 
-# Do not start migration for CPUs that are too old
-# SLE16 image panics on CPUs older than x86_64_v1 (i.e. x86_64) (bsc#1249593), so we need to block
-# migration before getting into the image.
-if [ "$(zypper system-architecture)" == "x86_64" ]; then
-   echo "CPU Architecture too old. Aborting migration."
-   exit 1
-fi
-
 # Set signal handler on EXIT
 trap cleanup EXIT
 
@@ -167,6 +159,14 @@ if [[ "${migration_iso}" == *SLES16*-*Migration*.iso ]]; then
 fi
 
 if ${is_sles16_migration}; then
+    # Do not start migration for CPUs that are too old
+    # SLE16 image panics on CPUs older than x86_64_v2 (i.e. x86_64) (bsc#1249593), so we need to
+    # block migration before getting into the image.
+    if [ "$(zypper system-architecture)" == "x86_64" ]; then
+        echo "CPU Architecture too old. Aborting migration."
+        exit 1
+    fi
+
     # store snapper pre snapshot if available
     store_snapper_pre_snapshot
 

@@ -16,6 +16,7 @@ import suse_migration_services.prechecks.kernels as check_kernels
 import suse_migration_services.prechecks.scc as check_scc
 import suse_migration_services.prechecks.ha as check_ha
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
+import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
@@ -32,6 +33,7 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.repos.remote_repos')
     @patch('suse_migration_services.prechecks.fs.encryption')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
+    @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch.dict(
         os.environ, {"SUSE_MIGRATION_PRE_CHECKS_MODE": "foo"}, clear=True
     )
@@ -40,7 +42,7 @@ class TestPreChecks():
         return_value=argparse.Namespace(fix=False)
     )
     def test_main(
-        self, mock_arg_parse, mock_kernels,
+        self, mock_arg_parse, mock_cpu_arch, mock_kernels,
         mock_fs, mock_repos, mock_os_geteuid, mock_log
     ):
         mock_os_geteuid.return_value = 0
@@ -51,6 +53,7 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.repos.remote_repos')
     @patch('suse_migration_services.prechecks.fs.encryption')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
+    @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch.dict(
         os.environ,
         {
@@ -62,7 +65,7 @@ class TestPreChecks():
         return_value=argparse.Namespace(fix=True)
     )
     def test_main_with_fix_and_migration_system_mode(
-        self, mock_arg_parse, mock_kernels, mock_fs,
+        self, mock_arg_parse, mock_cpu_arch, mock_kernels, mock_fs,
         mock_repos, mock_os_geteuid, mock_log
     ):
         """
@@ -543,6 +546,7 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.repos.remote_repos')
     @patch('suse_migration_services.prechecks.fs.encryption')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
+    @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch.dict(
         os.environ, {
             "SUSE_MIGRATION_PRE_CHECKS_MODE": "migration_system_iso_image"
@@ -553,7 +557,7 @@ class TestPreChecks():
         return_value=argparse.Namespace(fix=True)
     )
     def test_pre_checks_false(
-        self, mock_argparse, mock_kernels, mock_fs,
+        self, mock_argparse, mock_cpu_arch, mock_kernels, mock_fs,
         mock_repos, mock_scc_migration, mock_get_migration_config_file,
         mock_os_geteuid, mock_log
     ):
@@ -685,44 +689,6 @@ class TestPreChecks():
             file_handle_credentials.read.side_effect = Exception('IO error')
             check_scc.migration()
             assert not mock_requests_post.called
-
-    @patch('platform.machine')
-    @patch('os.path.isfile')
-    @patch.object(Command, 'run')
-    def test_check_scc_migration_default_target(
-        self, mock_Command_run, mock_os_path_isfile,
-        mock_platform_machine, mock_os_geteuid, mock_log
-    ):
-        mock_platform_machine.return_value = 'x86_64'
-        sles15_migration = Mock()
-        sles15_migration.returncode = 0
-        mock_Command_run.return_value = sles15_migration
-        mock_os_path_isfile.return_value = False
-        assert check_scc.get_migration_target() == {
-            'identifier': 'SLES',
-            'version': '15.3',
-            'arch': 'x86_64'
-        }
-
-    @patch('platform.machine')
-    @patch('os.path.isfile')
-    @patch.object(Command, 'run')
-    def test_check_scc_migration_default_target_sles16(
-        self, mock_Command_run, mock_os_path_isfile,
-        mock_platform_machine, mock_os_geteuid, mock_log
-    ):
-        mock_platform_machine.return_value = 'x86_64'
-        sles15_migration_not_found = Mock()
-        sles15_migration_not_found.returncode = 1  # SLES15-Migration not found
-        sles16_migration_found = Mock()
-        sles16_migration_found.returncode = 0  # SLES16-Migration found
-        mock_Command_run.side_effect = [sles15_migration_not_found, sles16_migration_found]
-        mock_os_path_isfile.return_value = False  # No /etc/sle-migration-service.yml
-        assert check_scc.get_migration_target() == {
-            'identifier': 'SLES',
-            'version': '16.0',
-            'arch': 'x86_64'
-        }
 
     def test_privileges(self, mock_os_geteuid, mock_log):
         with self._caplog.at_level(logging.ERROR):
@@ -914,3 +880,50 @@ class TestPreChecks():
             ],
             stdin=mock_subprocess_Popen().stdout, stderr=-2
         )
+
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
+    def test_check_x86_64_v2(
+            self, mock_get_migration_target, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+        mock_get_migration_target.return_value = {
+            'version': '16.0'
+        }
+        mock_Command_run.return_value.output = 'x86_64_v2'
+
+        check_cpu_arch.cpu_arch()
+        assert 'SLE16 requires x86_64_v2 at minimum' not in self._caplog.text
+        mock_Command_run.assert_called_once_with(['zypper', 'system-architecture'])
+
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
+    def test_check_x86_64_v1(
+            self, mock_get_migration_target, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+        mock_get_migration_target.return_value = {
+            'version': '16.0'
+        }
+        mock_Command_run.return_value.output = 'x86_64'
+
+        with self._caplog.at_level(logging.ERROR):
+            check_cpu_arch.cpu_arch()
+            assert 'SLE16 requires x86_64_v2 at minimum' in self._caplog.text
+        mock_Command_run.assert_called_once_with(['zypper', 'system-architecture'])
+
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
+    def test_check_x86_64_v1_sle15(
+            self, mock_get_migration_target, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+        mock_get_migration_target.return_value = {
+            'version': '15.0'
+        }
+        mock_Command_run.return_value.output = 'x86_64'
+
+        with self._caplog.at_level(logging.ERROR):
+            check_cpu_arch.cpu_arch()
+            assert 'SLE16 requires x86_64_v2 at minimum' not in self._caplog.text
+        mock_Command_run.assert_not_called()

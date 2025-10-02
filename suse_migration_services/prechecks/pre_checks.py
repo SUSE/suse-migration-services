@@ -30,6 +30,7 @@ import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_multi_kernels
 import suse_migration_services.prechecks.scc as check_scc
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
+import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
 
 
 def main():
@@ -91,6 +92,9 @@ def main():
         args.fix = False
 
     log.info('Checking harmful migration conditions')
+
+    log.info('--> Checking system architecture version...')
+    check_cpu_arch.cpu_arch()
 
     log.info('--> Checking for local private repos...')
     check_repos.remote_repos(
