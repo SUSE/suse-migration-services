@@ -2,6 +2,8 @@ soft_reboot: false
 network:
   wicked2nm-continue-migration: true
 preserve:
+  rules:
+  - /etc/systemd/network/*.link
   sysctl:
   - /etc/sysctl.conf
   - /etc/sysctl.d/*.conf
