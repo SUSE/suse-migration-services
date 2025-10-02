@@ -246,6 +246,7 @@ they will become effective.
 +
 The `preserve` section has three subsections that govern file
 preservation and system actions:
++
 * `static`: Files in this subsection are copied into the DMS
   directly, with no further processing.
 * `rules`: If this subsection contains files, they are preserved, and
@@ -269,7 +270,7 @@ udev rules that require custom drivers will not have the desired effect
 as the migration system will not include these drivers and therefore
 execution of those rules will fail. Rules with such properties should
 not be listed.
-
++
 [NOTE]
 The DMS provides a set of default preservable files that vary based on
 the target version and architecture. User-defined values will supplement
