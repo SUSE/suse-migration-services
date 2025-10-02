@@ -163,8 +163,8 @@ if ${is_sles16_migration}; then
     # SLE16 image panics on CPUs older than x86_64_v2 (i.e. x86_64) (bsc#1249593), so we need to
     # block migration before getting into the image.
     if [ "$(zypper system-architecture)" == "x86_64" ]; then
-	echo "CPU Architecture too old. Aborting migration."
-	exit 1
+        echo "CPU Architecture too old. Aborting migration."
+        exit 1
     fi
 
     # store snapper pre snapshot if available

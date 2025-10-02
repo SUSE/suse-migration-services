@@ -20,9 +20,10 @@ import logging
 import yaml
 import os
 import platform
+from glob import glob
+from fnmatch import fnmatch
 
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.command import Command
 
 log = logging.getLogger(Defaults.get_migration_log_name())
 
@@ -55,24 +56,22 @@ class MigrationTarget:
                 'version': product[1],
                 'arch': product[2]
             }
-        sles15_migration = Command.run(
-            ['rpm', '-q', 'SLES15-Migration'], raise_on_error=False
-        )
-        if sles15_migration.returncode == 0:
-            # return default migration target
-            return {
-                'identifier': 'SLES',
-                'version': '15.3',
-                'arch': platform.machine()
-            }
-        sles16_migration = Command.run(
-            ['rpm', '-q', 'SLES16-Migration'], raise_on_error=False
-        )
-        if sles16_migration.returncode == 0:
+        migration_iso = glob('/migration-image/*-*Migration.*.iso')
+        if not migration_iso:
+            return {}
+        migration_iso = migration_iso[0]
+
+        if fnmatch(migration_iso, '*SLES16*-*Migration*.iso'):
             # return default migration target
             return {
                 'identifier': 'SLES',
                 'version': '16.0',
                 'arch': platform.machine()
             }
-        return {}
+        else:
+            # return default migration target
+            return {
+                'identifier': 'SLES',
+                'version': '15.4',
+                'arch': platform.machine()
+            }
