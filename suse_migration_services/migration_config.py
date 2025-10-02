@@ -46,11 +46,14 @@ class MigrationConfig:
     def __init__(self):
         self.migration_config_file = \
             Defaults.get_migration_config_file()
+        self.migration_config_dir = \
+            Defaults.get_migration_config_dir()
         self.migration_custom_file = \
             Defaults.get_system_migration_custom_config_file()
         self.config_data = self._parse_config_file(
             self.migration_config_file
         )
+        self._merge_configs(self._list_dropin_configs())
 
     def _parse_config_file(self, config_file):
         config_data = {}
@@ -73,6 +76,43 @@ class MigrationConfig:
                     log.error(message)
                     raise DistMigrationConfigDataException(message)
         return config_data
+
+    @staticmethod
+    def _merge_config_dicts(dict1, dict2):
+        """
+        Recursively merges dict2 into dict1.
+        For keys present in both:
+         * nested dictionaries are recursively called
+         * lists are extended, duplicates are removed
+         * all other values are overwritten.
+        """
+        for key, value in dict2.items():
+            if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):
+                MigrationConfig._merge_config_dicts(dict1[key], value)
+            elif key in dict1 and isinstance(dict1[key], list) and isinstance(value, list):
+                dict1[key] = list(dict.fromkeys(dict1[key] + value))
+            else:
+                dict1[key] = value
+
+    def _merge_configs(self, config_files):
+        for f in config_files:
+            data = self._parse_config_file(f)
+            if data:
+                MigrationConfig._merge_config_dicts(self.config_data, data)
+
+    def _list_dropin_configs(self):
+        dropin_dir = self.migration_config_dir
+        dropin_files = []
+        if not os.path.isdir(dropin_dir):
+            return dropin_files
+
+        for filename in os.listdir(dropin_dir):
+            file_path = os.path.join(dropin_dir, filename)
+            if not os.path.isfile(file_path) or not file_path.endswith('.yml'):
+                continue
+            dropin_files.append(file_path)
+
+        return sorted(dropin_files)
 
     def get_migration_product(self):
         """
@@ -120,7 +160,7 @@ class MigrationConfig:
         if os.path.exists(self.migration_custom_file):
             new_config = self._parse_config_file(self.migration_custom_file)
             if new_config:
-                self.config_data.update(new_config)
+                MigrationConfig._merge_config_dicts(self.config_data, new_config)
 
                 self._write_config_file()
 

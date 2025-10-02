@@ -1,0 +1,4 @@
+preserve:
+  rules: 
+  - /etc/udev/rules.d/*qeth*.rules 
+  - /etc/udev/rules.d/*-cio-ignore*.rules

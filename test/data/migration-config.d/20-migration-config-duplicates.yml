@@ -1,0 +1,7 @@
+preserve:
+  rules:
+  - /etc/udev/rules.d/*.rules
+  static:
+  - /etc/sysconfig/proxy
+  sysctl:
+  - /etc/sysctl.conf
