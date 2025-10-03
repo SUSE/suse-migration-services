@@ -105,8 +105,9 @@ class TestMountSystem(object):
     @patch('suse_migration_services.units.mount_system.is_mounted')
     @patch('os.path.isfile')
     @patch('os.path.exists')
+    @patch('os.makedirs')
     def test_main(
-        self, mock_path_exists, mock_path_isfile, mock_is_mounted, mock_Fstab,
+        self, mock_makedirs, mock_path_exists, mock_path_isfile, mock_is_mounted, mock_Fstab,
         mock_path_wipe, mock_Command_run, mock_update_migration_config_file,
         mock_get_migration_config_file,
         mock_get_system_migration_custom_config_file, mock_yaml_dump,
@@ -203,7 +204,16 @@ class TestMountSystem(object):
                     ['mount', '-t', 'sysfs', 'sysfs', '/system-root/sys']
                 ),
                 call(
-                    ['mount', '-o', 'bind', '/run', '/system-root/run']
+                    [
+                        'mount', '-o', 'bind', '/run/NetworkManager',
+                        '/system-root/run/NetworkManager'
+                    ]
+                ),
+                call(
+                    [
+                        'mount', '-o', 'bind', '/run/netconfig',
+                        '/system-root/run/netconfig'
+                    ]
                 )
             ]
             assert fstab_mock.add_entry.call_args_list == [
@@ -252,6 +262,10 @@ class TestMountSystem(object):
                 call(
                     'sysfs', '/system-root/sys'
                 )
+            ]
+            assert mock_makedirs.call_args_list == [
+                call('/system-root/run/NetworkManager', exist_ok=True),
+                call('/system-root/run/netconfig', exist_ok=True)
             ]
             fstab_mock.export.assert_called_once_with(
                 '/etc/system-root.fstab'

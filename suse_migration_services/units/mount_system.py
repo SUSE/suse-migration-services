@@ -179,9 +179,20 @@ def mount_system(root_path, fstab):
             system_mount.add_entry(
                 mount_type, mount_point
             )
-        log.info('Bind mount /run inside chroot {0}'.format(root_path))
+        log.info('Bind mount subdirectories from /run inside chroot {0}'.format(root_path))
+        os.makedirs(os.sep.join([root_path, 'run', 'NetworkManager']), exist_ok=True)
         Command.run(
-            ['mount', '-o', 'bind', '/run', os.sep.join([root_path, 'run'])]
+            [
+                'mount', '-o', 'bind', '/run/NetworkManager',
+                os.sep.join([root_path, 'run', 'NetworkManager'])
+            ]
+        )
+        os.makedirs(os.sep.join([root_path, 'run', 'netconfig']), exist_ok=True)
+        Command.run(
+            [
+                'mount', '-o', 'bind', '/run/netconfig',
+                os.sep.join([root_path, 'run', 'netconfig'])
+            ]
         )
     except Exception as issue:
         log.error(
