@@ -142,7 +142,8 @@ def wicked2nm_migrate(root_path):
     skipped.
     """
     log = logging.getLogger(Defaults.get_migration_log_name())
-    wicked_config_path = root_path + '/var/cache/wicked_config'
+    wicked_config_path = os.sep.join([root_path, 'var/cache/wicked_config'])
+    netconf_dir_path = os.sep.join([root_path, 'etc/sysconfig/network'])
     migration_config = MigrationConfig()
     net_info = migration_config.get_network_info()
 
@@ -159,8 +160,7 @@ def wicked2nm_migrate(root_path):
     log.info('Running wicked2nm')
     wicked2nm_cmd = [
         'wicked2nm', 'migrate', '--activate-connections',
-        '--netconfig-path', os.sep.join([wicked_config_path, 'config']),
-        '--netconfig-dhcp-path', os.sep.join([wicked_config_path, 'dhcp']),
+        '--netconfig-base-dir', netconf_dir_path,
         os.sep.join([wicked_config_path, 'config.xml'])
     ]
     if net_info and 'wicked2nm-continue-migration' in net_info and net_info['wicked2nm-continue-migration']:
@@ -171,8 +171,7 @@ def wicked2nm_migrate(root_path):
     except Exception as issue:
         wicked2nm_cmd = [
             'wicked2nm', 'show',
-            '--netconfig-path', os.sep.join([wicked_config_path, 'config']),
-            '--netconfig-dhcp-path', os.sep.join([wicked_config_path, 'dhcp']),
+            '--netconfig-base-dir', netconf_dir_path,
             os.sep.join([wicked_config_path, 'config.xml'])
         ]
         log.info(
@@ -202,7 +201,7 @@ def setup_interfaces(root_path):
     isn't present this part is skipped.
     """
     log = logging.getLogger(Defaults.get_migration_log_name())
-    migration_udev_rules = root_path + '/var/cache/udev_rules/70-migration-persistent-net.rules'
+    migration_udev_rules = os.sep.join([root_path, 'var/cache/udev_rules/70-migration-persistent-net.rules'])
 
     if not os.path.exists(migration_udev_rules):
         log.info('No migration udev rules present, skipping copy and application of migration rules')

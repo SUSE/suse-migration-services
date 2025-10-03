@@ -129,8 +129,7 @@ class TestSetupHostNetwork(object):
             call(
                 [
                     'wicked2nm', 'migrate', '--activate-connections',
-                    '--netconfig-path', '/system-root/var/cache/wicked_config/config',
-                    '--netconfig-dhcp-path', '/system-root/var/cache/wicked_config/dhcp',
+                    '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
                     '/system-root/var/cache/wicked_config/config.xml'
                 ]
             ),
@@ -207,8 +206,7 @@ class TestSetupHostNetwork(object):
             call(
                 [
                     'wicked2nm', 'migrate', '--activate-connections',
-                    '--netconfig-path', '/system-root/var/cache/wicked_config/config',
-                    '--netconfig-dhcp-path', '/system-root/var/cache/wicked_config/dhcp',
+                    '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
                     '/system-root/var/cache/wicked_config/config.xml', '--continue-migration'
                 ]
             ),
@@ -279,8 +277,7 @@ class TestSetupHostNetwork(object):
         assert call(
             [
                 'wicked2nm', 'show',
-                '--netconfig-path', '/system-root/var/cache/wicked_config/config',
-                '--netconfig-dhcp-path', '/system-root/var/cache/wicked_config/dhcp',
+                '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
                 '/system-root/var/cache/wicked_config/config.xml'
             ],
             raise_on_error=False

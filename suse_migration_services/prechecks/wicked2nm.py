@@ -29,8 +29,11 @@ log = logging.getLogger(Defaults.get_migration_log_name())
 
 def check_wicked2nm(migration_system=False):
     wicked_config_path = '/var/cache/wicked_config'
+    netconf_dir_path = '/etc/sysconfig/network'
     if migration_system:
-        wicked_config_path = os.sep.join([Defaults.get_system_root_path(), wicked_config_path])
+        wicked_config_path = os.path.normpath(os.sep.join([Defaults.get_system_root_path(), wicked_config_path]))
+        netconf_dir_path = os.path.normpath(os.sep.join([Defaults.get_system_root_path(), netconf_dir_path]))
+
     if not os.access(os.sep.join([wicked_config_path, 'config.xml']), os.F_OK):
         if not shutil.which('wicked2nm') or not shutil.which('wicked'):
             log.info('No wicked setup available. Skipping wicked2nm check.')
@@ -44,9 +47,7 @@ def check_wicked2nm(migration_system=False):
                 stderr=subprocess.STDOUT
             )
         except subprocess.CalledProcessError as e:
-            log.error('Wicked to NetworkManager migration pre-check failed:{0}{1}'.format(
-                os.linesep, e.output.decode('utf-8')
-            ))
+            wicked2nm_log_error(e.output.decode('utf-8'))
             return False
     else:
         log.info('Checking copied wicked config at: ' + wicked_config_path)
@@ -54,14 +55,21 @@ def check_wicked2nm(migration_system=False):
             subprocess.check_output(
                 [
                     'wicked2nm', 'migrate', '--dry-run',
-                    '--netconfig-path', os.sep.join([wicked_config_path, 'config']),
-                    '--netconfig-dhcp-path', os.sep.join([wicked_config_path, 'dhcp']),
+                    '--netconfig-base-dir', netconf_dir_path,
                     os.sep.join([wicked_config_path, 'config.xml'])
                 ],
                 stderr=subprocess.STDOUT
             )
         except subprocess.CalledProcessError as e:
-            log.error('Wicked to NetworkManager migration pre-check failed:{0}{1}'.format(
-                os.linesep, e.output.decode('utf-8')
-            ))
+            wicked2nm_log_error(e.output.decode('utf-8'))
             return False
+
+
+def wicked2nm_log_error(output):
+    msg = 'Wicked to NetworkManager migration pre-check failed:{0}{1}'.format(os.linesep, output)
+    if '--continue-migration' in output:
+        msg = msg + """If you want the migration to ignore the warnings add
+network:
+  wicked2nm-continue-migration: true
+to /etc/sle-migration-service.yml"""
+    log.error(msg)
