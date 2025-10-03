@@ -96,6 +96,7 @@
         <package name="python-azuremetadata"/>
         <package name="wicked2nm"/>
         <package name="NetworkManager-config-server"/>
+        <package name="image-janitor"/>
     </packages>
     <packages type="bootstrap">
         <package name="udev"/>
