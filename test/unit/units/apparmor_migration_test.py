@@ -37,7 +37,7 @@ class TestAppArmorMigration(object):
                 '--allow-downgrade',
                 '--no-recommends',
                 'patterns-base-selinux'
-            ]
+            ], raise_on_error=False
         )
 
     @patch('fileinput.input')
