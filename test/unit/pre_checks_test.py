@@ -20,6 +20,7 @@ import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.migration_target import MigrationTarget
 
 
 @patch('suse_migration_services.logger.Logger.setup')
@@ -579,12 +580,18 @@ class TestPreChecks():
     @patch('requests.post')
     @patch.object(Command, 'run')
     @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_scc_migration(
-        self, mock_get_migration_config_file,
+        self, mock_get_migration_target, mock_get_migration_config_file,
         mock_Command_run, mock_requests_post,
         mock_os_path_isfile, mock_glob, mock_yaml_safe_load,
         mock_os_geteuid, mock_log
     ):
+        mock_get_migration_target.return_value = {
+            'identifier': 'SLES',
+            'version': '15.3',
+            'arch': 'x86_64'
+        }
         response = Mock()
         response.json.return_value = {
             'type': 'error',
@@ -672,12 +679,6 @@ class TestPreChecks():
             'failed with Some error' in self._caplog.text
             mock_requests_post.reset_mock()
 
-            # Test exception on get_migration_target
-            mock_yaml_safe_load.side_effect = \
-                safe_load_migration_config_exception
-            check_scc.migration()
-            assert not mock_requests_post.called
-
             # Test exception on get_registration_server_url
             mock_yaml_safe_load.side_effect = \
                 safe_load_suseconnect_exception
@@ -687,6 +688,11 @@ class TestPreChecks():
             # Test exception on get_scc_credentials
             mock_yaml_safe_load.side_effect = safe_load
             file_handle_credentials.read.side_effect = Exception('IO error')
+            check_scc.migration()
+            assert not mock_requests_post.called
+
+            # Test exception on get_migration_target
+            mock_get_migration_target.return_value = {}
             check_scc.migration()
             assert not mock_requests_post.called
 
