@@ -78,7 +78,7 @@ class MigrationConfig:
         return config_data
 
     @staticmethod
-    def _merge_config_dicts(dict1, dict2):
+    def _merge_config_dicts(dict1, dict2, max_recursion_guard=1):
         """
         Recursively merges dict2 into dict1.
         For keys present in both:
@@ -86,9 +86,17 @@ class MigrationConfig:
          * lists are extended, duplicates are removed
          * all other values are overwritten.
         """
+        MAX_RECURSIONS = 2
+        if max_recursion_guard > MAX_RECURSIONS:
+            message = 'Merge config failed with max recursions {0}>{1}'.format(
+                max_recursion_guard, MAX_RECURSIONS
+            )
+            raise DistMigrationConfigDataException(message)
+        max_recursion_guard += 1
+
         for key, value in dict2.items():
             if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):
-                MigrationConfig._merge_config_dicts(dict1[key], value)
+                MigrationConfig._merge_config_dicts(dict1[key], value, max_recursion_guard)
             elif key in dict1 and isinstance(dict1[key], list) and isinstance(value, list):
                 dict1[key] = list(dict.fromkeys(dict1[key] + value))
             else:
