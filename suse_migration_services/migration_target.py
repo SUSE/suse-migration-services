@@ -17,38 +17,26 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import logging
-import yaml
-import os
 import platform
 from glob import glob
 from fnmatch import fnmatch
 
+from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.defaults import Defaults
 
 log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 class MigrationTarget:
-    """Implements the detection of migration target"""
-    @staticmethod
-    def _parse_custom_config():
-        migration_config = '/etc/sle-migration-service.yml'
-        if os.path.isfile(migration_config):
-            try:
-                with open(migration_config, 'r') as config:
-                    return yaml.safe_load(config) or {}
-            except Exception as issue:
-                message = 'Loading {0} failed: {1}: {2}'.format(
-                    migration_config, type(issue).__name__, issue
-                )
-                log.error(message)
-
-        return {}
-
+    """
+    Implements the detection of migration target
+    """
     @staticmethod
     def get_migration_target():
-        config_data = MigrationTarget._parse_custom_config()
-        migration_product = config_data.get('migration_product')
+        migration_config = MigrationConfig()
+        migration_product = migration_config.config_data.get(
+            'migration_product'
+        )
         if migration_product:
             product = migration_product.split('/')
             return {
