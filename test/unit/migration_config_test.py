@@ -3,6 +3,7 @@ from unittest.mock import (
 )
 from pytest import raises
 import io
+from copy import deepcopy
 from collections import namedtuple
 
 from suse_migration_services.migration_config import MigrationConfig
@@ -299,3 +300,71 @@ class TestMigrationConfig(object):
             'debug',
             'migration_product'
         ]
+
+    def test_merge_config_dicts(self):
+        dictA = {
+            'key1': 'dictA.key1',
+            'key2': ['dictA.key2-1', 'dictA.key2-2'],
+            'key3': {
+                'key3.1': 'dictA.key3.1',
+                'key3.2': ['dictA.key3.2-1', 'dictA.key3.2-2'],
+                'key3.3': 'dictA.key3.3',
+            },
+            'key4': 'dictA.key4',
+        }
+        dictA_copy = deepcopy(dictA)
+
+        dictB = {
+            'key2': ['dictB.key2-1', 'dictB.key2-2'],
+            'key3': {
+                'key3.2': ['dictB.key3.2-1', 'dictB.key3.2-2'],
+                'key3.3': 'dictB.key3.3',
+                'key3.4': 'dictB.key3.4',
+            },
+            'key4': 'dictB.key4',
+            'key5': 'dictB.key5',
+        }
+        MigrationConfig._merge_config_dicts(dictA, {})
+        assert dictA == dictA_copy
+
+        empty = {}
+        MigrationConfig._merge_config_dicts(empty, dictA)
+        assert empty == dictA_copy
+
+        MigrationConfig._merge_config_dicts(dictA, dictB)
+        assert dictA == {
+            'key1': 'dictA.key1',
+            'key2': [
+                'dictA.key2-1',
+                'dictA.key2-2',
+                'dictB.key2-1',
+                'dictB.key2-2',
+            ],
+            'key3': {
+                'key3.1': 'dictA.key3.1',
+                'key3.2': [
+                    'dictA.key3.2-1',
+                    'dictA.key3.2-2',
+                    'dictB.key3.2-1',
+                    'dictB.key3.2-2',
+                ],
+                'key3.3': 'dictB.key3.3',
+                'key3.4': 'dictB.key3.4',
+            },
+            'key4': 'dictB.key4',
+            'key5': 'dictB.key5',
+        }
+
+        many_recursions = {
+            'foo': {
+                'bar': {
+                    'foo': {
+                        'bar': 'foo'
+                    }
+                }
+            }
+        }
+        many_recursions_copy = deepcopy(many_recursions)
+
+        with raises(DistMigrationConfigDataException):
+            MigrationConfig._merge_config_dicts(many_recursions, many_recursions_copy)
