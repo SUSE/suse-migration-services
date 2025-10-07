@@ -76,7 +76,7 @@ def check_wicked2nm(migration_system=False):
             if 'WARN' in relevant_error:
                 log.warning(relevant_error)
         log.warning(
-            'To ignore the warning(s) set: {} in: {}'.format(
+            'To ignore the warning(s) set {} in the network section of: {}'.format(
                 'wicked2nm-continue-migration: true',
                 Defaults.get_migration_host_config_file()
             )
