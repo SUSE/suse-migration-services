@@ -1,6 +1,6 @@
 [Unit]
 Description=Wicked to NetworkManager migration
-After=suse-migration.service
+After=suse-migration.service suse-migration-apparmor-selinux.service
 Requisite=suse-migration.service
 Before=suse-migration-regenerate-initrd.service
 

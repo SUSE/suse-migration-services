@@ -29,24 +29,6 @@ from suse_migration_services.exceptions import (
 )
 
 
-def install_patterns_base_selinux(root_path):
-    """Install patterns-base-selinux"""
-    Zypper.run([
-        '--no-cd',
-        '--non-interactive',
-        '--gpg-auto-import-keys',
-        '--root', root_path,
-        'install',
-        '--auto-agree-with-licenses',
-        '--allow-vendor-change',
-        '--download', 'in-advance',
-        '--replacefiles',
-        '--allow-downgrade',
-        '--no-recommends',
-        'patterns-base-selinux'
-    ])
-
-
 def main():
     """
     DistMigration migrate from apparmor to SELinux
@@ -71,8 +53,25 @@ def main():
             for line in finput:
                 print(re.sub(pattern, "security=selinux", line), end='')
 
-            log.info('Installing patterns-base-selinux')
-            install_patterns_base_selinux(root_path)
+        log.info('Installing patterns-base-selinux')
+        # selinux migration is allowed to fail, it can be fixed
+        # after the migration
+        Zypper.run(
+            [
+                '--no-cd',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--root', root_path,
+                'install',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download', 'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+                '--no-recommends',
+                'patterns-base-selinux'
+            ], raise_on_error=False
+        )
     except Exception as issue:
         message = 'Apparmor to SELinux migration failed with {0}'.format(issue)
         log.error(message)
