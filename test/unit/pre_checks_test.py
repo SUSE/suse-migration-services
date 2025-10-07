@@ -17,6 +17,7 @@ import suse_migration_services.prechecks.scc as check_scc
 import suse_migration_services.prechecks.ha as check_ha
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
+import suse_migration_services.prechecks.sshd as check_sshd
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
@@ -35,6 +36,7 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.fs.encryption')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
+    @patch('suse_migration_services.prechecks.sshd.root_login')
     @patch.dict(
         os.environ, {"SUSE_MIGRATION_PRE_CHECKS_MODE": "foo"}, clear=True
     )
@@ -43,7 +45,7 @@ class TestPreChecks():
         return_value=argparse.Namespace(fix=False)
     )
     def test_main(
-        self, mock_arg_parse, mock_cpu_arch, mock_kernels,
+        self, mock_arg_parse, mock_sshd_root_login, mock_cpu_arch, mock_kernels,
         mock_fs, mock_repos, mock_os_geteuid, mock_log
     ):
         mock_os_geteuid.return_value = 0
@@ -55,6 +57,7 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.fs.encryption')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
+    @patch('suse_migration_services.prechecks.sshd.root_login')
     @patch.dict(
         os.environ,
         {
@@ -66,7 +69,7 @@ class TestPreChecks():
         return_value=argparse.Namespace(fix=True)
     )
     def test_main_with_fix_and_migration_system_mode(
-        self, mock_arg_parse, mock_cpu_arch, mock_kernels, mock_fs,
+        self, mock_arg_parse, mock_sshd_root_login, mock_cpu_arch, mock_kernels, mock_fs,
         mock_repos, mock_os_geteuid, mock_log
     ):
         """
@@ -548,6 +551,7 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.fs.encryption')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
+    @patch('suse_migration_services.prechecks.sshd.root_login')
     @patch.dict(
         os.environ, {
             "SUSE_MIGRATION_PRE_CHECKS_MODE": "migration_system_iso_image"
@@ -558,7 +562,7 @@ class TestPreChecks():
         return_value=argparse.Namespace(fix=True)
     )
     def test_pre_checks_false(
-        self, mock_argparse, mock_cpu_arch, mock_kernels, mock_fs,
+        self, mock_argparse, mock_sshd_root_login, mock_cpu_arch, mock_kernels, mock_fs,
         mock_repos, mock_scc_migration, mock_get_migration_config_file,
         mock_os_geteuid, mock_log
     ):
@@ -899,4 +903,76 @@ class TestPreChecks():
         with self._caplog.at_level(logging.ERROR):
             check_cpu_arch.cpu_arch()
             assert 'SLE16 requires x86_64_v2 at minimum' not in self._caplog.text
+        mock_Command_run.assert_not_called()
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_sshd_root_login_disabled(
+            self, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+        mock_Command_run.return_value.returncode = 1  # Disabled
+
+        with self._caplog.at_level(logging.WARNING):
+            check_sshd.root_login(migration_system=False)
+            assert 'Root login by ssh will be disabled by default in SLE16' not in self._caplog.text
+        mock_Command_run.assert_called_once_with(
+            ['systemctl', '--quiet', 'is-enabled', 'sshd'],
+            raise_on_error=False
+        )
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_sshd_root_login_yes(
+            self, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+
+        mock_systemctl_run = Mock()
+        mock_systemctl_run.returncode = 0
+        mock_sshd_run = Mock()
+        mock_sshd_run.output = 'permitrootlogin yes\n'
+        mock_Command_run.side_effect = [mock_systemctl_run, mock_sshd_run]
+
+        with self._caplog.at_level(logging.WARNING):
+            check_sshd.root_login(migration_system=False)
+            assert 'Root login by ssh will be disabled by default in SLE16' in self._caplog.text
+        mock_Command_run.assert_has_calls(
+            [
+                call(
+                    ['systemctl', '--quiet', 'is-enabled', 'sshd'],
+                    raise_on_error=False
+                ),
+                call(['sshd', '-T'])
+            ]
+        )
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_sshd_root_login_no(
+            self, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+        mock_systemctl_run = Mock()
+        mock_systemctl_run.returncode = 0
+        mock_sshd_run = Mock()
+        mock_sshd_run.output = 'permitrootlogin no\n'
+        mock_Command_run.side_effect = [mock_systemctl_run, mock_sshd_run]
+
+        with self._caplog.at_level(logging.WARNING):
+            check_sshd.root_login(migration_system=False)
+            assert 'Root login by ssh will be disabled by default in SLE16' not in self._caplog.text
+        mock_Command_run.assert_has_calls(
+            [
+                call(
+                    ['systemctl', '--quiet', 'is-enabled', 'sshd'],
+                    raise_on_error=False
+                ),
+                call(['sshd', '-T'])
+            ]
+        )
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_sshd_root_login_in_migration_system(
+            self, mock_Command_run,
+            mock_os_getuid, mock_log
+    ):
+        check_sshd.root_login(migration_system=True)
         mock_Command_run.assert_not_called()
