@@ -15,61 +15,69 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-"""Call prechecks for HA provided by crmsh"""
 import logging
 import os
-import subprocess
 import shutil
 
-from suse_migration_services.defaults import Defaults
+from tempfile import NamedTemporaryFile
 
+from suse_migration_services.defaults import Defaults
+from suse_migration_services.command import Command
 
 log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 def check_wicked2nm(migration_system=False):
+    """
+    Run wicked2nm in dry run mode to check if a migration from
+    a wicked based network setup to NetworkManager is possible
+    """
     wicked_config_path = '/var/cache/wicked_config'
-    netconf_dir_path = '/etc/sysconfig/network'
+    wicked_config = os.sep.join(
+        [wicked_config_path, 'config.xml']
+    )
     if migration_system:
-        wicked_config_path = os.path.normpath(os.sep.join([Defaults.get_system_root_path(), wicked_config_path]))
-        netconf_dir_path = os.path.normpath(os.sep.join([Defaults.get_system_root_path(), netconf_dir_path]))
+        # This pre-check should not run during migration
+        # The actual wicked2nm call to perform the migration
+        # happens in the setup_host_network service
+        return
 
-    if not os.access(os.sep.join([wicked_config_path, 'config.xml']), os.F_OK):
-        if not shutil.which('wicked2nm') or not shutil.which('wicked'):
-            log.info('No wicked setup available. Skipping wicked2nm check.')
-            return
-        log.info('Checking wicked config present on live system')
-        wicked_config_output = subprocess.Popen(['wicked', 'show-config'], stdout=subprocess.PIPE)
-        try:
-            subprocess.check_output(
-                ['wicked2nm', 'migrate', '--dry-run', '-'],
-                stdin=wicked_config_output.stdout,
-                stderr=subprocess.STDOUT
-            )
-        except subprocess.CalledProcessError as e:
-            wicked2nm_log_error(e.output.decode('utf-8'))
-            return False
+    if not shutil.which('wicked2nm') or not shutil.which('wicked'):
+        log.info('No wicked setup available. Skipping wicked2nm check.')
+        return
+
+    temp_wicked_config = NamedTemporaryFile()
+    wicked2nm = [
+        'wicked2nm', 'migrate', '--dry-run'
+    ]
+    if not os.path.isfile(wicked_config):
+        # There is no cached wicked config.xml on the system
+        # Let's produce the config from the running wicked instance
+        # and store it temporary
+        wicked_config_output = Command.run(
+            ['wicked', 'show-config']
+        ).output
+        with open(temp_wicked_config.name, 'w') as config:
+            config.write(wicked_config_output)
+        wicked_config = temp_wicked_config.name
     else:
-        log.info('Checking copied wicked config at: ' + wicked_config_path)
-        try:
-            subprocess.check_output(
-                [
-                    'wicked2nm', 'migrate', '--dry-run',
-                    '--netconfig-base-dir', netconf_dir_path,
-                    os.sep.join([wicked_config_path, 'config.xml'])
-                ],
-                stderr=subprocess.STDOUT
+        # There is a wicked config active, use the standard
+        # system netconfig information with this network setup
+        wicked2nm += [
+            '--netconfig-base-dir', '/etc/sysconfig/network'
+        ]
+    wicked2nm.append(wicked_config)
+    wicked2nm_result = Command.run(
+        wicked2nm, raise_on_error=False
+    )
+    if wicked2nm_result.returncode != 0:
+        log.warning('wicked2nm failed with:')
+        for relevant_error in wicked2nm_result.error.split(os.linesep):
+            if 'WARN' in relevant_error:
+                log.warning(relevant_error)
+        log.warning(
+            'To ignore the warning(s) set: {} in: {}'.format(
+                'wicked2nm-continue-migration: true',
+                Defaults.get_migration_host_config_file()
             )
-        except subprocess.CalledProcessError as e:
-            wicked2nm_log_error(e.output.decode('utf-8'))
-            return False
-
-
-def wicked2nm_log_error(output):
-    msg = 'Wicked to NetworkManager migration pre-check failed:{0}{1}'.format(os.linesep, output)
-    if '--continue-migration' in output:
-        msg = msg + """If you want the migration to ignore the warnings add
-network:
-  wicked2nm-continue-migration: true
-to /etc/sle-migration-service.yml"""
-    log.error(msg)
+        )
