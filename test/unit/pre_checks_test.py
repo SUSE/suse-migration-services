@@ -696,7 +696,8 @@ class TestPreChecks():
             check_scc.migration()
             assert not mock_requests_post.called
 
-    def test_privileges(self, mock_os_geteuid, mock_log):
+    @patch('sys.exit')
+    def test_privileges(self, mock_sys_exit, mock_os_geteuid, mock_log):
         with self._caplog.at_level(logging.ERROR):
             check_pre_checks.main()
             assert 'pre-checks requires root permissions' in self._caplog.text
@@ -776,119 +777,82 @@ class TestPreChecks():
             call(['crm', 'cluster', 'health', 'sles16', '--local']),
         ])
 
-    @patch('subprocess.check_output')
-    @patch('os.access')
-    def test_check_wicked2nm_in_migration_system(
-        self,
-        mock_os_access, mock_subprocess_check_output,
-        mock_os_getuid, mock_log,
+    @patch.object(Command, 'run')
+    def test_check_wicked2nm_not_running_during_migration(
+        self, mock_Command_run, mock_os_geteuid, mock_log
     ):
-        mock_os_access.return_value = True
-        mock_subprocess_check_output.return_value = Mock(returncode=0, stdout=b'')
-
         check_wicked2nm.check_wicked2nm(migration_system=True)
-        mock_subprocess_check_output.assert_called_once_with(
-            [
-                'wicked2nm', 'migrate', '--dry-run',
-                '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
-                '/system-root/var/cache/wicked_config/config.xml'
-            ],
-            stderr=-2
-        )
-
-    @patch('subprocess.check_output')
-    @patch('os.access')
-    def test_check_wicked2nm_in_migration_system_failure(
-        self,
-        mock_os_access, mock_subprocess_check_output,
-        mock_os_getuid, mock_log,
-    ):
-        mock_os_access.return_value = True
-        mock_subprocess_check_output.side_effect = subprocess.CalledProcessError(returncode=1, cmd=[], output=b'[ERROR] wicked2nm failed')
-
-        with self._caplog.at_level(logging.ERROR):
-            check_wicked2nm.check_wicked2nm(migration_system=True)
-            assert '[ERROR] wicked2nm failed' in self._caplog.text
-        mock_subprocess_check_output.assert_called_once_with(
-            [
-                'wicked2nm', 'migrate', '--dry-run',
-                '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
-                '/system-root/var/cache/wicked_config/config.xml'
-            ],
-            stderr=-2
-        )
+        assert not mock_Command_run.called
 
     @patch('shutil.which')
-    @patch('subprocess.Popen')
-    @patch('subprocess.check_output')
-    @patch('os.access')
-    def test_check_wicked2nm_in_host_system(
-        self,
-        mock_os_access, mock_subprocess_check_output, mock_subprocess_Popen, mock_shutil_which,
-        mock_os_getuid, mock_log,
+    @patch.object(Command, 'run')
+    def test_check_wicked2nm_no_wicked(
+        self, mock_Command_run, mock_shutil_which,
+        mock_os_geteuid, mock_log
     ):
-        mock_os_access.return_value = False
-        mock_shutil_which.return_value = True
-        mock_subprocess_check_output.return_value = Mock(returncode=0, stdout=b'')
-
-        check_wicked2nm.check_wicked2nm(migration_system=False)
-        mock_subprocess_Popen.assert_called_once_with(
-            ['wicked', 'show-config'],
-            stdout=subprocess.PIPE
-        )
-        mock_subprocess_check_output.assert_called_once_with(
-            [
-                'wicked2nm', 'migrate', '--dry-run', '-'
-            ],
-            stdin=mock_subprocess_Popen().stdout, stderr=-2
-        )
-
-    @patch('shutil.which')
-    @patch('subprocess.check_output')
-    @patch('os.access')
-    def test_check_wicked2nm_in_host_system_prereq_not_installed(
-        self,
-        mock_os_access, mock_subprocess_check_output, mock_shutil_which,
-        mock_os_getuid, mock_log,
-    ):
-        mock_os_access.return_value = False
         mock_shutil_which.return_value = False
-
-        with self._caplog.at_level(logging.INFO):
-            check_wicked2nm.check_wicked2nm(migration_system=False)
-            assert 'No wicked setup available' in self._caplog.text
+        check_wicked2nm.check_wicked2nm(migration_system=True)
+        assert not mock_Command_run.called
+        check_wicked2nm.check_wicked2nm(migration_system=False)
+        assert not mock_Command_run.called
 
     @patch('shutil.which')
-    @patch('subprocess.Popen')
-    @patch('subprocess.check_output')
-    @patch('os.access')
-    def test_check_wicked2nm_in_host_system_failure(
-        self,
-        mock_os_access, mock_subprocess_check_output, mock_subprocess_Popen, mock_shutil_which,
-        mock_os_getuid, mock_log,
+    @patch('os.path.isfile')
+    @patch('suse_migration_services.prechecks.wicked2nm.NamedTemporaryFile')
+    @patch('suse_migration_services.prechecks.wicked2nm.Command.run')
+    def test_check_wicked2nm_no_cached_config(
+        self, mock_Command_run, mock_NamedTemporaryFile,
+        mock_os_path_isfile, mock_shutil_which,
+        mock_os_geteuid, mock_log
     ):
-        mock_os_access.return_value = False
-        mock_shutil_which.return_value = True
-        mock_subprocess_check_output.side_effect = subprocess.CalledProcessError(
-            returncode=1,
-            cmd=[],
-            output=b'[ERROR] Migration failed because of warnings, use the `--continue-migration` flag to ignore'
-        )
-
-        with self._caplog.at_level(logging.ERROR):
+        tempfile = Mock()
+        tempfile.name = 'tmpfile'
+        mock_NamedTemporaryFile.return_value = tempfile
+        wicked2nm_result = Mock()
+        wicked2nm_result.output = 'some wicked config'
+        wicked2nm_result.error = '[WARN] Unhandled field\n[ERROR] some'
+        wicked2nm_result.returncode = 1
+        mock_Command_run.return_value = wicked2nm_result
+        mock_shutil_which.return_value = 'some'
+        mock_os_path_isfile.return_value = False
+        with patch('builtins.open', create=True):
             check_wicked2nm.check_wicked2nm(migration_system=False)
-            assert '[ERROR] Migration failed' in self._caplog.text
-            assert 'wicked2nm-continue-migration: true' in self._caplog.text
-        mock_subprocess_Popen.assert_called_once_with(
-            ['wicked', 'show-config'],
-            stdout=subprocess.PIPE
-        )
-        mock_subprocess_check_output.assert_called_once_with(
+            mock_NamedTemporaryFile.assert_called_once_with()
+            assert mock_Command_run.call_args_list == [
+                call(
+                    ['wicked', 'show-config']
+                ),
+                call(
+                    ['wicked2nm', 'migrate', '--dry-run', 'tmpfile'],
+                    raise_on_error=False
+                )
+            ]
+            assert 'WARN' in self._caplog.text
+            assert 'To ignore the warning' in self._caplog.text
+
+    @patch('shutil.which')
+    @patch('os.path.isfile')
+    @patch('suse_migration_services.prechecks.wicked2nm.Command.run')
+    def test_check_wicked2nm_has_config(
+        self, mock_Command_run, mock_os_path_isfile, mock_shutil_which,
+        mock_os_geteuid, mock_log
+    ):
+        wicked2nm_result = Mock()
+        wicked2nm_result.error = '[WARN] Unhandled field\n[ERROR] some'
+        wicked2nm_result.returncode = 1
+        mock_Command_run.return_value = wicked2nm_result
+        mock_shutil_which.return_value = 'some'
+        mock_os_path_isfile.return_value = True
+        check_wicked2nm.check_wicked2nm(migration_system=False)
+        mock_Command_run.assert_called_once_with(
             [
-                'wicked2nm', 'migrate', '--dry-run', '-'
-            ],
-            stdin=mock_subprocess_Popen().stdout, stderr=-2
+                'wicked2nm', 'migrate', '--dry-run',
+                '--netconfig-base-dir', '/etc/sysconfig/network',
+                '/var/cache/wicked_config/config.xml'
+            ], raise_on_error=False
         )
+        assert 'WARN' in self._caplog.text
+        assert 'To ignore the warning' in self._caplog.text
 
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')

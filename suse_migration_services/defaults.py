@@ -35,6 +35,10 @@ class Defaults:
         return '/etc/migration-config.yml'
 
     @staticmethod
+    def get_migration_host_config_file():
+        return '/etc/sle-migration-service.yml'
+
+    @staticmethod
     def get_migration_config_dir():
         return '/etc/migration-config.d'
 
