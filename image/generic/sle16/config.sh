@@ -94,26 +94,10 @@ fi
 # Clean-up logs
 rm /var/log/zypper.log /var/log/zypp/history
 
-du -h -s /usr/{share,lib}/locale/
-
-# keep the en_US translations
-ls -1 -I en -I en_US -I "C.utf8" /usr/share/locale/ | xargs -I% sh -c "echo 'Removing translations %...' && rm -rf /usr/share/locale/%"
-
-# delete locale definitions for unsupported languages (explicitly keep the C and en_US locales)
-ls -1 -I "en_US.utf8" -I "C.utf8" /usr/lib/locale/ | xargs -I% sh -c "echo 'Removing locale %...' && rm -rf /usr/lib/locale/%"
-
 # delete unused translations (MO files)
 for t in Linux-PAM e2fsprogs gawk gettext-runtime grub2 iputils kbd libgpg-error mit-krb5 p11-kit pam-config rpm shadow.mo sudo sudoers xfsprogs zypp zypper; do
   rm -f /usr/share/locale/*/LC_MESSAGES/$t.mo
 done
-du -h -s /usr/{share,lib}/locale/
-
-# remove documentation
-du -h -s /usr/share/doc/packages/
-rm -rf /usr/share/doc/packages/*
-# remove man pages
-du -h -s /usr/share/man
-rm -rf /usr/share/man/*
 
 # remove unused SUSEConnect libzypp plugins
 rm -f /usr/lib/zypper/commands/zypper-search-packages
