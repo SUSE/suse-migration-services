@@ -28,6 +28,7 @@ import suse_migration_services.prechecks.ha as check_ha
 import suse_migration_services.prechecks.repos as check_repos
 import suse_migration_services.prechecks.fs as check_fs
 import suse_migration_services.prechecks.kernels as check_multi_kernels
+import suse_migration_services.prechecks.lsm as check_lsm
 import suse_migration_services.prechecks.scc as check_scc
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
@@ -112,6 +113,12 @@ def main():
     log.info('--> Checking for latest kernel in multiversion kernel system...')
     check_multi_kernels.multiversion_and_multiple_kernels(
         fix=args.fix, migration_system=migration_system_mode
+    )
+    log.info('Done')
+
+    log.info('--> Checking LSM migration...')
+    check_lsm.check_lsm(
+        migration_system=migration_system_mode
     )
     log.info('Done')
 
