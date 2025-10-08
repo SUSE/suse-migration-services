@@ -607,7 +607,6 @@ class TestPreChecks():
             check_lsm.check_lsm(migration_system=False)
             assert "Modified AppArmor profiles found, please verify changes to the files from: 'rpm -V apparmor-profiles'.\n" in self._caplog.text
             assert "Non-default AppArmor setup detected, please review the highlighted changes.\n" in self._caplog.text
-            assert "docker-default: enforce\n" in self._caplog.text
         mock_subprocess_run.assert_called()
 
     @patch('os.path.exists')

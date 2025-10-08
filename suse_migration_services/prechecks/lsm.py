@@ -76,10 +76,6 @@ def check_lsm(migration_system=False):
         if _apparmor_additional_profiles(aa_data):
             if _apparmor_extended_profiles_modified():
                 manual_check_needed = True
-            # look at loaded profiles
-            if _apparmor_analyze_profiles(aa_data):
-                # not possible ATM
-                manual_check_needed = True
     else:
         # nothing to do
         log.info('AppArmor disabled')
@@ -143,16 +139,4 @@ def _apparmor_additional_profiles(aa_data):
     retval = False
     if len(aa_data["profiles"]) > DEFAULT_PROFILE_COUNT:
         retval = True
-    return retval
-
-
-def _apparmor_analyze_profiles(aa_data):
-    # investigate loaded AA profiles closer
-    # XXX: not aware of any profiles that can not be migrated
-    #      mitigation should be logged as well
-    retval = False
-    if aa_data["profiles"].get("docker-default"):
-        log.info("docker-default: {}".format(aa_data["profiles"].get("docker-default")))
-        # docker is okay
-        retval = False
     return retval
