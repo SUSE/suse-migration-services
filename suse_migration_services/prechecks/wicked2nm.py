@@ -18,7 +18,7 @@
 import logging
 import os
 import shutil
-
+from textwrap import dedent
 from tempfile import NamedTemporaryFile
 
 from suse_migration_services.defaults import Defaults
@@ -48,7 +48,7 @@ def check_wicked2nm(migration_system=False):
 
     temp_wicked_config = NamedTemporaryFile()
     wicked2nm = [
-        'wicked2nm', 'migrate', '--dry-run'
+        'wicked2nm', 'migrate', '--disable-hints', '--dry-run'
     ]
     if not os.path.isfile(wicked_config):
         # There is no cached wicked config.xml on the system
@@ -70,14 +70,45 @@ def check_wicked2nm(migration_system=False):
     wicked2nm_result = Command.run(
         wicked2nm, raise_on_error=False
     )
-    if wicked2nm_result.returncode != 0:
-        log.warning('wicked2nm failed with:')
-        for relevant_error in wicked2nm_result.error.split(os.linesep):
-            if 'WARN' in relevant_error:
-                log.warning(relevant_error)
+    if wicked2nm_result.returncode == 3:
+        message = dedent('''\n
+            wicked2nm detected potential migration issues:
+
+            {0}
+
+            The reported issue(s) can be ignored by setting
+            the following configuration option in: {1}
+
+            network:
+              wicked2nm-continue-migration: true
+        ''')
         log.warning(
-            'To ignore the warning(s) set {} in the network section of: {}'.format(
-                'wicked2nm-continue-migration: true',
+            message.format(
+                wicked2nm_result.error,
                 Defaults.get_migration_host_config_file()
             )
+        )
+    elif wicked2nm_result.returncode > 0:
+        message = dedent('''\n
+            wicked2nm cannot migrate the network setup:
+
+            {0}
+
+            Please request support through your appropriate support channel.
+        ''')
+        log.error(
+            message.format(wicked2nm_result.error)
+        )
+    elif wicked2nm_result.error:
+        # also on success wicked2nm prints information to stderr
+        message = dedent('''\n
+            wicked2nm can migrate the network setup. The
+            following information provides details about
+            the changes that will be applied during migration.
+            Please read carefully:
+
+            {0}
+        ''')
+        log.info(
+            message.format(wicked2nm_result.error)
         )
