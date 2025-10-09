@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Tue Oct  7 16:04:17 UTC 2025 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Fix MinSLEVersion value depending on target
+
+  The MinSLEVersion global variable was set to a value
+  suitable for migrations from SLE12 to SLE15. Now that the
+  scope of the DMS is not only this target we have to add
+  a mechanism to dynamically set an appropriate value.
+  I added explanatory comments which hopefully makes sense
+  to explain when this information is taken into account
+
+-------------------------------------------------------------------
 Fri Aug  8 09:43:03 UTC 2025 - Marcus Schäfer <marcus.schaefer@suse.com>
 
 - Add product requirement according to image name.

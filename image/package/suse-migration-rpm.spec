@@ -25,6 +25,7 @@ Group:          System/Management
 Url:            https://github.com/SUSE/suse-migration-services
 Source:         %{name}.tar.gz
 BuildRequires:  filesystem
+BuildRequires:  sed
 Requires:       suse-migration-services
 Requires:       build
 Requires:       perl(Date::Parse)
@@ -41,6 +42,25 @@ ISO image in an rpm package.
 
 %install
 mkdir -p %{buildroot}/usr/lib/build/
+
+%if 0%{?suse_version} >= 1600 && 0%{?is_opensuse}
+# suse-migration-rpm building for SLE16, is used when building the SLE16
+# based live migration image for SLE15. As such the later package with
+# the image gets installed to a SLE15 system. The min SLE version must
+# be set to 15.4 (SLE15 SP4)
+sed -ie 's@__MINVERSION__@15.4@' image.spec.in
+%elif 0%{?sle_version} >= 150000 && !0%{?is_opensuse}
+# suse-migration-rpm building for SLE15, is used when building the SLE15
+# based live migration image for SLE12. As such the later package with
+# the image gets installed to a SLE12 system. The min SLE version must
+# be set to 12.3 (SLE12 SP3)
+sed -ie 's@__MINVERSION__@12.3@' image.spec.in
+%else
+# suse-migration-rpm building for unknown SLES, set min SLE version
+# to the lowest we support
+sed -ie 's@__MINVERSION__@12.3@' image.spec.in
+%endif
+
 install -m 644 image.spec.in %{buildroot}/usr/lib/build/
 install -m 755 kiwi_post_run %{buildroot}/usr/lib/build/
 
