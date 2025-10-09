@@ -31,6 +31,7 @@ import suse_migration_services.prechecks.kernels as check_multi_kernels
 import suse_migration_services.prechecks.scc as check_scc
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
+import suse_migration_services.prechecks.sshd as check_sshd
 
 
 def main():
@@ -126,4 +127,8 @@ def main():
 
     log.info('--> Checking wicked to NetworkManager migration...')
     check_wicked2nm.check_wicked2nm(migration_system=migration_system_mode)
+    log.info('Done')
+
+    log.info('--> Checking sshd configuration...')
+    check_sshd.root_login(migration_system=migration_system_mode)
     log.info('Done')
