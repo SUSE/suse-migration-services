@@ -873,24 +873,29 @@ class TestPreChecks():
         wicked2nm_result = Mock()
         wicked2nm_result.output = 'some wicked config'
         wicked2nm_result.error = '[WARN] Unhandled field\n[ERROR] some'
-        wicked2nm_result.returncode = 1
+        wicked2nm_result.returncode = 3
         mock_Command_run.return_value = wicked2nm_result
         mock_shutil_which.return_value = 'some'
         mock_os_path_isfile.return_value = False
         with patch('builtins.open', create=True):
-            check_wicked2nm.check_wicked2nm(migration_system=False)
-            mock_NamedTemporaryFile.assert_called_once_with()
-            assert mock_Command_run.call_args_list == [
-                call(
-                    ['wicked', 'show-config']
-                ),
-                call(
-                    ['wicked2nm', 'migrate', '--dry-run', 'tmpfile'],
-                    raise_on_error=False
-                )
-            ]
-            assert 'WARN' in self._caplog.text
-            assert 'To ignore the warning' in self._caplog.text
+            with self._caplog.at_level(logging.WARNING):
+                check_wicked2nm.check_wicked2nm(migration_system=False)
+                mock_NamedTemporaryFile.assert_called_once_with()
+                assert mock_Command_run.call_args_list == [
+                    call(
+                        ['wicked', 'show-config']
+                    ),
+                    call(
+                        [
+                            'wicked2nm', 'migrate',
+                            '--disable-hints', '--dry-run',
+                            'tmpfile'
+                        ],
+                        raise_on_error=False
+                    )
+                ]
+                assert 'wicked2nm detected potential migration issues' in \
+                    self._caplog.text
 
     @patch('shutil.which')
     @patch('os.path.isfile')
@@ -905,16 +910,23 @@ class TestPreChecks():
         mock_Command_run.return_value = wicked2nm_result
         mock_shutil_which.return_value = 'some'
         mock_os_path_isfile.return_value = True
-        check_wicked2nm.check_wicked2nm(migration_system=False)
-        mock_Command_run.assert_called_once_with(
-            [
-                'wicked2nm', 'migrate', '--dry-run',
-                '--netconfig-base-dir', '/etc/sysconfig/network',
-                '/var/cache/wicked_config/config.xml'
-            ], raise_on_error=False
-        )
-        assert 'WARN' in self._caplog.text
-        assert 'To ignore the warning' in self._caplog.text
+        with self._caplog.at_level(logging.ERROR):
+            check_wicked2nm.check_wicked2nm(migration_system=False)
+            mock_Command_run.assert_called_once_with(
+                [
+                    'wicked2nm', 'migrate',
+                    '--disable-hints', '--dry-run',
+                    '--netconfig-base-dir', '/etc/sysconfig/network',
+                    '/var/cache/wicked_config/config.xml'
+                ], raise_on_error=False
+            )
+            assert 'wicked2nm cannot migrate the network setup:' in \
+                self._caplog.text
+        wicked2nm_result.returncode = 0
+        with self._caplog.at_level(logging.INFO):
+            check_wicked2nm.check_wicked2nm(migration_system=False)
+            assert 'wicked2nm can migrate the network setup' in \
+                self._caplog.text
 
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
