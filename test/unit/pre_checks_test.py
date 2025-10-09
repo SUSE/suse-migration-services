@@ -611,9 +611,8 @@ class TestPreChecks():
 
     @patch('os.path.exists')
     @patch('subprocess.run')
-    @patch('builtins.open', new_callable=mock_open, read_data='Y')
     def test_check_lsm_migration_simple(
-        self, mock_open, mock_subprocess_run, mock_os_path_exists,
+        self, mock_subprocess_run, mock_os_path_exists,
         mock_os_geteuid, mock_log
     ):
         find_retval = Mock()
@@ -623,9 +622,19 @@ class TestPreChecks():
 
         mock_subprocess_run.side_effect = [FileNotFoundError(), find_retval]
 
+        with patch('builtins.open', new_callable=mock_open, read_data='Y'):
+            with self._caplog.at_level(logging.INFO):
+                check_lsm.check_lsm(migration_system=False)
+                assert "'aa-status' not available, in-depth checks not possible." in self._caplog.text
+
+    @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
+    def test_check_lsm_migration_apparmor_disabled(
+        self, mock_apparmor_enabled, mock_os_geteuid, mock_log
+    ):
+        mock_apparmor_enabled.return_value = False
         with self._caplog.at_level(logging.INFO):
             check_lsm.check_lsm(migration_system=False)
-            assert "'aa-status' not available, in-depth checks not possible." in self._caplog.text
+            assert 'AppArmor disabled' in self._caplog.text
 
     @patch('yaml.safe_load')
     @patch('glob.glob')
