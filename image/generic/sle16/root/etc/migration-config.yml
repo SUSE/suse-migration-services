@@ -1,5 +1,7 @@
 soft_reboot: false
 preserve:
+  rules:
+  - /etc/systemd/network/*.link
   sysctl:
   - /etc/sysctl.conf
   - /etc/sysctl.d/*.conf
