@@ -580,52 +580,76 @@ class TestPreChecks():
             assert info_message in self._caplog.text
 
     @patch('os.path.exists')
-    @patch('subprocess.run')
+    @patch.object(Command, 'run')
     @patch('builtins.open', new_callable=mock_open, read_data='Y')
     @patch('suse_migration_services.prechecks.lsm._apparmor_primitive_check')
     def test_check_lsm_migration(
-        self, mock__apparmor_primitive_check, mock_open, mock_subprocess_run, mock_os_path_exists,
+        self, mock_apparmor_primitive_check, mock_open, mock_Command_run, mock_os_path_exists,
         mock_os_geteuid, mock_log
     ):
         mock_os_path_exists.return_value = True
 
         aa_status_retval = Mock()
-        aa_status_retval.stdout = b'{"version": "2", "profiles": {"/usr/bin/lessopen.sh": "enforce", "apache2": "enforce", "apache2//DEFAULT_URI": "enforce", "apache2//HANDLING_UNTRUSTED_INPUT": "enforce", "apache2//phpsysinfo": "enforce", "avahi-daemon": "enforce", "dnsmasq": "enforce", "dnsmasq//libvirt_leaseshelper": "enforce", "docker-default": "enforce", "dovecot": "enforce", "dovecot-anvil": "enforce", "dovecot-auth": "enforce", "dovecot-config": "enforce", "dovecot-deliver": "enforce", "dovecot-dict": "enforce", "dovecot-director": "enforce", "dovecot-doveadm-server": "enforce", "dovecot-dovecot-auth": "enforce", "dovecot-dovecot-lda": "enforce", "dovecot-dovecot-lda//sendmail": "enforce", "dovecot-imap": "enforce", "dovecot-imap-login": "enforce", "dovecot-lmtp": "enforce", "dovecot-log": "enforce", "dovecot-managesieve": "enforce", "dovecot-managesieve-login": "enforce", "dovecot-pop3": "enforce", "dovecot-pop3-login": "enforce", "dovecot-replicator": "enforce", "dovecot-script-login": "enforce", "dovecot-ssl-params": "enforce", "dovecot-stats": "enforce", "identd": "enforce", "klogd": "enforce", "lsb_release": "enforce", "mdnsd": "enforce", "nmbd": "enforce", "nscd": "enforce", "ntpd": "enforce", "nvidia_modprobe": "enforce", "nvidia_modprobe//kmod": "enforce", "php-fpm": "enforce", "ping": "enforce", "samba-bgqd": "enforce", "samba-dcerpcd": "enforce", "samba-rpcd": "enforce", "samba-rpcd-classic": "enforce", "samba-rpcd-spoolss": "enforce", "smbd": "enforce", "smbldap-useradd": "enforce", "smbldap-useradd///etc/init.d/nscd": "enforce", "syslog-ng": "enforce", "syslogd": "enforce", "traceroute": "enforce", "unix-chkpwd": "enforce", "winbindd": "enforce", "zgrep": "enforce", "zgrep//helper": "enforce", "zgrep//sed": "enforce"}, "processes": {"/usr/sbin/nscd": [{"profile": "nscd", "pid": "783", "status": "enforce"}]}}'
+        aa_status_retval.output = '{"version": "2", "profiles": {"/usr/bin/lessopen.sh": "enforce", "apache2": "enforce", "apache2//DEFAULT_URI": "enforce", "apache2//HANDLING_UNTRUSTED_INPUT": "enforce", "apache2//phpsysinfo": "enforce", "avahi-daemon": "enforce", "dnsmasq": "enforce", "dnsmasq//libvirt_leaseshelper": "enforce", "docker-default": "enforce", "dovecot": "enforce", "dovecot-anvil": "enforce", "dovecot-auth": "enforce", "dovecot-config": "enforce", "dovecot-deliver": "enforce", "dovecot-dict": "enforce", "dovecot-director": "enforce", "dovecot-doveadm-server": "enforce", "dovecot-dovecot-auth": "enforce", "dovecot-dovecot-lda": "enforce", "dovecot-dovecot-lda//sendmail": "enforce", "dovecot-imap": "enforce", "dovecot-imap-login": "enforce", "dovecot-lmtp": "enforce", "dovecot-log": "enforce", "dovecot-managesieve": "enforce", "dovecot-managesieve-login": "enforce", "dovecot-pop3": "enforce", "dovecot-pop3-login": "enforce", "dovecot-replicator": "enforce", "dovecot-script-login": "enforce", "dovecot-ssl-params": "enforce", "dovecot-stats": "enforce", "identd": "enforce", "klogd": "enforce", "lsb_release": "enforce", "mdnsd": "enforce", "nmbd": "enforce", "nscd": "enforce", "ntpd": "enforce", "nvidia_modprobe": "enforce", "nvidia_modprobe//kmod": "enforce", "php-fpm": "enforce", "ping": "enforce", "samba-bgqd": "enforce", "samba-dcerpcd": "enforce", "samba-rpcd": "enforce", "samba-rpcd-classic": "enforce", "samba-rpcd-spoolss": "enforce", "smbd": "enforce", "smbldap-useradd": "enforce", "smbldap-useradd///etc/init.d/nscd": "enforce", "syslog-ng": "enforce", "syslogd": "enforce", "traceroute": "enforce", "unix-chkpwd": "enforce", "winbindd": "enforce", "zgrep": "enforce", "zgrep//helper": "enforce", "zgrep//sed": "enforce"}, "processes": {"/usr/sbin/nscd": [{"profile": "nscd", "pid": "783", "status": "enforce"}]}}'
 
         rpm_verify_retval = Mock()
-        rpm_verify_retval.stdout = b'S.5....T.  c /some/path\nS.5....T.  c /etc/apparmor.d/some_file'
+        rpm_verify_retval.output = 'S.5....T.  c /some/path\nS.5....T.  c /etc/apparmor.d/some_file'
 
-        def subprocess_run_retval(array, stdout):
+        def command_run_retval(array, raise_on_error=False):
             if array[0] == 'aa-status':
                 return aa_status_retval
             elif array[0] == 'rpm':
                 return rpm_verify_retval
 
-        mock_subprocess_run.side_effect = subprocess_run_retval
-        mock__apparmor_primitive_check.return_value = False
-        with self._caplog.at_level(logging.INFO):
+        mock_Command_run.side_effect = command_run_retval
+        mock_apparmor_primitive_check.return_value = False
+        with self._caplog.at_level(logging.ERROR):
             check_lsm.check_lsm(migration_system=False)
-            assert "Modified AppArmor profiles found, please verify changes to the files from: 'rpm -V apparmor-profiles'.\n" in self._caplog.text
-            assert "Non-default AppArmor setup detected, please review the highlighted changes.\n" in self._caplog.text
-        mock_subprocess_run.assert_called()
+            assert 'Modified AppArmor profiles found' \
+                in self._caplog.text
+            assert 'please verify changes to the files from: "rpm -V apparmor-profiles"' \
+                in self._caplog.text
+            assert 'Non-default AppArmor setup detected' \
+                in self._caplog.text
+            assert 'please review the details above' \
+                in self._caplog.text
+        mock_Command_run.assert_called()
 
-    @patch('os.path.exists')
-    @patch('subprocess.run')
-    def test_check_lsm_migration_simple(
-        self, mock_subprocess_run, mock_os_path_exists,
+    @patch.object(Command, 'run')
+    @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
+    @patch('shutil.which')
+    def test_check_lsm_migration_failed(
+        self, mock_shutil_which, mock_apparmor_enabled, mock_Command_run,
         mock_os_geteuid, mock_log
     ):
-        find_retval = Mock()
-        find_retval.stdout = Mock()
-        find_retval.stdout.count = Mock()
-        find_retval.stdout.count.return_value = 300
+        mock_shutil_which.return_value = True
+        mock_apparmor_enabled.return_value = True
+        mock_Command_run.side_effect = Exception
+        with self._caplog.at_level(logging.WARNING):
+            check_lsm.check_lsm(migration_system=False)
+            assert 'aa-status failed with' in self._caplog.text
+            assert 'Skipping LSM checks' in self._caplog.text
 
-        mock_subprocess_run.side_effect = [FileNotFoundError(), find_retval]
+    @patch('os.path.exists')
+    @patch.object(Command, 'run')
+    @patch('shutil.which')
+    def test_check_lsm_migration_simple(
+        self, mock_shutil_which, mock_Command_run, mock_os_path_exists,
+        mock_os_geteuid, mock_log
+    ):
+        mock_shutil_which.return_value = False
+        find_retval = Mock()
+        find_retval.output = Mock()
+        find_retval.output.count = Mock()
+        find_retval.output.count.return_value = 300
+
+        mock_Command_run.return_value = find_retval
 
         with patch('builtins.open', new_callable=mock_open, read_data='Y'):
             with self._caplog.at_level(logging.INFO):
                 check_lsm.check_lsm(migration_system=False)
-                assert "'aa-status' not available, in-depth checks not possible." in self._caplog.text
+                assert 'please install "apparmor-parser" as aa-status' in \
+                    self._caplog.text
 
     @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
     def test_check_lsm_migration_apparmor_disabled(
