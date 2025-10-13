@@ -1,6 +1,6 @@
 # needsrootforbuild
 
-%global MinSLEVersion 12.3
+%global MinSLEVersion __MINVERSION__
 
 Url:            http://www.suse.com/
 Name:           __NAME__
