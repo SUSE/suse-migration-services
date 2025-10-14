@@ -170,7 +170,7 @@ def wicked2nm_migrate(root_path):
         if not Command.run(wicked2nm_cmd).returncode:
             # the command succeeded so
             # we can remove wicked package
-            logging.info('Removing wicked2nm package')
+            log.info('Removing wicked package')
             Command.run(['zypper', 'rm', '-y', 'wicked'])
     except Exception as issue:
         wicked2nm_cmd = [
