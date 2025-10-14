@@ -134,6 +134,9 @@ class TestSetupHostNetwork(object):
                 ]
             ),
             call(
+                ['zypper', 'rm', '-y', 'wicked']
+            ),
+            call(
                 ['nm-online', '-q']
             )
         ]
@@ -209,6 +212,9 @@ class TestSetupHostNetwork(object):
                     '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
                     '/system-root/var/cache/wicked_config/config.xml', '--continue-migration'
                 ]
+            ),
+            call(
+                ['zypper', 'rm', '-y', 'wicked']
             ),
             call(
                 ['nm-online', '-q']

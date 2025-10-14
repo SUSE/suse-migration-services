@@ -167,7 +167,11 @@ def wicked2nm_migrate(root_path):
         log.info('Ignoring wicked2nm warnings')
         wicked2nm_cmd = wicked2nm_cmd + ['--continue-migration']
     try:
-        Command.run(wicked2nm_cmd)
+        if not Command.run(wicked2nm_cmd).returncode:
+            # the command succeeded so
+            # we can remove wicked package
+            logging.info('Removing wicked2nm package')
+            Command.run(['zypper', 'rm', '-y', 'wicked'])
     except Exception as issue:
         wicked2nm_cmd = [
             'wicked2nm', 'show',
