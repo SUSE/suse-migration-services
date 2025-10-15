@@ -583,10 +583,13 @@ class TestPreChecks():
     @patch.object(Command, 'run')
     @patch('builtins.open', new_callable=mock_open, read_data='Y')
     @patch('suse_migration_services.prechecks.lsm._apparmor_primitive_check')
+    @patch('shutil.which')
     def test_check_lsm_migration(
-        self, mock_apparmor_primitive_check, mock_open, mock_Command_run, mock_os_path_exists,
+        self, mock_shutil_which, mock_apparmor_primitive_check,
+        mock_open, mock_Command_run, mock_os_path_exists,
         mock_os_geteuid, mock_log
     ):
+        mock_shutil_which.return_value = True
         mock_os_path_exists.return_value = True
 
         aa_status_retval = Mock()
