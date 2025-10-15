@@ -28,6 +28,7 @@ class TestSetupHostNetwork(object):
             main()
         assert not mock_shutil_copy.called
 
+    @patch('os.makedirs')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
@@ -38,7 +39,8 @@ class TestSetupHostNetwork(object):
     @patch('os.path.isfile')
     def test_main(
         self, mock_isfile, mock_glob, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run, mock_logger_setup, mock_get_migration_config_file
+        mock_Fstab, mock_Command_run, mock_logger_setup, mock_get_migration_config_file,
+        mock_os_makedirs
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
@@ -102,6 +104,9 @@ class TestSetupHostNetwork(object):
         fstab.export.assert_called_once_with(
             '/etc/system-root.fstab'
         )
+        assert mock_os_makedirs.call_args_list == [
+            call('/etc/udev/rules.d', exist_ok=True)
+        ]
 
     @patch('os.path.exists')
     @patch('suse_migration_services.command.Command.run')
