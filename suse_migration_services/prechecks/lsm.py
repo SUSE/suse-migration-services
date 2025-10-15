@@ -15,14 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-"""Call prechecks for LSM migration (apparmor to selinux)"""
+"""
+Call prechecks for LSM migration (apparmor to selinux)
+"""
 import logging
 import json
 import os
-import subprocess
+import shutil
+from textwrap import dedent
 
-from typing import Optional
-
+from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 
 # find /etc/apparmor.d/ | wc -l
@@ -59,84 +61,103 @@ log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 def check_lsm(migration_system=False):
-    manual_check_needed = False
     if migration_system:
         # only relevant on the system that is being migrated
         log.info('Skipped LSM migration checks.')
         return
+
     if _apparmor_enabled():
-        try:
-            aa_data = json.loads(subprocess.run(['aa-status', '--json'], stdout=subprocess.PIPE).stdout)
-        except FileNotFoundError:
-            log.warn("'aa-status' not available, in-depth checks not possible.")
+        if not shutil.which('aa-status'):
+            # no aa-status found, run a primitive check for apparmor files
             _apparmor_primitive_check()
             return
-        if _apparmor_standard_profiles_modified():
-            manual_check_needed = True
-        if _apparmor_additional_profiles(aa_data):
-            if _apparmor_extended_profiles_modified():
-                manual_check_needed = True
+        try:
+            aa_status_output = Command.run(
+                ['aa-status', '--json']
+            ).output
+            if aa_status_output:
+                aa_data = json.loads(aa_status_output)
+
+                manual_check_needed = _apparmor_standard_profiles_modified()
+                if _apparmor_additional_profiles(aa_data) \
+                   and _apparmor_extended_profiles_modified():
+                    manual_check_needed = True
+
+                if manual_check_needed:
+                    message = dedent('''\n
+                        Non-default AppArmor setup detected,
+                        please review the details above.
+                    ''')
+                    log.error(message)
+        except Exception as issue:
+            log.warn('aa-status failed with: {}'.format(issue))
+            log.warn('Skipping LSM checks')
+            return
     else:
         # nothing to do
         log.info('AppArmor disabled')
-    if manual_check_needed:
-        log.error('Non-default AppArmor setup detected, please review the highlighted changes.')
 
 
 def _apparmor_enabled():
     # checks sysfs if AA is enabled
-    retval = False
     if os.path.exists('/sys/module/apparmor/parameters/enabled'):
-        with open("/sys/module/apparmor/parameters/enabled", "r") as file:
+        with open("/sys/module/apparmor/parameters/enabled") as file:
             if file.read().strip() == "Y":
-                retval = True
-    return retval
+                return True
 
 
 def _apparmor_primitive_check():
     # check amount of files in /etc/apparmor.d/
-    retval = False
-    apparmor_files = subprocess.run(['find', '/etc/apparmor.d/'], stdout=subprocess.PIPE).stdout
-    if apparmor_files.count(b"\n") > DEFAULT_ETC_FILE_COUNT:
-        log.error("Looks like customized AppArmor setup is in use: please install 'apparmor-parser' as aa-status is needed to perform a proper check.")
-        retval = True
-    return retval
+    apparmor_files = Command.run(
+        ['find', '/etc/apparmor.d/'], raise_on_error=False
+    ).output
+    if apparmor_files and apparmor_files.count('\n') > DEFAULT_ETC_FILE_COUNT:
+        message = dedent('''\n
+            Looks like customized AppArmor setup is in use:
+            please install "apparmor-parser" as aa-status is
+            needed to perform a proper check.
+        ''')
+        log.error(message)
+        return True
 
 
 def _apparmor_standard_profiles_modified():
     # verify AA files against rpm db
-    retval = False
-    if __find_modified_profiles('apparmor-profiles'):
-        log.error("Modified AppArmor profiles found, please verify changes to the files from: 'rpm -V {}'.".format('apparmor-profiles'))
-        retval = True
-    return retval
+    profile_package = 'apparmor-profiles'
+    if _find_modified_profiles(profile_package):
+        message = dedent('''\n
+            Modified AppArmor profiles found,
+            please verify changes to the files from: "rpm -V {}".
+        ''')
+        log.error(message.format(profile_package))
+        return True
 
 
 def _apparmor_extended_profiles_modified():
     # check packages that carry AA profiles for in place modification
-    retval = False
     for pkg in ADDITIONAL_AA_PROFILES:
         path_filter = '/etc/apparmor.d'
-        if __find_modified_profiles(pkg, path_filter):
-            log.error("Modified AppArmor profiles found, please verify changes to profiles from '{}': 'rpm -V {}'.".format(path_filter, pkg))
-            retval = True
-    return retval
+        if _find_modified_profiles(pkg, path_filter):
+            message = dedent('''\n
+                Modified AppArmor profiles found,
+                please verify changes to profiles from "{}": "rpm -V {}".
+            ''')
+            log.error(message.format(path_filter, pkg))
+            return True
 
 
-def __find_modified_profiles(pkg: str, path_filter: Optional[str] = None) -> bool:
-    retval = False
-    modified_files = subprocess.run(['rpm', '-V', pkg], stdout=subprocess.PIPE).stdout.decode('utf-8', 'replace')
+def _find_modified_profiles(pkg, path_filter=None):
+    modified_files = Command.run(
+        ['rpm', '-V', pkg], raise_on_error=False
+    ).output
     for line in modified_files.splitlines():
         if path_filter and line.find(path_filter) == -1:
             continue
         if (line[2] == "5"):
-            retval = True
-    return retval
+            return True
 
 
 def _apparmor_additional_profiles(aa_data):
     # check amount of loaded AA profiles
-    retval = False
     if len(aa_data["profiles"]) > DEFAULT_PROFILE_COUNT:
-        retval = True
-    return retval
+        return True
