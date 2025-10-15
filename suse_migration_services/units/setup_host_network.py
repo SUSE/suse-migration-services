@@ -168,6 +168,8 @@ def wicked2nm_migrate(root_path):
         wicked2nm_cmd = wicked2nm_cmd + ['--continue-migration']
     try:
         Command.run(wicked2nm_cmd)
+        # Wait for NetworkManager online to fix dhcp race condition
+        Command.run(['nm-online', '-q'])
     except Exception as issue:
         wicked2nm_cmd = [
             'wicked2nm', 'show',
@@ -184,11 +186,6 @@ def wicked2nm_migrate(root_path):
         log_network_details()
 
         raise DistMigrationHostNetworkException('Migration from wicked to NetworkManager failed with {0}'.format(issue))
-
-    # Wait for NetworkManager online to fix dhcp race condition
-    Command.run(
-        ['nm-online', '-q']
-    )
 
 
 def setup_interfaces(root_path):
