@@ -172,7 +172,7 @@ def wicked2nm_migrate(root_path):
             # we can remove wicked package
             log.info('Removing wicked package')
             Command.run(['zypper', 'rm', '-y', 'wicked'])
-        
+
         # Wait for NetworkManager online to fix dhcp race condition
         Command.run(['nm-online', '-q'])
     except Exception as issue:
