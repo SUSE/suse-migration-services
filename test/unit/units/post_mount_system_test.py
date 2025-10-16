@@ -18,6 +18,8 @@ class TestPostMountSystem(object):
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
+    @patch('os.remove')
+    @patch('os.path.isfile')
     @patch('glob.glob')
     @patch('os.path.exists')
     @patch.object(Defaults, 'get_migration_config_file')
@@ -28,12 +30,13 @@ class TestPostMountSystem(object):
     def test_main(
         self, mock_shutil_copy, mock_get_system_root_path, mock_Command_run,
         mock_logger_setup, mock_get_migration_config_file, mock_os_path_exists,
-        mock_glob
+        mock_glob, mock_os_isfile, mock_os_remove
     ):
         mock_get_system_root_path.return_value = '../data'
         mock_get_migration_config_file.return_value = \
             '../data/migration-config.yml'
         mock_os_path_exists.side_effect = [True, False, True, False, True]
+        mock_os_isfile.return_value = True
 
         def mock_glob_patterns(glob):
             if '*' in glob:
@@ -58,6 +61,7 @@ class TestPostMountSystem(object):
             call(['udevadm', 'trigger', '--type=devices', '--action=add']),
             call(['sysctl', '--system'])
         ]
+        mock_os_remove.assert_called_once()
 
     @patch.dict(os.environ, {'foo': 'bar', 'a': 'b'}, clear=True)
     def test_log_env(self):
