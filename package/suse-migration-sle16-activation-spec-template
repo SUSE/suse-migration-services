@@ -70,43 +70,36 @@ if [ -f /etc/udev/rules.d/70-persistent-net.rules ]; then
     sed -e 's/KERNEL=="eth\*"/KERNEL=="e\*"/g' -e 's/KERNEL=="wlan\*"/KERNEL=="w\*"/g' /etc/udev/rules.d/70-persistent-net.rules > /var/cache/udev_rules/70-migration-persistent-net.rules
 fi
 
-# Create systemd.link file for VMWARE or Hyper-V virtual interfaces
+# Create udev rules for VMWARE or Hyper-V virtual interfaces
 for netdev in /sys/class/net/*; do
-    dev=$(basename "$netdev")
-    link_file=/etc/systemd/network/70-persistent-net-"$dev".link
-    test -e "$link_file" && continue
+    dev=$(basename "${netdev}")
+    rule_file="/etc/udev/rules.d/60-migration-persistent-net.rules"
 
     ! grep -E '^(00:0c:29:|00:50:56:|00:15:5d:)' \
-        /sys/class/net/"$dev"/address >/dev/null && continue
+        /sys/class/net/"${dev}"/address >/dev/null && continue
     ID_PATH=$(
         udevadm info -q property --property=ID_PATH \
-        /sys/class/net/"$dev"
+        /sys/class/net/"${dev}"
     )
     ID_PATH=${ID_PATH#ID_PATH=}
     ID_NET_DRIVER=$(
         udevadm info -q property --property=ID_NET_DRIVER \
-        /sys/class/net/"$dev"
+        /sys/class/net/"${dev}"
     )
     ID_NET_DRIVER=${ID_NET_DRIVER#ID_NET_DRIVER=}
     if [ -z "$ID_PATH" ] || [ -z "$ID_NET_DRIVER" ]; then
-        echo "[ERROR] failed to create systemd.link file for $dev"
+        echo "[ERROR] failed to create systemd.link file for ${dev}"
         exit 1
     fi
-    grep -sE '^Name="?'"$dev"'"?$' \
-        /etc/systemd/network/*.link && continue
     grep -sE '^\s*[^#].*[ \t,]NAME="'"$dev"'"$' \
         /etc/udev/rules.d/*.rules && continue
 
-    echo "Create $link_file with Path=$ID_PATH Driver=$ID_NET_DRIVER"
-    cat > "$link_file" <<EOT
-# This file was created from suse-migration-sle16-activation
-[Match]
-Path=$ID_PATH
-Driver=$ID_NET_DRIVER
+    if [ ! -e "${rule_file}" ]; then
+        echo '# This file was created from suse-migration-sle16-activation' > "$rule_file"
+    fi
 
-[Link]
-NamePolicy=
-Name=$dev
+    cat >> "${rule_file}" <<EOT
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="${ID_NET_DRIVER}", KERNELS=="${ID_PATH#pci-}", NAME="${dev}"
 EOT
 
 done
