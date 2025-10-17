@@ -1,7 +1,7 @@
 soft_reboot: false
 preserve:
   rules:
-  - /etc/systemd/network/*.link
+  - /etc/udev/rules.d/60-migration-persistent-net.rules
   sysctl:
   - /etc/sysctl.conf
   - /etc/sysctl.d/*.conf
