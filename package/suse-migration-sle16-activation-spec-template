@@ -30,6 +30,7 @@ Requires:         grub2
 Requires(post):   util-linux-systemd
 Requires(postun): util-linux-systemd
 Requires(pre):	  sed
+Requires(pre):	  awk
 Requires(pre):	  zypper
 ExclusiveArch:    aarch64 ppc64le x86_64
 
@@ -77,17 +78,17 @@ for netdev in /sys/class/net/*; do
 
     ! grep -E '^(00:0c:29:|00:50:56:|00:15:5d:)' \
         /sys/class/net/"${dev}"/address >/dev/null && continue
-    ID_PATH=$(
-        udevadm info -q property --property=ID_PATH \
-        /sys/class/net/"${dev}"
+    DEVPATH=$(
+        udevadm info -q property --property=DEVPATH \
+        /sys/class/net/"${dev}" |
+        awk -F'/' '{print $(NF-2)}'
     )
-    ID_PATH=${ID_PATH#ID_PATH=}
     ID_NET_DRIVER=$(
         udevadm info -q property --property=ID_NET_DRIVER \
         /sys/class/net/"${dev}"
     )
     ID_NET_DRIVER=${ID_NET_DRIVER#ID_NET_DRIVER=}
-    if [ -z "$ID_PATH" ] || [ -z "$ID_NET_DRIVER" ]; then
+    if [ -z "$DEVPATH" ] || [ -z "$ID_NET_DRIVER" ]; then
         echo "[ERROR] failed to create systemd.link file for ${dev}"
         exit 1
     fi
@@ -98,8 +99,9 @@ for netdev in /sys/class/net/*; do
         echo '# This file was created from suse-migration-sle16-activation' > "$rule_file"
     fi
 
+    echo "Create udev for ${dev} in ${rule_file}"
     cat >> "${rule_file}" <<EOT
-SUBSYSTEM=="net", ACTION=="add", DRIVERS=="${ID_NET_DRIVER}", KERNELS=="${ID_PATH#pci-}", NAME="${dev}"
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="${ID_NET_DRIVER}", KERNELS=="${DEVPATH}", NAME="${dev}"
 EOT
 
 done
