@@ -7,7 +7,7 @@
         <contact>public-cloud-dev@susecloud.net</contact>
         <specification>
             SLES16 Distribution Migration Live System to upgrade
-            SLES15-SP6+ instances to SLES16+
+            SLES15-SP7+ instances to SLES16+
         </specification>
     </description>
     <preferences>
@@ -56,24 +56,34 @@
         <package name="grub2-i386-pc" arch="x86_64"/>
         <package name="grub2-powerpc-ieee1275" arch="ppc64le"/>
         <package name="grub2-s390x-emu" arch="s390x" />
-        <package name="syslinux" arch="x86_64"/>
         <package name="lvm2"/>
-        <package name="plymouth"/>
-        <package name="fontconfig"/>
-        <package name="fonts-config"/>
         <package name="tar"/>
         <package name="parted"/>
         <package name="openssh"/>
         <package name="iproute2"/>
         <package name="less"/>
-        <package name="bash-completion"/>
-        <package name="dhcp-client"/>
         <package name="which"/>
         <package name="shim" arch="x86_64,aarch64"/>
         <package name="blog" arch="s390x" />
         <package name="libblogger2" arch="s390x" />
         <package name="kernel-default"/>
-        <package name="kernel-firmware"/>
+        <package name="kernel-firmware-ath10k"/>
+        <package name="kernel-firmware-atheros"/>
+        <package name="kernel-firmware-bnx2"/>
+        <package name="kernel-firmware-brcm"/>
+        <package name="kernel-firmware-chelsio"/>
+        <package name="kernel-firmware-intel"/>
+        <package name="kernel-firmware-iwlwifi"/>
+        <package name="kernel-firmware-liquidio"/>
+        <package name="kernel-firmware-marvell"/>
+        <package name="kernel-firmware-mellanox"/>
+        <package name="kernel-firmware-mwifiex"/>
+        <package name="kernel-firmware-network"/>
+        <package name="kernel-firmware-platform"/>
+        <package name="kernel-firmware-qcom"/>
+        <package name="kernel-firmware-qlogic"/>
+        <package name="kernel-firmware-realtek"/>
+        <package name="kernel-firmware-serial"/>
         <package name="timezone"/>
         <package name="dracut-kiwi-live"/>
         <package name="bind-utils"/>
@@ -96,13 +106,14 @@
         <package name="python-azuremetadata"/>
         <package name="wicked2nm"/>
         <package name="NetworkManager-config-server"/>
+        <package name="image-janitor"/>
     </packages>
     <packages type="bootstrap">
         <package name="udev"/>
         <package name="grep"/>
         <package name="filesystem"/>
-        <package name="glibc-locale"/>
-        <package name="cracklib-dict-full"/>
+        <package name="glibc-locale-base"/>
+        <package name="cracklib-dict-small"/>
         <package name="ca-certificates"/>
         <package name="SLES-release"/>
     </packages>

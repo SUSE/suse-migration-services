@@ -88,3 +88,39 @@ preserve:
     - /etc/udev/rules.d/*-cio-ignore*.rules
 EOF
 fi
+
+# optimize iso size (based from Agama live image)
+
+# Clean-up logs
+rm /var/log/zypper.log /var/log/zypp/history
+
+# delete unused translations (MO files)
+for t in Linux-PAM e2fsprogs gawk gettext-runtime grub2 iputils kbd libgpg-error mit-krb5 p11-kit pam-config rpm shadow.mo sudo sudoers xfsprogs zypp zypper; do
+  rm -f /usr/share/locale/*/LC_MESSAGES/$t.mo
+done
+
+# remove unused SUSEConnect libzypp plugins
+rm -f /usr/lib/zypper/commands/zypper-search-packages
+
+# remove the unused firmware(not referenced by kernel drivers)
+image-janitor -v fw-cleanup --delete 
+
+# remove the tool, not needed anymore
+rpm -e image-janitor
+du -h -s /lib/modules /lib/firmware
+
+# Stronger compression for the initrd
+echo 'compress="xz -9 --check=crc32 --memlimit-compress=50%"' >> /etc/dracut.conf.d/less-storage.conf
+
+# Decompress kernel modules, better for squashfs (boo#1192457)
+find /lib/modules/*/kernel -name '*.ko.xz' -exec xz -d {} +
+find /lib/modules/*/kernel -name '*.ko.zst' -exec zstd --rm -d {} +
+for moddir in /lib/modules/*; do
+  depmod "$(basename "$moddir")"
+done
+
+# Not needed, boo#1166406
+rm -f /usr/lib/modules/*/vmlinux*.[gx]z
+
+# Remove generated files (boo#1098535)
+rm -rf /var/cache/zypp/* /var/lib/zypp/AnonymousUniqueId /var/lib/systemd/random-seed
