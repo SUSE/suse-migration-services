@@ -4,7 +4,7 @@ from unittest.mock import (
 from pytest import raises
 
 from suse_migration_services.units.setup_host_network import (
-    main, wicked2nm_migrate, setup_interfaces
+    main, wicked2nm_migrate
 )
 from suse_migration_services.exceptions import (
     DistMigrationHostNetworkException
@@ -28,7 +28,6 @@ class TestSetupHostNetwork(object):
             main()
         assert not mock_shutil_copy.called
 
-    @patch('os.makedirs')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
@@ -39,8 +38,7 @@ class TestSetupHostNetwork(object):
     @patch('os.path.isfile')
     def test_main(
         self, mock_isfile, mock_glob, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run, mock_logger_setup, mock_get_migration_config_file,
-        mock_os_makedirs
+        mock_Fstab, mock_Command_run, mock_logger_setup, mock_get_migration_config_file
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
@@ -63,10 +61,6 @@ class TestSetupHostNetwork(object):
             call(
                 '/system-root/etc/sysconfig/network/dhcp',
                 '/etc/sysconfig/network'
-            ),
-            call(
-                '/system-root/var/cache/udev_rules/70-migration-persistent-net.rules',
-                '/etc/udev/rules.d/70-migration-persistent-net.rules'
             )
         ]
         assert mock_Command_run.call_args_list == [
@@ -76,15 +70,6 @@ class TestSetupHostNetwork(object):
                     '/system-root/etc/sysconfig/network/providers',
                     '/etc/sysconfig/network/providers'
                 ]
-            ),
-            call(
-                ['udevadm', 'control', '--reload']
-            ),
-            call(
-                ['udevadm', 'trigger', '--subsystem-match=net', '--action=add']
-            ),
-            call(
-                ['udevadm', 'settle']
             ),
             call(
                 ['systemctl', 'reload', 'network']
@@ -104,9 +89,6 @@ class TestSetupHostNetwork(object):
         fstab.export.assert_called_once_with(
             '/etc/system-root.fstab'
         )
-        assert mock_os_makedirs.call_args_list == [
-            call('/etc/udev/rules.d', exist_ok=True)
-        ]
 
     @patch('os.path.exists')
     @patch('suse_migration_services.command.Command.run')
@@ -217,44 +199,6 @@ class TestSetupHostNetwork(object):
             ),
             call(
                 ['nm-online', '-q']
-            )
-        ]
-
-    @patch('os.path.exists')
-    def test_setup_interfaces_migration_rules_dont_exist(
-            self, mock_os_path_exists
-    ):
-        mock_os_path_exists.return_value = False
-
-        setup_interfaces(root_path='/system-root')
-        mock_os_path_exists.assert_called_once()
-
-    @patch('os.makedirs')
-    @patch('shutil.copy')
-    @patch('suse_migration_services.command.Command.run')
-    @patch('os.path.exists')
-    def test_setup_interfaces_create_dir(
-            self, mock_os_path_exists, mock_Command_run, mock_shutil_copy, mock_os_makedirs
-    ):
-        mock_os_path_exists.side_effect = [True]
-
-        setup_interfaces(root_path='/system-root')
-        assert mock_os_path_exists.call_args_list == [
-            call('/system-root/var/cache/udev_rules/70-migration-persistent-net.rules'),
-        ]
-        assert mock_os_makedirs.call_args_list == [
-            call('/etc/udev/rules.d', exist_ok=True),
-        ]
-        mock_shutil_copy.assert_called()
-        assert mock_Command_run.call_args_list == [
-            call(
-                ['udevadm', 'control', '--reload']
-            ),
-            call(
-                ['udevadm', 'trigger', '--subsystem-match=net', '--action=add']
-            ),
-            call(
-                ['udevadm', 'settle']
             )
         ]
 

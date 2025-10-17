@@ -56,6 +56,10 @@ for host_boot_option in $(xargs -n1 < /proc/cmdline);do
     boot_options="${boot_options} ${host_boot_option}"
 done
 
+if ${is_sles16_migration} && [[ ${boot_options} != *"net.ifnames"* ]]; then
+    boot_options="${boot_options} net.ifnames=0"
+fi
+
 ARCH=$(uname -m)
 
 if grub_file_is_not_garbage "${migration_iso}"; then

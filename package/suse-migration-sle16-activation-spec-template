@@ -65,10 +65,6 @@ if [ -x "$(command -v wicked)" ]; then
     mkdir -p /var/cache/wicked_config
     wicked show-config > /var/cache/wicked_config/config.xml
 fi
-if [ -f /etc/udev/rules.d/70-persistent-net.rules ]; then
-    mkdir -p /var/cache/udev_rules
-    sed -e 's/KERNEL=="eth\*"/KERNEL=="e\*"/g' -e 's/KERNEL=="wlan\*"/KERNEL=="w\*"/g' /etc/udev/rules.d/70-persistent-net.rules > /var/cache/udev_rules/70-migration-persistent-net.rules
-fi
 
 # Create systemd.link file for VMWARE or Hyper-V virtual interfaces
 for netdev in /sys/class/net/*; do
