@@ -89,7 +89,10 @@ class Defaults:
             return 'boot/image'
         else:
             raise NotImplementedError(
-                f'get_target_kernel not implemented for machine type {machine}')
+                'get_target_kernel not implemented for machine type {}'.format(
+                    machine
+                )
+            )
 
     @staticmethod
     def get_target_initrd():
