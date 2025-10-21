@@ -114,3 +114,13 @@ rm -f /usr/lib/modules/*/vmlinux*.[gx]z
 
 # Remove generated files (boo#1098535)
 rm -rf /var/cache/zypp/* /var/lib/zypp/AnonymousUniqueId /var/lib/systemd/random-seed
+
+# Disable all network interface naming schemes to boot with kernel names.
+# This enables the host udev rules and link files to be applied after boot.
+cat <<EOF > /etc/systemd/network/99-default.link
+# This file was generated for the migration.
+# It disables all network interface naming schemes at boot.
+EOF
+cat <<EOF > /etc/dracut.conf.d/disable_predictable.conf
+install_items+=" /etc/systemd/network/99-default.link "
+EOF

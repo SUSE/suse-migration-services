@@ -38,7 +38,13 @@ def main():
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
     root_path = Defaults.get_system_root_path()
+    systemd_default_link_path = '/etc/systemd/network/99-default.link'
     log.info('Running post mount actions')
+
+    # Remove 99-default.link that may have been installed
+    # to disable predictable naming scheme for network interfaces
+    if os.path.isfile(systemd_default_link_path):
+        os.remove(systemd_default_link_path)
 
     migration_config = MigrationConfig()
     preserve_info = migration_config.get_preserve_info()
