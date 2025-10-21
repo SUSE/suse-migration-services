@@ -347,9 +347,10 @@ class TestSetupPrepare(object):
         mock_Command_run, mock_Fstab, mock_logger_setup,
         mock_update_regionsrv_setup
     ):
+        # test with volume based block device returned from findmnt
         mock_command_return_values = [
             Mock(output='/dev/sda3 part\n/dev/sda disk'),
-            Mock(output='dev/sda3\n')
+            Mock(output='dev/sda3[/@/.snapshots/1/snapshot]\n')
         ]
 
         def command_returns(arg):
@@ -383,6 +384,24 @@ class TestSetupPrepare(object):
         assert regionsrv_setup.get('instance', 'dataProvider') == \
             '/usr/bin/azuremetadata --api latest --subscriptionId --billingTag ' \
             '--attestedData --signature --xml --device /dev/sda'
+
+        # test with standard block device returned from findmnt
+        mock_command_return_values = [
+            Mock(output='/dev/sdb7 part\n/dev/sdb disk'),
+            Mock(output='dev/sdb7\n')
+        ]
+        shutil.copy(
+            '../data/regionserverclnt-azure.cfg', tmp_regionserverclnt.name
+        )
+        update_regionsrv_setup(
+            '/system-root', tmp_regionserverclnt.name
+        )
+
+        regionsrv_setup = ConfigParser()
+        regionsrv_setup.read(tmp_regionserverclnt.name)
+        assert regionsrv_setup.get('instance', 'dataProvider') == \
+            '/usr/bin/azuremetadata --api latest --subscriptionId --billingTag ' \
+            '--attestedData --signature --xml --device /dev/sdb'
 
     @patch('os.listdir')
     @patch('os.path.isdir')
