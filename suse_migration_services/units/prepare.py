@@ -320,6 +320,9 @@ def get_root_disk_device(root_path):
         ]
     ).output
     if root_device:
+        # The findmnt output can contain extra volume information
+        # which we don't need for the subsequent lsblk call.
+        root_device = root_device.split('[')[0]
         lsblk_call = Command.run(
             [
                 'lsblk', '-p', '-n', '-r', '-s', '-o',
