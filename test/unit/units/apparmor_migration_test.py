@@ -28,7 +28,6 @@ class TestAppArmorMigration(object):
                 '--no-cd',
                 '--non-interactive',
                 '--gpg-auto-import-keys',
-                '--root', '/system-root',
                 'install',
                 '--auto-agree-with-licenses',
                 '--allow-vendor-change',
@@ -37,7 +36,7 @@ class TestAppArmorMigration(object):
                 '--allow-downgrade',
                 '--no-recommends',
                 'patterns-base-selinux'
-            ], raise_on_error=False
+            ], raise_on_error=False, chroot='/system-root'
         )
 
     @patch('fileinput.input')
