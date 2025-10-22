@@ -166,7 +166,12 @@ def wicked2nm_migrate(root_path):
         log.info('Ignoring wicked2nm warnings')
         wicked2nm_cmd = wicked2nm_cmd + ['--continue-migration']
     try:
-        Command.run(wicked2nm_cmd)
+        if not Command.run(wicked2nm_cmd).returncode:
+            # the command succeeded so
+            # we can remove wicked package
+            log.info('Removing wicked package')
+            Command.run(['zypper', 'rm', '-y', 'wicked'])
+
         # Wait for NetworkManager online to fix dhcp race condition
         Command.run(['nm-online', '-q'])
     except Exception as issue:
