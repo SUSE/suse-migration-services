@@ -27,6 +27,22 @@ class TestCommand(object):
             ], raise_on_error=True
         )
 
+    def test_zypper_run_chroot(self, mock_Command_run):
+        command_run_result = namedtuple(
+            'command', ['output', 'error', 'returncode']
+        )
+        mock_Command_run.return_value = command_run_result(
+            output='', error='', returncode=0
+        )
+        Zypper.run(['in', 'test', '--root', '/system-root'], chroot='root')
+        mock_Command_run.assert_called_once_with(
+            [
+                'chroot', 'root', 'bash', '-c',
+                'zypper in test --root /system-root '
+                '&>> /var/log/distro_migration.log'
+            ], raise_on_error=True
+        )
+
     def test_zypper_raises(self, mock_Command_run):
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationZypperException):

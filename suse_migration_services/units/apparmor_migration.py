@@ -61,7 +61,6 @@ def main():
                 '--no-cd',
                 '--non-interactive',
                 '--gpg-auto-import-keys',
-                '--root', root_path,
                 'install',
                 '--auto-agree-with-licenses',
                 '--allow-vendor-change',
@@ -70,7 +69,7 @@ def main():
                 '--allow-downgrade',
                 '--no-recommends',
                 'patterns-base-selinux'
-            ], raise_on_error=False
+            ], raise_on_error=False, chroot=root_path
         )
     except Exception as issue:
         message = 'Apparmor to SELinux migration failed with {0}'.format(issue)
