@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import os
 from typing import List
 
 # project
@@ -29,7 +30,6 @@ class Zypper:
     """
     **Implements zypper invocation**
     """
-
     @staticmethod
     def run(args: List[str], raise_on_error=True, chroot=''):
         """
@@ -52,6 +52,13 @@ class Zypper:
         command_string = ' '.join(['zypper'] + list(args) + ['&>>', log_file])
         command = []
         if chroot:
+            # Calling zypper in a new system root should be done in
+            # offline systemd mode to prevent package scripts to access
+            # services not necessarily present
+            custom_env = {}
+            custom_env['SYSTEMD_OFFLINE'] = '1'
+            os.environ.update(custom_env)
+
             command += ['chroot', chroot]
         try:
             result = Command.run(
