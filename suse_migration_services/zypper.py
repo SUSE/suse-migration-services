@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+import os
 from typing import List
 
 # project
@@ -29,28 +30,45 @@ class Zypper:
     """
     **Implements zypper invocation**
     """
-
     @staticmethod
-    def run(args: List[str], raise_on_error=True):
+    def run(args: List[str], raise_on_error=True, chroot=''):
         """
-        Invoke zypper and block the caller. The return value is a `ZypperCall` instance
-        containing the result of invocation.
+        Invoke zypper and block the caller. The return value is a
+        ZypperCall instance containing the result of invocation.
 
-        The `raise_on_error` is directly passed to the underlying `Command.run` invocation
-        and thus will raise whenever zypper exists with a non-zero status. To check the status
-        according to zypper sematics, use `raise_on_error = False` with `ZypperCall.success` and
-        `ZypperCall.raise_if_failed`.
+        raise_on_error:
+            is directly passed to the underlying Command.run invocation
+            and thus will raise whenever zypper exists with a non-zero
+            status. To check the status according to zypper sematics,
+            use raise_on_error=False with ZypperCall.success and
+            ZypperCall.raise_if_failed.
+
+        chroot:
+            run zypper chrooted against the given path
         """
-        log_file = Defaults.get_migration_log_file()
-        command = ' '.join(['zypper'] + list(args) + ['&>>', log_file])
+        log_file = Defaults.get_migration_log_file(
+            system_root=False if chroot else True
+        )
+        command_string = ' '.join(['zypper'] + list(args) + ['&>>', log_file])
+        command = []
+        if chroot:
+            # Calling zypper in a new system root should be done in
+            # offline systemd mode to prevent package scripts to access
+            # services not necessarily present
+            custom_env = {}
+            custom_env['SYSTEMD_OFFLINE'] = '1'
+            os.environ.update(custom_env)
 
+            command += ['chroot', chroot]
         try:
-            result = Command.run(['bash', '-c', command], raise_on_error=raise_on_error)
-        except Exception as e:
-            raise DistMigrationZypperException('{0} failed with: {1}'.format(
-                command, str(e)
-            ))
-
+            result = Command.run(
+                command + ['bash', '-c', command_string],
+                raise_on_error=raise_on_error
+            )
+        except Exception as issue:
+            raise DistMigrationZypperException(
+                'zypper failed with: {}'.format(issue)
+            )
         return ZypperCall(args, command, result)
 
 
