@@ -20,6 +20,7 @@ import os
 import re
 
 # project
+from suse_migration_services.command import Command
 from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
@@ -31,6 +32,24 @@ from suse_migration_services.units.post_mount_system import (
 from suse_migration_services.exceptions import (
     DistMigrationZypperException,
 )
+
+
+def duplicate_solver_test_case_data():
+    """
+    We duplicate the created solver test case to cover both use cases
+    a user looging into the migration system and wanting to see the
+    solver case and a user expecting the solver case to be on the
+    system that is/has being migrated.
+    """
+    test_case_dir = Defaults.get_zypper_solver_test_case_dir()
+
+    if os.path.isdir(test_case_dir):
+        target = os.sep.join(
+            [Defaults.get_system_root_path(), test_case_dir]
+        )
+        Command.run(
+            ['cp', '-r', test_case_dir, target]
+        )
 
 
 def is_single_rpmtrans_requested() -> str:
@@ -143,3 +162,5 @@ def main():
         raise DistMigrationZypperException(
             'Migration failed with {0}'.format(issue)
         )
+    finally:
+        duplicate_solver_test_case_data()

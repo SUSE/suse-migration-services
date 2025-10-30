@@ -31,6 +31,10 @@ class Defaults:
         return '/system-root'
 
     @staticmethod
+    def get_zypper_solver_test_case_dir():
+        return '/var/log/zypper.solverTestCase'
+
+    @staticmethod
     def get_migration_config_file():
         return '/etc/migration-config.yml'
 
