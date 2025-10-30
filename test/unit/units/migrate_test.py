@@ -238,6 +238,34 @@ class TestMigration(object):
         )
         zypper_call.raise_if_failed.assert_called_once()
 
+    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.zypper.Zypper.run')
+    @patch('suse_migration_services.units.migrate.log_env')
+    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.units.migrate.MigrationConfig')
+    @patch('os.path.isdir')
+    @patch('suse_migration_services.units.migrate.Command.run')
+    def test_main_zypper_dup_with_solver_test_case(
+        self, mock_Command_run, mock_os_path_isdir, mock_MigrationConfig,
+        mock_update_env, mock_log_env, mock_Zypper_run, mock_logger_setup,
+        mock_is_single_rpmtrans_requested
+    ):
+        mock_os_path_isdir.return_value = True
+        mock_MigrationConfig.return_value = self.migration_config_dup
+        zypper_call = Mock()
+        mock_Zypper_run.return_value = zypper_call
+        mock_is_single_rpmtrans_requested.return_value = '0'
+        with patch('builtins.open', create=True):
+            main()
+        mock_Command_run.assert_called_once_with(
+            [
+                'cp', '-r',
+                '/var/log/zypper.solverTestCase',
+                '/system-root//var/log/zypper.solverTestCase'
+            ]
+        )
+
     @patch('builtins.open', new_callable=MagicMock)
     def test_is_single_rpmtrans_requested(self, mock_open):
         # Test case 1: migration.single_rpmtrans is not present
