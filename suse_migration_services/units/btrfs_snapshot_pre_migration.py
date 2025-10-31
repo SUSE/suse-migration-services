@@ -76,7 +76,9 @@ def main():
                 'chroot', root_path, 'snapper',
                 '--no-dbus',
                 'create',
-                '--from', pre_migration_activation_package_snapshot_number,
+                '--from', format(
+                    pre_migration_activation_package_snapshot_number
+                ),
                 '--read-only',
                 '--type', 'single',
                 '--cleanup-algorithm', 'number',
@@ -88,12 +90,12 @@ def main():
         if snapper_call.returncode == 0:
             pre_snapshot_number = '{}'.format(snapper_call.output)
             with open(
-                f'/run/{snapshot_number_base_file}', 'w'
+                '/run/{}'.format(snapshot_number_base_file), 'w'
             ) as pre_snapshot_number_file:
                 pre_snapshot_number_file.write(pre_snapshot_number)
     except Exception as issue:
-        message = 'BTRFS pre-migration snapshot creation failed with {issue}'
-        log.error(message)
+        message = 'BTRFS pre-migration snapshot creation failed with {}'
+        log.error(message.format(issue))
         raise DistMigrationBtrfsSnapshotPreMigrationException(
-            message
-        ) from issue
+            message.format(issue)
+        )
