@@ -1,4 +1,6 @@
-from unittest.mock import patch
+from unittest.mock import (
+    patch, Mock
+)
 from pytest import raises
 from collections import namedtuple
 
@@ -67,6 +69,23 @@ class TestCommand(object):
         assert not zypper_call.success
         with raises(DistMigrationZypperException):
             zypper_call.raise_if_failed()
+
+    def test_zypper_log_if_failed(self, mock_Command_run):
+        command_run_result = namedtuple(
+            'command', ['output', 'error', 'returncode']
+        )
+        mock_Command_run.return_value = command_run_result(
+            output='some_output', error='some_error', returncode=1
+        )
+        zypper_call = Zypper.run(
+            ['args'], raise_on_error=False
+        )
+        log = Mock()
+        zypper_call.log_if_failed(log)
+        log.error.assert_called_once_with(
+            'zypper args &>> /system-root/var/log/distro_migration.log: '
+            'failed with: some_output: some_error'
+        )
 
     def test_zypper_call_failed(self, mock_Command_run):
         command_run_result = namedtuple(

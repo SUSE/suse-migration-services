@@ -1,0 +1,13 @@
+[Unit]
+Description=Setup Migration Host Network
+After=suse-migration-container-prepare.service NetworkManager.service
+Requires=suse-migration-container-prepare.service
+OnFailure=suse-migration-container-emergency.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-setup-container-network
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

@@ -56,7 +56,7 @@ def main():
         log.info('Installing patterns-base-selinux')
         # selinux migration is allowed to fail, it can be fixed
         # after the migration
-        Zypper.run(
+        zypper_call = Zypper.run(
             [
                 '--no-cd',
                 '--non-interactive',
@@ -71,6 +71,7 @@ def main():
                 'patterns-base-selinux'
             ], raise_on_error=False, chroot=root_path
         )
+        zypper_call.log_if_failed(log)
     except Exception as issue:
         message = 'Apparmor to SELinux migration failed with {0}'.format(issue)
         log.error(message)
