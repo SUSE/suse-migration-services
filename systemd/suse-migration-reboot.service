@@ -1,11 +1,12 @@
 [Unit]
 Description=Reboot System
-After=suse-migration-kernel-load.service suse-migration-update-bootloader.service
+After=suse-migration-kernel-load.service suse-migration-update-bootloader.service suse-migration-apparmor-selinux.service
 ConditionKernelCommandLine=!migration.noreboot
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/suse-migration-reboot
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
