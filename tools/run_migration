@@ -58,7 +58,15 @@ function get_boot_options {
     local host_boot_option
     local migration_iso=$1
     local is_sles16_migration=$2
-    boot_options="iso-scan/filename=${migration_iso} root=live:CDLABEL=CDROM rd.live.image"
+    local migration_rootfs_uuid
+    migration_rootfs_uuid=$(findmnt --noheadings --output UUID /)
+    # init boot options needed for live boot
+    boot_options="rd.live.image root=live:CDLABEL=CDROM"
+    # add live image reference filename for iso-scan module
+    boot_options="${boot_options} iso-scan/filename=${migration_iso}"
+    # add rootfs UUID to identify migration target disk
+    boot_options="${boot_options} migration_target=${migration_rootfs_uuid}"
+    # add auto activation of devices in soft raid mode
     if mdadm --detail "$(get_system_root_device)" &>/dev/null; then
         boot_options="${boot_options} rd.auto"
     fi
