@@ -1,11 +1,12 @@
 [Unit]
 Description=Reboot System
-After=suse-migration-container.service
+After=suse-migration-container.service suse-migration-container-apparmor-selinux.service
 Requires=suse-migration-container.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/suse-migration-reboot
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
