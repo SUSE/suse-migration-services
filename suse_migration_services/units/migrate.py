@@ -136,8 +136,8 @@ def main():
                     '--download', 'in-advance',
                     '--replacefiles',
                     '--allow-downgrade'
-                ],
-                raise_on_error=False)
+                ], raise_on_error=False
+            )
             zypper_call.raise_if_failed()
         # report success(0) return code
         with open(exit_code_file, 'w') as exit_code:

@@ -32,7 +32,7 @@ from suse_migration_services.exceptions import (
 )
 
 
-def main():
+def main(container=False):
     """
     DistMigration activate host network setup
 
@@ -71,13 +71,21 @@ def main():
                 shutil.copy(
                     network_setup, '/etc/sysconfig/network'
                 )
-        Command.run(
-            ['systemctl', 'reload', 'network']
+        if not container:
+            Command.run(
+                ['systemctl', 'reload', 'network']
+            )
+        wicked2nm_migrate(
+            root_path,
+            activate_connections=False if container else True
         )
-        wicked2nm_migrate(root_path)
         system_mount.export(
             Defaults.get_system_mount_info_file()
         )
+        if container:
+            Command.run(
+                ['systemctl', 'stop', 'NetworkManager']
+            )
     except Exception as issue:
         log.error(
             'Preparation of migration host network failed with {0}'.format(
@@ -88,7 +96,20 @@ def main():
             'Preparation of migration host network failed with {0}'.format(
                 issue
             )
-        ) from issue
+        )
+
+
+def container():
+    """
+    DistMigration setup host network setup when running in container
+
+    Setup network needed for the migration when running a
+    container based migration process. The DMS uses the host
+    networking model, as such the network is already there but
+    preparations to move from one network technology to another
+    might still be required
+    """
+    main(container=True)
 
 
 def log_network_details():
@@ -131,7 +152,7 @@ def log_network_details():
         )
 
 
-def wicked2nm_migrate(root_path):
+def wicked2nm_migrate(root_path, activate_connections=True):
     """
     Migrate from wicked to NetworkManager
 
@@ -141,28 +162,42 @@ def wicked2nm_migrate(root_path):
     skipped.
     """
     log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Running wicked2nm host network migration')
+
     wicked_config_path = os.sep.join([root_path, 'var/cache/wicked_config'])
     netconf_dir_path = os.sep.join([root_path, 'etc/sysconfig/network'])
     migration_config = MigrationConfig()
     net_info = migration_config.get_network_info()
-
     if not os.path.exists(os.sep.join([wicked_config_path, 'config.xml'])):
-        log.info('No wicked config present, skipping wicked2nm host network setup.')
+        log.info('No wicked config present, skipping wicked2nm.')
         return
-    if Command.run(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False).returncode != 0:
-        log.info('No wicked2nm present, skipping wicked2nm host network setup.')
+    if Command.run(
+        ['rpm', '--query', '--quiet', 'wicked2nm'],
+        raise_on_error=False
+    ).returncode != 0:
+        log.info('No wicked2nm present, skipping wicked2nm.')
         return
-    if Command.run(['rpm', '--query', '--quiet', 'NetworkManager-config-server'], raise_on_error=False).returncode != 0:
-        log.info('No NetworkManager-config-server present, skipping wicked2nm host network setup.')
+    if Command.run(
+        ['rpm', '--query', '--quiet', 'NetworkManager-config-server'],
+        raise_on_error=False
+    ).returncode != 0:
+        log.info(
+            'No NetworkManager-config-server present, skipping wicked2nm'
+        )
         return
 
-    log.info('Running wicked2nm')
     wicked2nm_cmd = [
-        'wicked2nm', 'migrate', '--activate-connections',
-        '--netconfig-base-dir', netconf_dir_path,
-        os.sep.join([wicked_config_path, 'config.xml'])
+        'wicked2nm',
+        'migrate',
+        '--netconfig-base-dir', netconf_dir_path
     ]
-    if net_info and 'wicked2nm-continue-migration' in net_info and net_info['wicked2nm-continue-migration']:
+    if activate_connections:
+        wicked2nm_cmd.append('--activate-connections')
+    wicked2nm_cmd.append(
+        os.sep.join([wicked_config_path, 'config.xml'])
+    )
+    if net_info and 'wicked2nm-continue-migration' in net_info \
+       and net_info['wicked2nm-continue-migration']:
         log.info('Ignoring wicked2nm warnings')
         wicked2nm_cmd = wicked2nm_cmd + ['--continue-migration']
     try:
@@ -183,5 +218,8 @@ def wicked2nm_migrate(root_path):
             )
         )
         log_network_details()
-
-        raise DistMigrationHostNetworkException('Migration from wicked to NetworkManager failed with {0}'.format(issue))
+        raise DistMigrationHostNetworkException(
+            'Migration from wicked to NetworkManager failed with {0}'.format(
+                issue
+            )
+        )

@@ -69,7 +69,7 @@ class Zypper:
             raise DistMigrationZypperException(
                 'zypper failed with: {}'.format(issue)
             )
-        return ZypperCall(args, command, result)
+        return ZypperCall(args, command_string, result)
 
 
 class ZypperCall:
@@ -121,7 +121,18 @@ class ZypperCall:
             return
 
         raise DistMigrationZypperException(
-            '{0} failed with: {1}: {2}'.format(
+            '{0}: failed with: {1}: {2}'.format(
                 self.command, self.output, self.error
             )
         )
+
+    def log_if_failed(self, log):
+        """
+        log output and error when failed
+        """
+        if not self.success:
+            log.error(
+                '{0}: failed with: {1}: {2}'.format(
+                    self.command, self.output, self.error
+                )
+            )
