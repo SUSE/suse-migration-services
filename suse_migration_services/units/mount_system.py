@@ -16,6 +16,7 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import logging
+import re
 import os
 
 # project
@@ -73,74 +74,121 @@ def main():
             ['mount', '-o', 'remount,rw', isoscan_loop_mount]
         )
 
-    fstab, storage_info = read_system_fstab(root_path)
-    if not fstab:
-        log.error(
-            'Could not find system in fstab on {0}'.format(
-                storage_info
-            )
-        )
-        raise DistMigrationSystemNotFoundException(
-            'Could not find system with fstab on {0}'.format(
-                storage_info
-            )
-        )
+    activate_lvm()
 
-    mount_system(root_path, fstab)
+    mount_system(
+        root_path, read_system_fstab(root_path)
+    )
 
     migration_config = MigrationConfig()
     migration_config.update_migration_config_file()
     log.info(
-        'Config file content:\n{content}\n'. format(
+        'Config file content:\n{content}\n'.format(
             content=migration_config.get_migration_config_file_content()
         )
     )
 
 
-def read_system_fstab(root_path):
+def get_uuid(device):
+    """
+    Retrieve UUID from block device
+    """
+    blkid_result = Command.run(
+        ['blkid', device, '-s', 'UUID', '-o', 'value'],
+        raise_on_error=False
+    )
+    return blkid_result.output.strip(os.linesep) if blkid_result else ''
+
+
+def activate_lvm():
     log = logging.getLogger(Defaults.get_migration_log_name())
-    log.info('Reading fstab from associated disks')
     lsblk_call = Command.run(
         ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
     )
-    considered_block_types = ['part', 'raid', 'lvm']
-    considered_block_devices = []
-    lvm_managed_block_device_found = False
     for entry in lsblk_call.output.split(os.linesep):
         block_record = entry.split()
         if len(block_record) >= 2:
             block_type = block_record[1]
-            if block_type in considered_block_types:
-                if block_type == 'lvm':
-                    lvm_managed_block_device_found = True
-                considered_block_devices.append(
-                    block_record[0]
+            if block_type == 'lvm':
+                log.info(
+                    'LVM managed block device(s) found, activating LVM'
                 )
+                Command.run(['vgchange', '-a', 'y'])
+                return
 
-    if lvm_managed_block_device_found:
-        log.info('LVM managed block device(s) found, activating volume groups')
-        Command.run(['vgchange', '-a', 'y'])
 
-    for block_device in considered_block_devices:
-        try:
-            log.info('Lookup for fstab on %s ...', block_device)
-            Command.run(
-                ['mount', block_device, root_path]
+def get_target_root():
+    """
+    Read the migration_target information from the kernel cmdline
+    and provide the associated device name. The migration_target
+    information was placed to the cmdline by the DMS grub boot
+    menu entry of by the DMS run_migration kexec cmdline parameter
+    """
+    log = logging.getLogger(Defaults.get_migration_log_name())
+    try:
+        with open('/proc/cmdline') as cmdline_fd:
+            cmdline = cmdline_fd.read()
+        match = re.search(r'migration_target=([\w-]+)', cmdline)
+        if match:
+            migration_rootfs_uuid = match.group(1)
+            lsblk_call = Command.run(
+                ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
             )
-            fstab_file = os.sep.join([root_path, 'etc', 'fstab'])
-            if os.path.isfile(fstab_file):
-                log.info('Found %s on %s ', fstab_file, block_device)
-                fstab = Fstab()
-                fstab.read(fstab_file)
-                return (fstab, lsblk_call.output)
-            log.info('No %s found on ', block_device)
-            log.info('Umount %s', root_path)
-            Command.run(
-                ['umount', root_path], raise_on_error=False
+            considered_block_types = ['part', 'raid', 'lvm']
+            for entry in lsblk_call.output.split(os.linesep):
+                block_record = entry.split()
+                if len(block_record) >= 2:
+                    block_type = block_record[1]
+                    if block_type in considered_block_types:
+                        device = block_record[0]
+                        uuid = get_uuid(device)
+                        if uuid == migration_rootfs_uuid:
+                            return device
+        # nothing was found
+        raise DistMigrationSystemMountException(
+            'no match for migration_target= in cmdline'
+        )
+    except Exception as issue:
+        message = 'Failed to find target disk: {0}'.format(issue)
+        log.error(message)
+        raise DistMigrationSystemMountException(
+            message
+        )
+
+
+def read_system_fstab(root_path):
+    log = logging.getLogger(Defaults.get_migration_log_name())
+    log.info('Reading fstab from DMS selected target disk')
+    migration_target_root = get_target_root()
+    try:
+        log.info(
+            'Lookup for fstab on {0}'.format(migration_target_root)
+        )
+        Command.run(
+            ['mount', migration_target_root, root_path]
+        )
+        fstab_file = os.sep.join(
+            [root_path, 'etc', 'fstab']
+        )
+        if os.path.isfile(fstab_file):
+            log.info(
+                'Found {0} on {1}'.format(fstab_file, migration_target_root)
             )
-        except Exception as issue:
-            log.info('Exception on mount of %s: %s', block_device, issue)
-    return (None, lsblk_call.output)
+            fstab = Fstab()
+            fstab.read(fstab_file)
+            return fstab
+        raise DistMigrationSystemNotFoundException(
+            'Could not find system with fstab on {0}'.format(
+                migration_target_root
+            )
+        )
+    except Exception as issue:
+        Command.run(
+            ['umount', root_path], raise_on_error=False
+        )
+        raise DistMigrationSystemNotFoundException(
+            'Reading fstab failed with: {}'.format(issue)
+        )
 
 
 def mount_system(root_path, fstab):
@@ -179,15 +227,25 @@ def mount_system(root_path, fstab):
             system_mount.add_entry(
                 mount_type, mount_point
             )
-        log.info('Bind mount subdirectories from /run inside chroot {0}'.format(root_path))
-        os.makedirs(os.sep.join([root_path, 'run', 'NetworkManager']), exist_ok=True)
+        log.info(
+            'Bind mount subdirectories from /run inside chroot {0}'.format(
+                root_path
+            )
+        )
+        os.makedirs(
+            os.sep.join([root_path, 'run', 'NetworkManager']),
+            exist_ok=True
+        )
         Command.run(
             [
                 'mount', '-o', 'bind', '/run/NetworkManager',
                 os.sep.join([root_path, 'run', 'NetworkManager'])
             ]
         )
-        os.makedirs(os.sep.join([root_path, 'run', 'netconfig']), exist_ok=True)
+        os.makedirs(
+            os.sep.join([root_path, 'run', 'netconfig']),
+            exist_ok=True
+        )
         Command.run(
             [
                 'mount', '-o', 'bind', '/run/netconfig',

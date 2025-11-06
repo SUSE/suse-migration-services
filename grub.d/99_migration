@@ -14,6 +14,8 @@ else
     ) ${CLASS}"
 fi
 
+migration_rootfs_uuid=$(findmnt --noheadings --output UUID /)
+
 migration_iso=$(echo /migration-image/*-*Migration.*.iso)
 is_sles16_migration=false
 if [[ "${migration_iso}" == *SLES16*-*Migration*.iso ]]; then
@@ -31,6 +33,9 @@ fi
 
 # init boot options needed for live boot
 boot_options="rd.live.image root=live:CDLABEL=CDROM"
+
+# add rootfs UUID to identify migration target disk
+boot_options="${boot_options} migration_target=${migration_rootfs_uuid}"
 
 # add auto activation of devices in soft raid mode
 if mdadm --detail "${root_device}" &>/dev/null; then
