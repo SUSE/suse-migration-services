@@ -78,6 +78,9 @@ function get_boot_options {
             quiet)
                 continue
             ;;
+            cio_ignore=*)
+                [ "$(systemd-detect-virt)" == "kvm" ] && continue
+            ;;
             security=apparmor)
             if ${is_sles16_migration}; then
                 boot_options="${boot_options} security=selinux"
