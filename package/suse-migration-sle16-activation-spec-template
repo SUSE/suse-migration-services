@@ -31,11 +31,23 @@ Requires(post):   util-linux-systemd
 Requires(postun): util-linux-systemd
 Requires(pre):	  sed
 Requires(pre):	  zypper
+Requires(pre):    suse-migration-sle16-scripts
 ExclusiveArch:    aarch64 ppc64le x86_64
 
 %description -n suse-migration-sle16-activation
 Script code to activate the SLE16 migration image to be booted at
 next reboot of the machine.
+
+%package          -n suse-migration-sle16-scripts
+Summary:          The migrate helper scripts collection
+Group:            System/Management
+Requires:         bash
+Requires:         wicked
+Requires:         grep
+BuildArch:        noarch
+
+%description -n suse-migration-sle16-scripts
+Helper script collection to migrate to sle16.
 
 %prep
 %setup -q -n suse_migration_services-%{version}
@@ -43,6 +55,9 @@ next reboot of the machine.
 %install
 install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
+
+install -D -m 755 tools/network_pre.functions \
+    %{buildroot}%{_datarootdir}/suse_migration_services/network_pre.functions
 
 %pre
 # Prevent installation for CPUs that are too old
@@ -60,52 +75,10 @@ if [ -x /usr/bin/snapper ]; then
         echo $PRE_SNAPSHOT > /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
     fi
 fi
-# Setup wicked to NetworkManager migration files
-if [ -x "$(command -v wicked)" ]; then
-    mkdir -p /var/cache/wicked_config
-    wicked show-config > /var/cache/wicked_config/config.xml
-fi
 
-# Create systemd.link file for VMWARE or Hyper-V virtual interfaces
-for netdev in /sys/class/net/*; do
-    dev=$(basename "$netdev")
-    link_file=/etc/systemd/network/70-persistent-net-"$dev".link
-    test -e "$link_file" && continue
-
-    ! grep -E '^(00:0c:29:|00:50:56:|00:15:5d:)' \
-        /sys/class/net/"$dev"/address >/dev/null && continue
-    ID_PATH=$(
-        udevadm info -q property --property=ID_PATH \
-        /sys/class/net/"$dev"
-    )
-    ID_PATH=${ID_PATH#ID_PATH=}
-    ID_NET_DRIVER=$(
-        udevadm info -q property --property=ID_NET_DRIVER \
-        /sys/class/net/"$dev"
-    )
-    ID_NET_DRIVER=${ID_NET_DRIVER#ID_NET_DRIVER=}
-    if [ -z "$ID_PATH" ] || [ -z "$ID_NET_DRIVER" ]; then
-        echo "[ERROR] failed to create systemd.link file for $dev"
-        exit 1
-    fi
-    grep -sE '^Name="?'"$dev"'"?$' \
-        /etc/systemd/network/*.link && continue
-    grep -sE '^\s*[^#].*[ \t,]NAME="'"$dev"'"$' \
-        /etc/udev/rules.d/*.rules && continue
-
-    echo "Create $link_file with Path=$ID_PATH Driver=$ID_NET_DRIVER"
-    cat > "$link_file" <<EOT
-# This file was created from suse-migration-sle16-activation
-[Match]
-Path=$ID_PATH
-Driver=$ID_NET_DRIVER
-
-[Link]
-NamePolicy=
-Name=$dev
-EOT
-
-done
+# Prepare network migration
+source %{_datarootdir}/suse_migration_services/network_pre.functions
+setup_wicked_to_NetworkManager_prereqs
 
 %post
 /usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -118,5 +91,9 @@ done
 %dir /etc/grub.d
 /etc/grub.d/*
 %ghost /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
+
+%files -n suse-migration-sle16-scripts
+%dir %{_datarootdir}/suse_migration_services
+%{_datarootdir}/suse_migration_services/network_pre.functions
 
 %changelog

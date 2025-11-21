@@ -19,6 +19,8 @@
 # Enable shell globbing
 set +o noglob
 
+source /usr/share/suse_migration_services/network_pre.functions
+
 logfile=/var/log/migration_startup.log
 
 
@@ -111,59 +113,6 @@ function extract_kernel_and_initrd {
             echo "${boot_data_dir}"
         fi
     fi
-}
-
-function setup_wicked_to_NetworkManager_prereqs {
-    # """
-    # Set up required files for wicked to NetworkManager migration
-    #
-    # Only applies for SLE16
-    # """
-    if [ -x "$(command -v wicked)" ]; then
-        mkdir -p /var/cache/wicked_config
-        wicked show-config > /var/cache/wicked_config/config.xml
-    fi
-
-    # Create systemd.link file for VMWARE or Hyper-V virtual interfaces
-    for netdev in /sys/class/net/*; do
-        dev=$(basename "${netdev}")
-        link_file=/etc/systemd/network/70-persistent-net-"${dev}".link
-        test -e "${link_file}" && continue
-
-        ! grep -E '^(00:0c:29:|00:50:56:|00:15:5d:)' \
-            /sys/class/net/"${dev}"/address >/dev/null && continue
-        ID_PATH=$(
-            udevadm info -q property --property=ID_PATH \
-            /sys/class/net/"${dev}"
-        )
-        ID_PATH=${ID_PATH#ID_PATH=}
-        ID_NET_DRIVER=$(
-            udevadm info -q property --property=ID_NET_DRIVER \
-            /sys/class/net/"${dev}"
-        )
-        ID_NET_DRIVER=${ID_NET_DRIVER#ID_NET_DRIVER=}
-        if [ -z "$ID_PATH" ] || [ -z "$ID_NET_DRIVER" ]; then
-            echo "[ERROR] failed to create systemd.link file for ${dev}"
-            exit 1
-        fi
-        grep -sE '^Name="?'"$dev"'"?$' \
-            /etc/systemd/network/*.link && continue
-        grep -sE '^\s*[^#].*[ \t,]NAME="'"$dev"'"$' \
-            /etc/udev/rules.d/*.rules && continue
-
-        echo "Create $link_file with Path=$ID_PATH Driver=$ID_NET_DRIVER"
-        cat > "${link_file}" <<EOT
-# This file was created from run_migration
-[Match]
-Path=$ID_PATH
-Driver=$ID_NET_DRIVER
-
-[Link]
-NamePolicy=
-Name=$dev
-EOT
-
-    done
 }
 
 function store_snapper_pre_snapshot {
