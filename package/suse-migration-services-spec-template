@@ -192,6 +192,9 @@ install -D -m 644 systemd/suse-migration-container-setup-host-network.service \
     %{buildroot}%{_unitdir}/suse-migration-container-setup-host-network.service
 %endif
 
+install -D -m 644 systemd/suse-migration-container-pam-config.service \
+    %{buildroot}%{_unitdir}/suse-migration-container-pam-config.service
+
 install -D -m 644 systemd/suse-migration-container-prepare.service \
     %{buildroot}%{_unitdir}/suse-migration-container-prepare.service
 
