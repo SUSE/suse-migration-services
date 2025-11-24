@@ -1,14 +1,23 @@
 from unittest.mock import (
     patch, MagicMock
 )
-from pytest import raises
+from pytest import (
+    raises, fixture
+)
+import logging
 import io
+import os
+import yaml
 from collections import namedtuple
 
 from suse_migration_services.defaults import Defaults
 
 
 class TestDefaults(object):
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     def setup_method(self):
         self.defaults = Defaults()
 
@@ -47,14 +56,16 @@ class TestDefaults(object):
             id='sles', id_like='suse', ansi_color='0;32',
             cpe_name='cpe:/o:suse:sles:15:sp3'
         )
-        os_release_content = ('NAME="SLES"\n'
-                              'VERSION="15-SP3"\n'
-                              'VERSION_ID="15.3"\n'
-                              'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP3"\n'
-                              'ID="sles"\n'
-                              'ID_LIKE="suse"\n'
-                              'ANSI_COLOR="0;32"\n'
-                              'CPE_NAME="cpe:/o:suse:sles:15:sp3"')
+        os_release_content = (
+            'NAME="SLES"\n'
+            'VERSION="15-SP3"\n'
+            'VERSION_ID="15.3"\n'
+            'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP3"\n'
+            'ID="sles"\n'
+            'ID_LIKE="suse"\n'
+            'ANSI_COLOR="0;32"\n'
+            'CPE_NAME="cpe:/o:suse:sles:15:sp3"'
+        )
         with patch('builtins.open', create=True) as mock_open:
             mock_open_os_release = MagicMock(spec=io.IOBase)
 
@@ -95,7 +106,8 @@ class TestDefaults(object):
             def open_file(filename, mode):
                 if filename == '/etc/os-release':
                     return mock_open_os_release.return_value
-                # Fallback for other open calls if any, though not expected here
+                # Fallback for other open calls if any,
+                # though not expected here
                 return MagicMock(spec=io.IOBase)
 
             mock_open.side_effect = open_file
@@ -104,7 +116,9 @@ class TestDefaults(object):
             file_handle.read.return_value = os_release_content
             parsed_result = self.defaults.get_os_release()
             assert parsed_result == expected_result
-            assert parsed_result._fields == ('name', 'id', 'id_like', 'version_id')
+            assert parsed_result._fields == (
+                'name', 'id', 'id_like', 'version_id'
+            )
 
     def test_get_os_release_empty_file(self):
         os_release_content = ""
@@ -142,3 +156,21 @@ class TestDefaults(object):
     def test_get_proxy_path(self):
         assert self.defaults.get_proxy_path() == \
             '/etc/sysconfig/proxy'
+
+    @patch.dict(os.environ, {'foo': 'bar', 'a': 'b'}, clear=True)
+    def test_log_env(self):
+        log = logging.getLogger('foo')
+        with self._caplog.at_level(logging.INFO):
+            self.defaults.log_env(log)
+        assert ' Env variables' in self._caplog.text
+        assert ' a: b\nfoo: bar\n\n' in self._caplog.text
+
+    @patch.object(Defaults, 'get_proxy_path')
+    @patch('suse_migration_services.defaults.os')
+    def test_update_env(self, mock_os, mock_proxy_path):
+        with open('../data/migration-config-proxy.yml', 'r') as config:
+            config_data = yaml.safe_load(config)
+        mock_os.linesep = '\n'
+        mock_proxy_path.return_value = '../data/etc/sysconfig/proxy'
+        self.defaults.update_env(config_data.get('preserve'))
+        mock_os.environ.update.assert_called_once_with({'http_foo': 'bar'})

@@ -27,86 +27,66 @@ from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.command import Command
 
 
-def main():
-    """
-    DistMigration post mount actions
+class PostMountSystem:
+    def __init__(self):
+        """
+        DistMigration post mount actions
 
-    Preserve custom data file(s) e.g udev rules from the system
-    to be migrated to the live migration system and activate
-    those file changes to become effective
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    root_path = Defaults.get_system_root_path()
-    systemd_default_link_path = '/etc/systemd/network/99-default.link'
-    log.info('Running post mount actions')
+        Preserve custom data file(s) e.g udev rules from the system
+        to be migrated to the live migration system and activate
+        those file changes to become effective
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
+        self.systemd_default_link_path = '/etc/systemd/network/99-default.link'
 
-    # Remove 99-default.link that may have been installed
-    # to disable predictable naming scheme for network interfaces
-    if os.path.isfile(systemd_default_link_path):
-        os.remove(systemd_default_link_path)
+    def perform(self):
+        self.log.info('Running post mount actions')
 
-    migration_config = MigrationConfig()
-    preserve_info = migration_config.get_preserve_info()
-    if preserve_info:
-        for _, preserve_files in preserve_info.items():
-            for preserve_file in preserve_files:
-                source_glob = os.path.normpath(
-                    os.sep.join([root_path, preserve_file])
-                )
-                for source_file in glob.glob(source_glob):
-                    target_dir = os.path.dirname(source_file)[len(root_path):]
-                    log.info(
-                        'Copy file: {0} to: {1}'.format(
-                            source_file, target_dir
-                        )
+        # Remove 99-default.link that may have been installed
+        # to disable predictable naming scheme for network interfaces
+        if os.path.isfile(self.systemd_default_link_path):
+            os.remove(self.systemd_default_link_path)
+
+        migration_config = MigrationConfig()
+        preserve_info = migration_config.get_preserve_info()
+        if preserve_info:
+            for _, preserve_files in preserve_info.items():
+                for preserve_file in preserve_files:
+                    source_glob = os.path.normpath(
+                        os.sep.join([self.root_path, preserve_file])
                     )
-                    if not os.path.exists(target_dir):
-                        Command.run(
-                            ['mkdir', '-p', target_dir]
+                    for source_file in glob.glob(source_glob):
+                        target_dir = os.path.dirname(
+                            source_file
+                        )[len(self.root_path):]
+                        self.log.info(
+                            'Copy file: {0} to: {1}'.format(
+                                source_file, target_dir
+                            )
                         )
-                    shutil.copy(source_file, target_dir)
-        if 'rules' in preserve_info.keys():
-            Command.run(
-                ['udevadm', 'control', '--reload']
-            )
-            Command.run(
-                ['udevadm', 'trigger', '--type=subsystems', '--action=add']
-            )
-            Command.run(
-                ['udevadm', 'trigger', '--type=devices', '--action=add']
-            )
-        if 'sysctl' in preserve_info.keys():
-            Command.run(
-                ['sysctl', '--system']
-            )
+                        if not os.path.exists(target_dir):
+                            Command.run(
+                                ['mkdir', '-p', target_dir]
+                            )
+                        shutil.copy(source_file, target_dir)
+            if 'rules' in preserve_info.keys():
+                Command.run(
+                    ['udevadm', 'control', '--reload']
+                )
+                Command.run(
+                    ['udevadm', 'trigger', '--type=subsystems', '--action=add']
+                )
+                Command.run(
+                    ['udevadm', 'trigger', '--type=devices', '--action=add']
+                )
+            if 'sysctl' in preserve_info.keys():
+                Command.run(
+                    ['sysctl', '--system']
+                )
 
 
-def update_env(preserve_info):
-    proxy_env = {}
-    for _, preserve_files in preserve_info.items():
-        if Defaults.get_proxy_path() in preserve_files:
-            with open(Defaults.get_proxy_path(), 'r') as proxy_file:
-                for line in proxy_file.readlines():
-                    if not (line.startswith('#') or line.startswith(os.linesep)):
-                        # DMS currently takes http, https and ftp protocols
-                        # into consideration, so lower case them is ok
-                        key_value = line.lower(). \
-                            replace(os.linesep, ''). \
-                            replace('"', ''). \
-                            split('=')
-                        proxy_env.update(dict([key_value]))
-    if proxy_env.get('proxy_enabled') == 'yes':
-        del proxy_env['proxy_enabled']
-        os.environ.update(proxy_env)
-
-
-def log_env(log):
-    """Provide information about the current environment."""
-    log.info('Env variables')
-    env = ''
-    for key, value in sorted(os.environ.items()):
-        env += '{key}: {value}{newline}'.format(
-            key=key, value=value, newline=os.linesep
-        )
-    log.info(env)
+def main():
+    post_mount_os = PostMountSystem()
+    post_mount_os.perform()

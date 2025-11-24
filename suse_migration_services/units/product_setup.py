@@ -27,37 +27,46 @@ from suse_migration_services.exceptions import (
 )
 
 
-def main():
-    """
-    DistMigration setup baseproduct for migration
+class ProductSetup:
+    def __init__(self):
+        """
+        DistMigration setup baseproduct for migration
 
-    Creates a backup of the system products data and prepares
-    the baseproduct to be suitable for the distribution migration.
-    In case of an error the backup information is used by the
-    zypper migration plugin to restore the original product
-    data such that the plugin's rollback mechanism is not
-    negatively influenced.
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    log.info('Running setup baseproduct for migration')
-    try:
-        # Note:
-        # zypper implements a handling for the distro_target attribute.
-        # If present in the repository metadata, zypper compares the
-        # value with the baseproduct <target> setup in /etc/products.d.
-        # If they mismatch zypper refuses to create the repo. In the
-        # process of a migration from distribution [A] to [B] this mismatch
-        # always applies by design and prevents the zypper migration
-        # plugin to work. In SCC or RMT the repositories doesn't
-        # contain the distro_target attribute which is the reason
-        # why we don't see this problem there. SMT however creates repos
-        # including distro_target. The current workaround solution is
-        # to delete the target specification in the baseproduct
-        # registration if present.
-        log.info('Updating Base Product to be suitable for migration')
-        SUSEBaseProduct(log).delete_target_registration()
-    except Exception as issue:
-        message = 'Base Product update failed with: {0}'.format(issue)
-        log.error(message)
-        raise DistMigrationProductSetupException(message)
+        Creates a backup of the system products data and prepares
+        the baseproduct to be suitable for the distribution migration.
+        In case of an error the backup information is used by the
+        zypper migration plugin to restore the original product
+        data such that the plugin's rollback mechanism is not
+        negatively influenced.
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+
+    def perform(self):
+        self.log.info('Running setup baseproduct for migration')
+
+        try:
+            # Note:
+            # zypper implements a handling for the distro_target attribute.
+            # If present in the repository metadata, zypper compares the
+            # value with the baseproduct <target> setup in /etc/products.d.
+            # If they mismatch zypper refuses to create the repo. In the
+            # process of a migration from distribution [A] to [B] this mismatch
+            # always applies by design and prevents the zypper migration
+            # plugin to work. In SCC or RMT the repositories doesn't
+            # contain the distro_target attribute which is the reason
+            # why we don't see this problem there. SMT however creates repos
+            # including distro_target. The current workaround solution is
+            # to delete the target specification in the baseproduct
+            # registration if present.
+            self.log.info('Updating Base Product to be suitable for migration')
+            SUSEBaseProduct(self.log).delete_target_registration()
+        except Exception as issue:
+            message = 'Base Product update failed with: {0}'.format(issue)
+            self.log.error(message)
+            raise DistMigrationProductSetupException(message)
+
+
+def main():
+    product = ProductSetup()
+    product.perform()

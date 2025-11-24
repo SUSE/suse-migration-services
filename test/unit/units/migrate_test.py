@@ -4,7 +4,9 @@ from unittest.mock import (
 )
 from pytest import raises
 
-from suse_migration_services.units.migrate import main, is_single_rpmtrans_requested
+from suse_migration_services.units.migrate import (
+    MigrateSystem, main
+)
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.exceptions import (
@@ -32,11 +34,11 @@ class TestMigration(object):
     def setup_method(self, cls, mock_get_migration_config_file):
         self.setup()
 
-    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.zypper.Zypper.run')
-    @patch('suse_migration_services.units.migrate.log_env')
-    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin_raises(
@@ -71,11 +73,11 @@ class TestMigration(object):
                 call('1\n')
             ]
 
-    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.zypper.Zypper.run')
-    @patch('suse_migration_services.units.migrate.log_env')
-    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_dup_raises(
@@ -96,11 +98,11 @@ class TestMigration(object):
             with raises(DistMigrationZypperException):
                 main()
 
-    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.zypper.Zypper.run')
-    @patch('suse_migration_services.units.migrate.log_env')
-    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin(
@@ -137,11 +139,11 @@ class TestMigration(object):
             ]
         )
 
-    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.zypper.Zypper.run')
-    @patch('suse_migration_services.units.migrate.log_env')
-    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin_verbose(
@@ -171,11 +173,11 @@ class TestMigration(object):
             ]
         )
 
-    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.zypper.Zypper.run')
-    @patch('suse_migration_services.units.migrate.log_env')
-    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch.object(MigrationConfig, 'get_migration_product')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_migration_plugin_solver_case(
@@ -205,11 +207,11 @@ class TestMigration(object):
             ]
         )
 
-    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.zypper.Zypper.run')
-    @patch('suse_migration_services.units.migrate.log_env')
-    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     def test_main_zypper_dup(
         self, mock_MigrationConfig, mock_update_env,
@@ -238,11 +240,11 @@ class TestMigration(object):
         )
         zypper_call.raise_if_failed.assert_called_once()
 
-    @patch('suse_migration_services.units.migrate.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.zypper.Zypper.run')
-    @patch('suse_migration_services.units.migrate.log_env')
-    @patch('suse_migration_services.units.migrate.update_env')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
     @patch('os.path.isdir')
     @patch('suse_migration_services.units.migrate.Command.run')
@@ -267,33 +269,35 @@ class TestMigration(object):
         )
 
     @patch('builtins.open', new_callable=MagicMock)
-    def test_is_single_rpmtrans_requested(self, mock_open):
+    @patch('suse_migration_services.logger.Logger.setup')
+    def test_is_single_rpmtrans_requested(self, mock_logger_setup, mock_open):
+        system = MigrateSystem()
         # Test case 1: migration.single_rpmtrans is not present
         mock_open.return_value.__enter__.return_value.read.return_value = \
             'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default root=/dev/sda2'
-        assert is_single_rpmtrans_requested() == '0'
+        assert system.is_single_rpmtrans_requested() == '0'
 
         # Test case 2: migration.single_rpmtrans=true
         mock_open.return_value.__enter__.return_value.read.return_value = \
             'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=true'
-        assert is_single_rpmtrans_requested() == '1'
+        assert system.is_single_rpmtrans_requested() == '1'
 
         # Test case 3: migration.single_rpmtrans=1
         mock_open.return_value.__enter__.return_value.read.return_value = \
             'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=1'
-        assert is_single_rpmtrans_requested() == '1'
+        assert system.is_single_rpmtrans_requested() == '1'
 
         # Test case 4: migration.single_rpmtrans=false
         mock_open.return_value.__enter__.return_value.read.return_value = \
             'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=false'
-        assert is_single_rpmtrans_requested() == '0'
+        assert system.is_single_rpmtrans_requested() == '0'
 
         # Test case 5: migration.single_rpmtrans=0
         mock_open.return_value.__enter__.return_value.read.return_value = \
             'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=0'
-        assert is_single_rpmtrans_requested() == '0'
+        assert system.is_single_rpmtrans_requested() == '0'
 
         # Test case 6: migration.single_rpmtrans with unexpected value
         mock_open.return_value.__enter__.return_value.read.return_value = \
             'BOOT_IMAGE=/boot/vmlinuz-5.3.18-150300.59.87-default migration.single_rpmtrans=unexpected'
-        assert is_single_rpmtrans_requested() == '0'
+        assert system.is_single_rpmtrans_requested() == '0'

@@ -6,8 +6,7 @@ from pytest import raises
 from collections import namedtuple
 
 from suse_migration_services.units.mount_system import (
-    main, mount_system, get_uuid, activate_lvm,
-    get_target_root, is_mounted, read_system_fstab
+    MountSystem, main
 )
 from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.fstab import Fstab
@@ -19,9 +18,18 @@ from suse_migration_services.exceptions import (
 
 class TestMountSystem():
     @patch('suse_migration_services.logger.Logger.setup')
+    def setup(self, mock_Logger_setup):
+        self.mount_os = MountSystem()
+        self.mount_os.root_path = 'some'
+
+    @patch('suse_migration_services.logger.Logger.setup')
+    def setup_method(self, cls, mock_Logger_setup):
+        self.setup()
+
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.mount_system.Path.create')
-    @patch('suse_migration_services.units.mount_system.is_mounted')
-    @patch('suse_migration_services.units.mount_system.mount_system')
+    @patch('suse_migration_services.units.mount_system.MountSystem.is_mounted')
+    @patch('suse_migration_services.units.mount_system.MountSystem.mount_system')
     def test_main_root_already_mounted(
         self,
         mock_mount_system,
@@ -36,10 +44,10 @@ class TestMountSystem():
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.mount_system.Path.create')
-    @patch('suse_migration_services.units.mount_system.is_mounted')
-    @patch('suse_migration_services.units.mount_system.mount_system')
-    @patch('suse_migration_services.units.mount_system.read_system_fstab')
-    @patch('suse_migration_services.units.mount_system.activate_lvm')
+    @patch('suse_migration_services.units.mount_system.MountSystem.is_mounted')
+    @patch('suse_migration_services.units.mount_system.MountSystem.mount_system')
+    @patch('suse_migration_services.units.mount_system.MountSystem.read_system_fstab')
+    @patch('suse_migration_services.units.mount_system.MountSystem.activate_lvm')
     @patch('suse_migration_services.command.Command.run')
     @patch.object(MigrationConfig, 'update_migration_config_file')
     def test_main_perform(
@@ -71,7 +79,7 @@ class TestMountSystem():
 
     @patch('suse_migration_services.command.Command.run')
     def test_get_uuid(self, mock_Command_run):
-        get_uuid('some')
+        self.mount_os.get_uuid('some')
         mock_Command_run.assert_called_once_with(
             ['blkid', 'some', '-s', 'UUID', '-o', 'value'],
             raise_on_error=False
@@ -87,7 +95,7 @@ class TestMountSystem():
             error='',
             returncode=0
         )
-        activate_lvm()
+        self.mount_os.activate_lvm()
         assert mock_Command_run.call_args_list == [
             call(['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']),
             call(['vgchange', '-a', 'y'])
@@ -100,10 +108,10 @@ class TestMountSystem():
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = 'foo'
             with raises(DistMigrationSystemMountException):
-                get_target_root()
+                self.mount_os.get_target_root()
 
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.mount_system.get_uuid')
+    @patch('suse_migration_services.units.mount_system.MountSystem.get_uuid')
     def test_get_target_root_match_found(
         self,
         mock_get_uuid,
@@ -122,16 +130,16 @@ class TestMountSystem():
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = 'migration_target=UUID'
-            assert get_target_root() == '/dev/sda4'
+            assert self.mount_os.get_target_root() == '/dev/sda4'
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.path.ismount')
     def test_is_mounted(self, mock_os_path_ismount, mock_Logger_setup):
-        is_mounted('some')
+        self.mount_os.is_mounted('some')
         mock_os_path_ismount.assert_called_once_with('some')
 
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.units.mount_system.get_target_root')
+    @patch('suse_migration_services.units.mount_system.MountSystem.get_target_root')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.mount_system.Fstab')
     @patch('os.path.isfile')
@@ -147,7 +155,7 @@ class TestMountSystem():
         mock_Fstab.return_value = fstab
         # fstab file found
         mock_os_path_isfile.return_value = True
-        assert read_system_fstab('some') == fstab
+        assert self.mount_os.read_system_fstab() == fstab
         mock_Command_run.assert_called_once_with(
             ['mount', mock_get_target_root.return_value, 'some']
         )
@@ -155,7 +163,7 @@ class TestMountSystem():
         mock_os_path_isfile.return_value = False
         mock_Command_run.reset_mock()
         with raises(DistMigrationSystemNotFoundException):
-            read_system_fstab('some')
+            self.mount_os.read_system_fstab()
         assert mock_Command_run.call_args_list == [
             call(['mount', mock_get_target_root.return_value, 'some']),
             call(['umount', 'some'], raise_on_error=False)
@@ -180,7 +188,7 @@ class TestMountSystem():
         fstab_mock.read.return_value = fstab.read('../data/fstab')
         fstab_mock.get_devices.return_value = fstab.get_devices()
 
-        mount_system('some', fstab_mock)
+        self.mount_os.mount_system(fstab_mock)
         assert mock_Command_run.call_args_list == [
             call(
                 [
@@ -225,4 +233,4 @@ class TestMountSystem():
         ]
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationSystemMountException):
-            mount_system('some', fstab_mock)
+            self.mount_os.mount_system(fstab_mock)

@@ -27,75 +27,83 @@ from suse_migration_services.exceptions import (
 )
 
 
-def main():
-    """
-    Pre-migration btrfs snapshot creation.
+class BtrfsSnapshotPreMigration:
+    def __init__(self):
+        """
+        Pre-migration btrfs snapshot creation.
 
-    Creates a backup of the system's data and prepares the file system
-    to be suitable for the distribution migration. In case of an error,
-    the backup information is used by the zypper migration plugin to
-    restore the original product data, such that the plugin's rollback
-    mechanism is not negatively influenced.
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    root_path = Defaults.get_system_root_path()
+        Creates a backup of the system's data and prepares the file system
+        to be suitable for the distribution migration. In case of an error,
+        the backup information is used by the zypper migration plugin to
+        restore the original product data, such that the plugin's rollback
+        mechanism is not negatively influenced.
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
 
-    try:
-        log.info('Running Pre-migration btrfs snapshot creation')
-        # we want pre snapshot to be created before we installed
-        # migration-activation package, if it was installed
-        pre_migration_activation_package_snapshot_number = 0
-        snapshot_number_base_file = \
-            'suse_migration_snapper_btrfs_pre_snapshot_number'
-        snapshot_number_file = os.path.normpath(
-            os.sep.join(
-                [root_path, '/var/cache', snapshot_number_base_file]
+    def perform(self):
+        try:
+            self.log.info('Running Pre-migration btrfs snapshot creation')
+            # we want pre snapshot to be created before we installed
+            # migration-activation package, if it was installed
+            pre_migration_activation_package_snapshot_number = 0
+            snapshot_number_base_file = \
+                'suse_migration_snapper_btrfs_pre_snapshot_number'
+            snapshot_number_file = os.path.normpath(
+                os.sep.join(
+                    [self.root_path, '/var/cache', snapshot_number_base_file]
+                )
             )
-        )
-        if os.path.isfile(snapshot_number_file):
-            with open(snapshot_number_file) as file:
-                pre_migration_activation_package_snapshot_number = \
-                    file.read().strip()
+            if os.path.isfile(snapshot_number_file):
+                with open(snapshot_number_file) as file:
+                    pre_migration_activation_package_snapshot_number = \
+                        file.read().strip()
 
-        # Note: The btrfs snapshot will be created before the
-        # mount system setup in order to avoid any potential issues
-        # with the new filesystem layout while
-        # the migration process proceeds.
-        snapper_enabled = Command.run(
-            [
-                'chroot', root_path, 'snapper', '--no-dbus', 'get-config'
-            ], raise_on_error=False
-        )
-        if snapper_enabled.returncode != 0:
-            return
+            # Note: The btrfs snapshot will be created before the
+            # mount system setup in order to avoid any potential issues
+            # with the new filesystem layout while
+            # the migration process proceeds.
+            snapper_enabled = Command.run(
+                [
+                    'chroot', self.root_path, 'snapper',
+                    '--no-dbus', 'get-config'
+                ], raise_on_error=False
+            )
+            if snapper_enabled.returncode != 0:
+                return
 
-        # Create a new backup before any changes
-        snapper_call = Command.run(
-            [
-                'chroot', root_path, 'snapper',
-                '--no-dbus',
-                'create',
-                '--from', format(
-                    pre_migration_activation_package_snapshot_number
-                ),
-                '--read-only',
-                '--type', 'single',
-                '--cleanup-algorithm', 'number',
-                '--print-number',
-                '--userdata', 'important=yes',
-                '--description', 'before offline migration'
-            ]
-        )
-        if snapper_call.returncode == 0:
-            pre_snapshot_number = '{}'.format(snapper_call.output)
-            with open(
-                '/run/{}'.format(snapshot_number_base_file), 'w'
-            ) as pre_snapshot_number_file:
-                pre_snapshot_number_file.write(pre_snapshot_number)
-    except Exception as issue:
-        message = 'BTRFS pre-migration snapshot creation failed with {}'
-        log.error(message.format(issue))
-        raise DistMigrationBtrfsSnapshotPreMigrationException(
-            message.format(issue)
-        )
+            # Create a new backup before any changes
+            snapper_call = Command.run(
+                [
+                    'chroot', self.root_path, 'snapper',
+                    '--no-dbus',
+                    'create',
+                    '--from', format(
+                        pre_migration_activation_package_snapshot_number
+                    ),
+                    '--read-only',
+                    '--type', 'single',
+                    '--cleanup-algorithm', 'number',
+                    '--print-number',
+                    '--userdata', 'important=yes',
+                    '--description', 'before offline migration'
+                ]
+            )
+            if snapper_call.returncode == 0:
+                pre_snapshot_number = '{}'.format(snapper_call.output)
+                with open(
+                    '/run/{}'.format(snapshot_number_base_file), 'w'
+                ) as pre_snapshot_number_file:
+                    pre_snapshot_number_file.write(pre_snapshot_number)
+        except Exception as issue:
+            message = 'BTRFS pre-migration snapshot creation failed with {}'
+            self.log.error(message.format(issue))
+            raise DistMigrationBtrfsSnapshotPreMigrationException(
+                message.format(issue)
+            )
+
+
+def main():
+    snapshot_pre = BtrfsSnapshotPreMigration()
+    snapshot_pre.perform()

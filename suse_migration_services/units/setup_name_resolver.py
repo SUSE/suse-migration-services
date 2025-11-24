@@ -30,63 +30,67 @@ from suse_migration_services.exceptions import (
 )
 
 
-def main():
-    """
-    DistMigration setup name resolver
+class SetupNameResolver:
+    def __init__(self):
+        """
+        DistMigration setup name resolver
 
-    Setup /etc/resolv.conf by importing the resolver configuration
-    from the migration host
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    root_path = Defaults.get_system_root_path()
-
-    system_mount = Fstab()
-    system_mount.read(
-        Defaults.get_system_mount_info_file()
-    )
-
-    resolv_conf = os.sep.join(
-        [root_path, 'etc', 'resolv.conf']
-    )
-    try:
-        log.info('Running setup resolver service')
-        if has_host_resolv_setup(resolv_conf):
-            log.info('Copying {}'.format(resolv_conf))
-            shutil.copy(
-                resolv_conf, '/etc/resolv.conf'
-            )
-        else:
-            log.info('Empty {0}, bind mounting /etc/resolv.conf to {0}'.format(resolv_conf))
-            Command.run(
-                [
-                    'mount', '--bind', '/etc/resolv.conf',
-                    resolv_conf
-                ]
-            )
-            system_mount.add_entry(
-                '/etc/resolv.conf', resolv_conf
-            )
-            system_mount.export(
-                Defaults.get_system_mount_info_file()
-            )
-    except Exception as issue:
-        log.error(
-            'Preparation of migration host network failed with {0}'.format(
-                issue
-            )
+        Setup /etc/resolv.conf by importing the resolver configuration
+        from the migration host
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
+        self.resolv_conf = os.path.normpath(
+            os.sep.join([self.root_path, 'etc', 'resolv.conf'])
         )
-        raise DistMigrationNameResolverException(
-            'Preparation of migration host network failed with {0}'.format(
-                issue
+
+    def perform(self):
+        system_mount = Fstab()
+        system_mount.read(
+            Defaults.get_system_mount_info_file()
+        )
+        try:
+            self.log.info('Running setup resolver service')
+            if self.has_host_resolv_setup():
+                self.log.info('Copying {}'.format(self.resolv_conf))
+                shutil.copy(
+                    self.resolv_conf, '/etc/resolv.conf'
+                )
+            else:
+                self.log.info(
+                    'Empty {0}, bind mounting /etc/resolv.conf to {0}'.format(
+                        self.resolv_conf
+                    )
+                )
+                Command.run(
+                    [
+                        'mount', '--bind', '/etc/resolv.conf',
+                        self.resolv_conf
+                    ]
+                )
+                system_mount.add_entry(
+                    '/etc/resolv.conf', self.resolv_conf
+                )
+                system_mount.export(
+                    Defaults.get_system_mount_info_file()
+                )
+        except Exception as issue:
+            message = 'Preparation of migration host network failed with {}'
+            self.log.error(message.format(issue))
+            raise DistMigrationNameResolverException(
+                message.format(issue)
             )
-        ) from issue
+
+    def has_host_resolv_setup(self):
+        with open(self.resolv_conf, 'r') as resolv:
+            for line in resolv:
+                # check there is useful information in the remaining lines
+                if line.startswith('search') or line.startswith('nameserver'):
+                    return True
+        return False
 
 
-def has_host_resolv_setup(resolv_conf_path):
-    with open(resolv_conf_path, 'r') as resolv:
-        for line in resolv:
-            # check there is useful information in the remaining lines
-            if line.startswith('search') or line.startswith('nameserver'):
-                return True
-    return False
+def main():
+    name_resolver = SetupNameResolver()
+    name_resolver.perform()

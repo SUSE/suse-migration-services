@@ -28,47 +28,54 @@ from suse_migration_services.exceptions import (
 )
 
 
+class GrubSetup:
+    def __init__(self):
+        """
+        DistMigration update grub to migrated version
+
+        Setup and update grub with content from the migrated system
+        Uninstall live migration packages such that they are no longer
+        part of the now migrated system.
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
+        self.grub_config_file = Defaults.get_grub_config_file()
+
+    def perform(self):
+        try:
+            self.log.info('Running grub setup service')
+            migration_packages = [
+                'SLE*Migration',
+                'suse-migration-*-activation'
+            ]
+            self.log.info(
+                'Uninstalling migration: {0}{1}'.format(
+                    os.linesep, Command.run(
+                        [
+                            'chroot', self.root_path, 'zypper',
+                            '--non-interactive', '--no-gpg-checks',
+                            'remove'
+                        ] + migration_packages, raise_on_error=False
+                    ).output
+                )
+            )
+            self.log.info(
+                'Creating new grub menu: {0}{1}'.format(
+                    os.linesep, Command.run(
+                        [
+                            'chroot', self.root_path, 'grub2-mkconfig', '-o',
+                            '{0}{1}'.format(os.sep, self.grub_config_file)
+                        ]
+                    ).error
+                )
+            )
+        except Exception as issue:
+            message = 'Update grub failed with {0}'.format(issue)
+            self.log.error(message)
+            raise DistMigrationGrubConfigException(message)
+
+
 def main():
-    """
-    DistMigration update grub to migrated version
-
-    Setup and update grub with content from the migrated system
-    Uninstall live migration packages such that they are no longer
-    part of the now migrated system.
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    root_path = Defaults.get_system_root_path()
-    grub_config_file = Defaults.get_grub_config_file()
-
-    try:
-        log.info('Running grub setup service')
-        migration_packages = [
-            'SLE*Migration',
-            'suse-migration-*-activation'
-        ]
-        log.info(
-            'Uninstalling migration: {0}{1}'.format(
-                os.linesep, Command.run(
-                    [
-                        'chroot', root_path, 'zypper',
-                        '--non-interactive', '--no-gpg-checks',
-                        'remove'
-                    ] + migration_packages, raise_on_error=False
-                ).output
-            )
-        )
-        log.info(
-            'Creating new grub menu: {0}{1}'.format(
-                os.linesep, Command.run(
-                    [
-                        'chroot', root_path, 'grub2-mkconfig', '-o',
-                        '{0}{1}'.format(os.sep, grub_config_file)
-                    ]
-                ).error
-            )
-        )
-    except Exception as issue:
-        message = 'Update grub failed with {0}'.format(issue)
-        log.error(message)
-        raise DistMigrationGrubConfigException(message)
+    grub_setup = GrubSetup()
+    grub_setup.perform()

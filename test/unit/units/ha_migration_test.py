@@ -5,20 +5,23 @@ import os
 
 from suse_migration_services.exceptions import DistMigrationException
 from suse_migration_services.units import ha_migration
+from suse_migration_services.units.ha_migration import HighAvailabilityExtension
 
 
 @patch('suse_migration_services.logger.Logger.setup')
 class TestMigrationHa(TestCase):
-
     @patch('os.access')
     def test_corosync_conf_exists(self, mock_os_access, mock_logger_setup):
         mock_os_access.return_value = True
-        self.assertTrue(ha_migration._corosync_conf_exists())
-        mock_os_access.assert_called_once_with('/etc/corosync/corosync.conf', os.F_OK)
+        ha_setup = HighAvailabilityExtension()
+        self.assertTrue(ha_setup._corosync_conf_exists())
+        mock_os_access.assert_called_once_with(
+            '/etc/corosync/corosync.conf', os.F_OK
+        )
 
     @patch('suse_migration_services.command.Command.run')
     @patch('os.chroot')
-    @patch('suse_migration_services.units.ha_migration._corosync_conf_exists')
+    @patch('suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     def test_main(
         self,
@@ -36,7 +39,7 @@ class TestMigrationHa(TestCase):
 
     @patch('suse_migration_services.command.Command.run')
     @patch('os.chroot')
-    @patch('suse_migration_services.units.ha_migration._corosync_conf_exists')
+    @patch('suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     def test_main_no_corosync_conf(
         self,
@@ -54,7 +57,7 @@ class TestMigrationHa(TestCase):
 
     @patch('suse_migration_services.command.Command.run')
     @patch('os.chroot')
-    @patch('suse_migration_services.units.ha_migration._corosync_conf_exists')
+    @patch('suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists')
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     def test_main_failure(
         self,

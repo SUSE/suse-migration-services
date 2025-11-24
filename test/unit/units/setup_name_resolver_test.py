@@ -5,15 +5,25 @@ from unittest.mock import (
 from pytest import raises
 
 from suse_migration_services.units.setup_name_resolver import (
-    main, has_host_resolv_setup
+    main, SetupNameResolver
 )
 from suse_migration_services.exceptions import (
     DistMigrationNameResolverException
 )
 
 
-class TestSetupNameResolver(object):
-    @patch('suse_migration_services.units.setup_name_resolver.has_host_resolv_setup')
+class TestSetupNameResolver:
+    @patch('suse_migration_services.logger.Logger.setup')
+    def setup(self, mock_Logger_setup):
+        self.name_resolver = SetupNameResolver()
+        self.name_resolver.root_path = '/system-root'
+        self.name_resolver.resolv_conf = '/system-root/etc/resolv.conf'
+
+    @patch('suse_migration_services.logger.Logger.setup')
+    def setup_method(self, cls, mock_Logger_setup):
+        self.setup()
+
+    @patch('suse_migration_services.units.setup_name_resolver.SetupNameResolver.has_host_resolv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_name_resolver.Fstab')
@@ -30,7 +40,7 @@ class TestSetupNameResolver(object):
             main()
         assert not mock_shutil_copy.called
 
-    @patch('suse_migration_services.units.setup_name_resolver.has_host_resolv_setup')
+    @patch('suse_migration_services.units.setup_name_resolver.SetupNameResolver.has_host_resolv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_name_resolver.Fstab')
@@ -63,7 +73,7 @@ class TestSetupNameResolver(object):
             return_value=io.StringIO('# foo\n# bar\nsearch domain'),
             create=True
         ):
-            assert has_host_resolv_setup('foo') is True
+            assert self.name_resolver.has_host_resolv_setup() is True
 
     def test_resolv_empty_without_info(self):
         with patch(
@@ -71,9 +81,9 @@ class TestSetupNameResolver(object):
             return_value=io.StringIO('#foo\n#bar\n'),
             create=True
         ):
-            assert has_host_resolv_setup('foo') is False
+            assert self.name_resolver.has_host_resolv_setup() is False
 
-    @patch('suse_migration_services.units.setup_name_resolver.has_host_resolv_setup')
+    @patch('suse_migration_services.units.setup_name_resolver.SetupNameResolver.has_host_resolv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_name_resolver.Fstab')
