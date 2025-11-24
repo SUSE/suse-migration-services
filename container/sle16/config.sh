@@ -35,6 +35,7 @@ for service in \
     suse-migration-container-btrfs-snapshot-post-migration.service \
     suse-migration-container-regenerate-initrd.service \
     suse-migration-container-wicked-networkmanager.service \
+    suse-migration-container-pam-config.service \
     suse-migration-container-ha.service
 do
     systemctl enable "${service}"

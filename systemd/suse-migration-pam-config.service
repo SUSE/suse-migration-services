@@ -1,0 +1,13 @@
+[Unit]
+Description=PAM configuration migration
+After=suse-migration.service
+Requisite=suse-migration.service
+Before=suse-migration-regenerate-initrd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/suse-migration-pam-config
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

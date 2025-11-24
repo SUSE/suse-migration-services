@@ -32,6 +32,7 @@ config = {
             'suse-migration=suse_migration_services.units.migrate:main',
             'suse-migration-apparmor-selinux=suse_migration_services.units.apparmor_migration:main',
             'suse-migration-wicked-networkmanager=suse_migration_services.units.wicked_migration:main',
+            'suse-migration-pam-config=suse_migration_services.units.pam_config:main',
             'suse-migration-ha=suse_migration_services.units.ha_migration:main',
             'suse-migration-grub-setup=suse_migration_services.units.grub_setup:main',
             'suse-migration-update-bootloader=suse_migration_services.units.update_bootloader:main',
