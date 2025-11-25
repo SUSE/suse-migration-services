@@ -16,6 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+
+no_reboot=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --no-automated-reboot)
+      no_reboot="migration.noreboot"
+      shift # past argument
+      ;;
+    *)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+  esac
+done
 # Enable shell globbing
 set +o noglob
 
@@ -92,6 +106,9 @@ function get_boot_options {
         esac
         boot_options="${boot_options} ${host_boot_option}"
     done
+    if [ -n "$no_reboot" ]; then
+        boot_options="${boot_options} ${no_reboot}"
+    fi
     echo "${boot_options}"
 }
 

@@ -350,6 +350,15 @@ process by calling the following command:
 ----
 tux > sudo run_migration
 ----
++
+To prevent the system from automatically rebooting after the migration is complete,
+the `--no-automated-reboot` flag can be used. This is useful for debugging
+purposes.
++
+[listing]
+----
+tux > sudo run_migration --no-automated-reboot
+----
 
 Option 2 - Running Migration via reboot::
 +
