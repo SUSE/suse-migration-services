@@ -1,0 +1,119 @@
+# Copyright (c) 2025 SUSE Software Solutions Germany GmbH.  All rights reserved.
+#
+# This file is part of suse-migration-services.
+#
+# suse-migration-services is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# suse-migration-services is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
+
+
+function create_systemd_linkfile()
+{
+    local dev
+    dev="$1"
+
+    link_file=/etc/systemd/network/70-persistent-net-"${dev}".link
+    test -e "${link_file}" && return
+
+    ID_PATH=$(
+        udevadm info -q property --property=ID_PATH \
+            /sys/class/net/"${dev}"
+        )
+    ID_PATH=${ID_PATH#ID_PATH=}
+    ID_NET_DRIVER=$(
+        udevadm info -q property --property=ID_NET_DRIVER \
+            /sys/class/net/"${dev}"
+        )
+    ID_NET_DRIVER=${ID_NET_DRIVER#ID_NET_DRIVER=}
+    if [ -z "$ID_PATH" ] || [ -z "$ID_NET_DRIVER" ]; then
+        echo "[ERROR] failed to create systemd.link file for ${dev}"
+        exit 1
+    fi
+
+    grep -sE '^Name="?'"$dev"'"?$' \
+        /etc/systemd/network/*.link && return
+    grep -sE '^\s*[^#].*[ \t,]NAME="'"$dev"'"$' \
+        /etc/udev/rules.d/*.rules && return
+
+    echo "Create $link_file with Path=$ID_PATH Driver=$ID_NET_DRIVER"
+    cat > "${link_file}" <<EOT
+# This file was created from suse-migration-services
+[Match]
+Path=$ID_PATH
+Driver=$ID_NET_DRIVER
+
+[Link]
+NamePolicy=
+Name=$dev
+EOT
+}
+
+
+function biosdevname_enabled() 
+{
+    enabled=false
+    if [ -e /sys/class/dmi/id/sys_vendor ]; then
+        if grep -q ^Dell /sys/class/dmi/id/sys_vendor; then
+            enabled=true
+        fi
+    fi
+
+    if grep -wq "biosdevname=1" /proc/cmdline; then
+        enabled=true
+    fi
+
+    if grep -wq "biosdevname=0" /proc/cmdline; then
+        enabled=false
+    fi
+
+    if ! command -v biosdevname >/dev/null; then
+        enabled=false
+    fi
+
+    ${enabled}
+}
+
+
+function setup_wicked_to_NetworkManager_prereqs {
+    # """
+    # Set up required files for wicked to NetworkManager migration
+    #
+    # Only applies for SLE16
+    # """
+    if [ -x "$(command -v wicked)" ]; then
+        mkdir -p /var/cache/wicked_config
+        wicked show-config > /var/cache/wicked_config/config.xml
+    fi
+
+    # Create systemd.link file for VMWARE or Hyper-V virtual interfaces
+    # (bsc#1250076)
+    for netdev in /sys/class/net/*; do
+        dev=$(basename "${netdev}")
+
+        if grep -E '^(00:0c:29:|00:50:56:|00:15:5d:)' \
+              /sys/class/net/"${dev}"/address >/dev/null; then
+            create_systemd_linkfile "$dev"
+        fi
+    done
+
+    # Creating systemd.link files for all interfaces, 
+    # renamed by biosdevname. (bsc#1253963)
+    if biosdevname_enabled; then
+        for netdev in /sys/class/net/*; do
+            dev=$(basename "${netdev}")
+            biosname=$(biosdevname --policy physical --smbios 2.6 --nopirq -i "$dev")
+            if [ "$dev" == "$biosname" ]; then
+                create_systemd_linkfile "$dev"
+            fi
+        done
+    fi
+}
