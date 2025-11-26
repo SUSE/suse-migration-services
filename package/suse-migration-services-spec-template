@@ -74,6 +74,16 @@ Provides:	  python3-migration = %{version}-%{release}
 %description -n  %{pythonpkgname}
 Python based implementation for suse major code stream upgrade system
 
+%package          -n suse-migration-scripts
+Summary:          The common scripts collection for migrations
+Group:            System/Management
+Requires:         bash
+Requires:         grep
+BuildArch:        noarch
+
+%description -n suse-migration-scripts
+Common script collection for migrations.
+
 %package          -n suse-migration-pre-checks
 Summary:          The pre-checks code used with the python migration module
 Group:            System/Management
@@ -98,6 +108,7 @@ Group:            System/Management
 Requires:         podman
 Requires:         sysvinit-tools
 Requires:         sudo
+Requires:         suse-migration-scripts
 BuildArch:        noarch
 
 %description -n suse-migration
@@ -123,6 +134,9 @@ The migrate tool to start the migration as container based process
 
 install -D -m 755 tools/run_migration \
     %{buildroot}%{_sbindir}/run_migration
+
+install -D -m 755 tools/network_pre.functions \
+    %{buildroot}%{_datarootdir}/suse_migration_services/network_pre.functions
 
 install -D -m 644 systemd/suse-migration-mount-system.service \
     %{buildroot}%{_unitdir}/suse-migration-mount-system.service
@@ -305,6 +319,10 @@ install -D -m 755 tools/migrate \
 %files -n %{pythonpkgname}
 %{python_sitelib}/suse_migration_services
 %{python_sitelib}/suse_migration_services-%{version}*-info
+
+%files -n suse-migration-scripts
+%dir %{_datarootdir}/suse_migration_services
+%{_datarootdir}/suse_migration_services
 
 %files -n suse-migration-pre-checks
 %{_bindir}/suse-migration-pre-checks

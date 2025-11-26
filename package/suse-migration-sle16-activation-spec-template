@@ -31,23 +31,12 @@ Requires(post):   util-linux-systemd
 Requires(postun): util-linux-systemd
 Requires(pre):	  sed
 Requires(pre):	  zypper
-Requires(pre):    suse-migration-sle16-scripts
+Requires(pre):    suse-migration-scripts
 ExclusiveArch:    aarch64 ppc64le x86_64
 
 %description -n suse-migration-sle16-activation
 Script code to activate the SLE16 migration image to be booted at
 next reboot of the machine.
-
-%package          -n suse-migration-sle16-scripts
-Summary:          The migrate helper scripts collection
-Group:            System/Management
-Requires:         bash
-Requires:         wicked
-Requires:         grep
-BuildArch:        noarch
-
-%description -n suse-migration-sle16-scripts
-Helper script collection to migrate to sle16.
 
 %prep
 %setup -q -n suse_migration_services-%{version}
@@ -55,9 +44,6 @@ Helper script collection to migrate to sle16.
 %install
 install -D -m 755 grub.d/99_migration \
     %{buildroot}/etc/grub.d/99_migration
-
-install -D -m 755 tools/network_pre.functions \
-    %{buildroot}%{_datarootdir}/suse_migration_services/network_pre.functions
 
 %pre
 # Prevent installation for CPUs that are too old
@@ -91,9 +77,5 @@ setup_wicked_to_NetworkManager_prereqs
 %dir /etc/grub.d
 /etc/grub.d/*
 %ghost /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
-
-%files -n suse-migration-sle16-scripts
-%dir %{_datarootdir}/suse_migration_services
-%{_datarootdir}/suse_migration_services/network_pre.functions
 
 %changelog
