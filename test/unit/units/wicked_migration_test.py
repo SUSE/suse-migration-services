@@ -3,17 +3,23 @@ from unittest.mock import (
     patch, call
 )
 
+from suse_migration_services.drop_components import DropComponents
 from suse_migration_services.units.wicked_migration import main
 from suse_migration_services.exceptions import (
     DistMigrationWickedMigrationException
 )
 
 
-@patch('suse_migration_services.logger.Logger.setup')
-class TestMigrationWicked(object):
+class TestMigrationWicked:
+    @patch.object(DropComponents, 'drop_package')
+    @patch.object(DropComponents, 'drop_perform')
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('glob.iglob')
-    def test_main(self, mock_iglob, mock_Command_run, mock_logger_setup):
+    def test_main(
+        self, mock_iglob, mock_Command_run,
+        mock_logger_setup, mock_drop_perform, mock_drop_package
+    ):
         mock_iglob.return_value = [
             '/etc/NetworkManager/system-connections/some.nmconnection'
         ]
@@ -45,9 +51,14 @@ class TestMigrationWicked(object):
                 ]
             )
         ]
+        mock_drop_package.assert_called_once_with('wicked')
+        mock_drop_perform.assert_called_once_with()
 
+    @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
-    def test_main_raises(self, mock_Command_run, mock_logger_setup):
+    def test_main_raises(
+        self, mock_Command_run, mock_logger_setup
+    ):
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationWickedMigrationException):
             main()
