@@ -74,6 +74,12 @@ class WickedToNetworkManager(DropComponents):
                 Command.run(
                     ['cp', connection, nm_connections_path]
                 )
+            self.log.info('Drop wicked from migrated system')
+            self.drop_package('wicked')
+            self.drop_package('wicked-service')
+            if self.package_installed('biosdevname'):
+                self.drop_package('biosdevname')
+            self.drop_perform()
         except Exception as issue:
             message = 'wicked to NetworkManager migration failed with {}'.format(
                 issue
