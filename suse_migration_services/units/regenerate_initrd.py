@@ -34,7 +34,8 @@ class RegenerateBootImage:
         """
         DistMigration create a new initrd with added modules
 
-        Run dracut to build a new initrd that includes multipath modules
+        Run dracut to build a new initrd taking into account the
+        dracut module configuration at call time
         """
         Logger.setup()
         self.log = logging.getLogger(Defaults.get_migration_log_name())
@@ -46,6 +47,10 @@ class RegenerateBootImage:
             self.log.info('Creating a new host independent initrd')
             self._dracut_bind_mounts()
             self._run_dracut()
+        else:
+            self.log.info(
+                'No action needed, dracut was called during installation'
+            )
 
     def _dracut_bind_mounts(self):
         """

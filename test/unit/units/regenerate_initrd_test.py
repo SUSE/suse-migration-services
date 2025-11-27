@@ -55,6 +55,18 @@ class TestRegenInitrd:
     @patch('os.path.exists')
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('suse_migration_services.command.Command.run')
+    def test_main_initrd_skipped_because_handled_at_install_time(
+        self, mock_Command_run, mock_get_migration_config_file,
+        mock_os_path_exists, mock_logger_setup
+    ):
+        with self._caplog.at_level(logging.INFO):
+            main()
+            assert 'No action needed' in self._caplog.text
+
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('os.path.exists')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch('suse_migration_services.command.Command.run')
     def test_dracut_bind_mounts_raises_on_regen_initrd(
         self, mock_Command_run, mock_get_migration_config_file,
         mock_os_path_exists, mock_logger_setup
