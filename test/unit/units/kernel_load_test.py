@@ -9,7 +9,7 @@ from pytest import (
 )
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.units.kernel_load import (
-    main, _get_cmdline
+    main, KernelKexec
 )
 from suse_migration_services.exceptions import (
     DistMigrationKernelRebootException
@@ -27,12 +27,14 @@ class TestKernelLoad(object):
         self, mock_os_path_exists, mock_logger_setup
     ):
         mock_os_path_exists.return_value = False
+        new_kernel = KernelKexec()
         with self._caplog.at_level(logging.ERROR):
             with raises(DistMigrationKernelRebootException):
-                _get_cmdline(Defaults.get_grub_config_file())
+                new_kernel._get_cmdline(Defaults.get_grub_config_file())
 
     def test_get_cmd_line(self, mock_path_exists, mock_logger_setup):
         mock_path_exists.return_value = True
+        new_kernel = KernelKexec()
         with open('../data/fake_grub.cfg') as fake_grub:
             fake_grub_data = fake_grub.read()
         with patch('builtins.open', create=True) as mock_open:
@@ -42,7 +44,7 @@ class TestKernelLoad(object):
             grub_cmd_content = \
                 'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
                 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = _get_cmdline(
+            result = new_kernel._get_cmdline(
                 os.path.basename(Defaults.get_target_kernel())
             )
             mock_open.assert_called_once_with(
@@ -52,6 +54,7 @@ class TestKernelLoad(object):
 
     def test_get_cmd_line_linuxefi(self, mock_path_exists, mock_logger_setup):
         mock_path_exists.return_value = True
+        new_kernel = KernelKexec()
         with open('../data/fake_grub_linuxefi.cfg') as fake_grub:
             fake_grub_data = fake_grub.read()
         with patch('builtins.open', create=True) as mock_open:
@@ -61,7 +64,7 @@ class TestKernelLoad(object):
             grub_cmd_content = \
                 'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
                 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = _get_cmdline(
+            result = new_kernel._get_cmdline(
                 os.path.basename(Defaults.get_target_kernel())
             )
             mock_open.assert_called_once_with(
@@ -73,6 +76,7 @@ class TestKernelLoad(object):
         self, mock_path_exists, mock_logger_setup
     ):
         mock_path_exists.return_value = True
+        new_kernel = KernelKexec()
         with open('../data/fake_grub_linux_var.cfg') as fake_grub:
             fake_grub_data = fake_grub.read()
         with patch('builtins.open', create=True) as mock_open:
@@ -82,7 +86,7 @@ class TestKernelLoad(object):
             grub_cmd_content = \
                 'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
                 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = _get_cmdline(
+            result = new_kernel._get_cmdline(
                 os.path.basename(Defaults.get_target_kernel())
             )
             mock_open.assert_called_once_with(
@@ -94,6 +98,7 @@ class TestKernelLoad(object):
         self, mock_path_exists, mock_logger_setup
     ):
         mock_path_exists.return_value = True
+        new_kernel = KernelKexec()
         with open('../data/fake_grub_with_bootpart.cfg') as fake_grub:
             fake_grub_data = fake_grub.read()
         with patch('builtins.open', create=True) as mock_open:
@@ -103,7 +108,7 @@ class TestKernelLoad(object):
             grub_cmd_content = \
                 'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
                 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = _get_cmdline(
+            result = new_kernel._get_cmdline(
                 os.path.basename(Defaults.get_target_kernel())
             )
             mock_open.assert_called_once_with(
@@ -114,7 +119,7 @@ class TestKernelLoad(object):
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('shutil.copy')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.kernel_load._get_cmdline')
+    @patch('suse_migration_services.units.kernel_load.KernelKexec._get_cmdline')
     def test_main_raises_on_kernel_load(
         self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
         mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
@@ -150,7 +155,7 @@ class TestKernelLoad(object):
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('shutil.copy')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.kernel_load._get_cmdline')
+    @patch('suse_migration_services.units.kernel_load.KernelKexec._get_cmdline')
     def test_main(
         self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
         mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
@@ -180,7 +185,7 @@ class TestKernelLoad(object):
     @patch.object(Defaults, 'get_migration_config_file')
     @patch('shutil.copy')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.kernel_load._get_cmdline')
+    @patch('suse_migration_services.units.kernel_load.KernelKexec._get_cmdline')
     def test_main_hard_reboot(
         self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
         mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup

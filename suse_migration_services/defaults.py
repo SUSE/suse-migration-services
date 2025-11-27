@@ -136,8 +136,8 @@ class Defaults:
     def get_os_release():
         with open('/etc/os-release', 'r') as handle:
             valid_pairs = []
-            # Read the whole file, strip leading/trailing whitespace from the content,
-            # then split into lines.
+            # Read the whole file, strip leading/trailing whitespace
+            # from the content, then split into lines.
             raw_lines = handle.read().strip().split(os.linesep)
 
             for line_text in raw_lines:
@@ -151,10 +151,12 @@ class Defaults:
                 if len(parts) == 2:
                     key, value = parts
                     valid_pairs.append((key.lower(), value.strip('\'"')))
-                # else: malformed line (e.g., no '='), ignore it as per os-release behavior
+                # else: malformed line (e.g., no '='),
+                # ignore it as per os-release behavior
 
             if not valid_pairs:
-                # Handle cases where /etc/os-release is empty or contains only comments/invalid lines
+                # Handle cases where /etc/os-release is
+                # empty or contains only comments/invalid lines
                 return namedtuple('OSRelease', [])()
 
             keys, values = zip(*valid_pairs)
@@ -179,3 +181,38 @@ class Defaults:
                 [Defaults.get_system_root_path(), '/etc/default/grub']
             )
         )
+
+    @staticmethod
+    def update_env(preserve_info):
+        """
+        Update runtime environment with preserve_info dict
+        """
+        proxy_env = {}
+        for _, preserve_files in preserve_info.items():
+            if Defaults.get_proxy_path() in preserve_files:
+                with open(Defaults.get_proxy_path(), 'r') as proxy_file:
+                    for line in proxy_file.readlines():
+                        if not (line.startswith('#') or line.startswith(os.linesep)):
+                            # DMS currently takes http, https and ftp protocols
+                            # into consideration, so lower case them is ok
+                            key_value = line.lower(). \
+                                replace(os.linesep, ''). \
+                                replace('"', ''). \
+                                split('=')
+                            proxy_env.update(dict([key_value]))
+        if proxy_env.get('proxy_enabled') == 'yes':
+            del proxy_env['proxy_enabled']
+            os.environ.update(proxy_env)
+
+    @staticmethod
+    def log_env(log):
+        """
+        Provide information about the current environment.
+        """
+        log.info('Env variables')
+        env = ''
+        for key, value in sorted(os.environ.items()):
+            env += '{key}: {value}{newline}'.format(
+                key=key, value=value, newline=os.linesep
+            )
+        log.info(env)

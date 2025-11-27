@@ -24,31 +24,41 @@ from suse_migration_services.logger import Logger
 from suse_migration_services.exceptions import DistMigrationException
 
 
+class HighAvailabilityExtension:
+    def __init__(self):
+        """
+        Migration for high availability extension
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
+
+    def perform(self):
+        self.log.info('Running migration for high availability extension')
+        self.log.info('chroot to %s', self.root_path)
+
+        os.chroot(self.root_path)
+
+        if not self._corosync_conf_exists():
+            self.log.info(
+                'corosync.conf not found. Skipped HA extension migration.'
+            )
+            return
+        try:
+            Command.run(
+                [
+                    'crm', 'cluster', 'health', 'sles16', '--local', '--fix',
+                ]
+            )
+        except Exception as issue:
+            message = 'Migration for high availability failed with: {}'
+            self.log.error(message.format(issue))
+            raise DistMigrationException(message.format(issue))
+
+    def _corosync_conf_exists(self):
+        return os.access('/etc/corosync/corosync.conf', os.F_OK)
+
+
 def main():
-    """Migration for high availability extension"""
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    root_path = Defaults.get_system_root_path()
-
-    log.info('Running migration for high availability extension')
-    log.info('chroot to %s', root_path)
-    os.chroot(root_path)
-    if not _corosync_conf_exists():
-        log.info('corosync.conf not found. Skipped migration for high availablity extension.')
-        return
-    try:
-        Command.run(
-            [
-                'crm', 'cluster', 'health', 'sles16', '--local', '--fix',
-            ]
-        )
-    except Exception as issue:
-        message = 'Migration for high availability failed with {}'.format(
-            issue
-        )
-        log.error('%s', message)
-        raise DistMigrationException(message)
-
-
-def _corosync_conf_exists():
-    return os.access('/etc/corosync/corosync.conf', os.F_OK)
+    ha_setup = HighAvailabilityExtension()
+    ha_setup.perform()

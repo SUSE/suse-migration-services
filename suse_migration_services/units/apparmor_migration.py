@@ -23,56 +23,66 @@ import re
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.zypper import Zypper
+from suse_migration_services.drop_components import DropComponents
 
 from suse_migration_services.exceptions import (
     DistMigrationAppArmorMigrationException
 )
 
 
+class ApparmorToSelinux(DropComponents):
+    def __init__(self):
+        """
+        DistMigration migrate from apparmor to SELinux
+
+        Setup grub to use selinux instead of apparmor
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
+        super().__init__()
+
+    def perform(self):
+        try:
+            self.log.info('Running AppArmor to SELinux migration')
+            self.log.info(
+                'Replace occurrence of security=apparmor with '
+                'security=selinux in /etc/default/grub'
+            )
+            pattern = r"security=apparmor\b"
+            with fileinput.input(
+                Defaults.get_grub_default_file(), inplace=True
+            ) as finput:
+                for line in finput:
+                    print(re.sub(pattern, "security=selinux", line), end='')
+
+            self.log.info('Installing patterns-base-selinux')
+            # selinux migration is allowed to fail, it can be fixed
+            # after the migration
+            zypper_call = Zypper.run(
+                [
+                    '--no-cd',
+                    '--non-interactive',
+                    '--gpg-auto-import-keys',
+                    'install',
+                    '--auto-agree-with-licenses',
+                    '--allow-vendor-change',
+                    '--download', 'in-advance',
+                    '--replacefiles',
+                    '--allow-downgrade',
+                    '--no-recommends',
+                    'patterns-base-selinux'
+                ], raise_on_error=False, chroot=self.root_path
+            )
+            zypper_call.log_if_failed(self.log)
+        except Exception as issue:
+            message = 'Apparmor to SELinux migration failed with {0}'.format(
+                issue
+            )
+            self.log.error(message)
+            raise DistMigrationAppArmorMigrationException(message)
+
+
 def main():
-    """
-    DistMigration migrate from apparmor to SELinux
-
-    Setup grub to use selinux instead of apparmor
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-
-    root_path = Defaults.get_system_root_path()
-
-    try:
-        log.info('Running AppArmor to SELinux migration')
-        log.info(
-            'Replace occurrence of security=apparmor with '
-            'security=selinux in /etc/default/grub'
-        )
-        pattern = r"security=apparmor\b"
-        with fileinput.input(
-            Defaults.get_grub_default_file(), inplace=True
-        ) as finput:
-            for line in finput:
-                print(re.sub(pattern, "security=selinux", line), end='')
-
-        log.info('Installing patterns-base-selinux')
-        # selinux migration is allowed to fail, it can be fixed
-        # after the migration
-        zypper_call = Zypper.run(
-            [
-                '--no-cd',
-                '--non-interactive',
-                '--gpg-auto-import-keys',
-                'install',
-                '--auto-agree-with-licenses',
-                '--allow-vendor-change',
-                '--download', 'in-advance',
-                '--replacefiles',
-                '--allow-downgrade',
-                '--no-recommends',
-                'patterns-base-selinux'
-            ], raise_on_error=False, chroot=root_path
-        )
-        zypper_call.log_if_failed(log)
-    except Exception as issue:
-        message = 'Apparmor to SELinux migration failed with {0}'.format(issue)
-        log.error(message)
-        raise DistMigrationAppArmorMigrationException(message)
+    system_security = ApparmorToSelinux()
+    system_security.perform()

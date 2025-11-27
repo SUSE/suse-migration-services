@@ -12,8 +12,7 @@ from unittest.mock import (
 from pytest import raises
 
 from suse_migration_services.units.prepare import (
-    main, update_regionsrv_setup, get_regionsrv_client_file_location,
-    get_regionsrv_certs_path, report_if_regionsrv_certs_not_found
+    main, PrepareMigration
 )
 
 from suse_migration_services.suse_connect import SUSEConnect
@@ -23,12 +22,23 @@ from suse_migration_services.exceptions import (
 )
 
 
-@patch('suse_migration_services.units.prepare.update_regionsrv_setup')
-@patch('suse_migration_services.logger.Logger.setup')
-@patch('suse_migration_services.units.prepare.Fstab')
-@patch('suse_migration_services.command.Command.run')
-class TestSetupPrepare(object):
-    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
+class TestSetupPrepare:
+    @patch('suse_migration_services.logger.Logger.setup')
+    def setup(self, mock_Logger_setup):
+        self.log = Mock(spec=['info'])
+        self.prepare = PrepareMigration()
+        self.prepare.root_path = '/foo'
+        self.prepare.log = self.log
+
+    @patch('suse_migration_services.logger.Logger.setup')
+    def setup_method(self, cls, mock_Logger_setup):
+        self.setup()
+
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('builtins.open')
@@ -51,8 +61,12 @@ class TestSetupPrepare(object):
         with raises(DistMigrationZypperMetaDataException):
             main()
 
-    @patch('suse_migration_services.units.prepare.get_regionsrv_certs_path')
-    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_certs_path')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('os.path.exists')
@@ -83,7 +97,11 @@ class TestSetupPrepare(object):
             with raises(DistMigrationZypperMetaDataException):
                 main()
 
-    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main_raises_on_regionsrv_client_file_exists(
@@ -106,7 +124,11 @@ class TestSetupPrepare(object):
             with raises(DistMigrationZypperMetaDataException):
                 main()
 
-    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('builtins.open')
@@ -136,7 +158,11 @@ class TestSetupPrepare(object):
                 call(['umount', '/system-root/dev'], raise_on_error=False)
             ]
 
-    @patch('suse_migration_services.units.prepare.get_regionsrv_certs_path')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_certs_path')
     @patch('os.path.isfile')
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
@@ -308,8 +334,12 @@ class TestSetupPrepare(object):
             ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
         )
 
-    @patch('suse_migration_services.units.prepare.get_regionsrv_certs_path')
-    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_certs_path')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
     @patch('suse_migration_services.units.prepare.Path')
@@ -340,12 +370,14 @@ class TestSetupPrepare(object):
             with raises(DistMigrationZypperMetaDataException):
                 main()
 
-    @patch('suse_migration_services.units.prepare.get_regionsrv_client_file_location')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
     @patch('os.path.exists')
     def test_update_regionsrv_setup(
         self, mock_os_path_exists, mock_get_regionsrv_client_file_location,
-        mock_Command_run, mock_Fstab, mock_logger_setup,
-        mock_update_regionsrv_setup
+        mock_Command_run, mock_Fstab, mock_logger_setup
     ):
         # test with volume based block device returned from findmnt
         mock_command_return_values = [
@@ -362,9 +394,11 @@ class TestSetupPrepare(object):
         shutil.copy(
             '../data/regionserverclnt-azure.cfg', tmp_regionserverclnt.name
         )
-        update_regionsrv_setup(
-            '/system-root', tmp_regionserverclnt.name
-        )
+        self.prepare.root_path = '/system-root'
+        self.prepare.suse_cloud_regionsrv_setup = tmp_regionserverclnt.name
+
+        self.prepare.update_regionsrv_setup()
+
         assert mock_Command_run.call_args_list == [
             call(
                 [
@@ -382,8 +416,8 @@ class TestSetupPrepare(object):
         regionsrv_setup = ConfigParser()
         regionsrv_setup.read(tmp_regionserverclnt.name)
         assert regionsrv_setup.get('instance', 'dataProvider') == \
-            '/usr/bin/azuremetadata --api latest --subscriptionId --billingTag ' \
-            '--attestedData --signature --xml --device /dev/sda'
+            '/usr/bin/azuremetadata --api latest --subscriptionId ' \
+            '--billingTag --attestedData --signature --xml --device /dev/sda'
 
         # test with standard block device returned from findmnt
         mock_command_return_values = [
@@ -393,16 +427,18 @@ class TestSetupPrepare(object):
         shutil.copy(
             '../data/regionserverclnt-azure.cfg', tmp_regionserverclnt.name
         )
-        update_regionsrv_setup(
-            '/system-root', tmp_regionserverclnt.name
-        )
+        self.prepare.update_regionsrv_setup()
 
         regionsrv_setup = ConfigParser()
         regionsrv_setup.read(tmp_regionserverclnt.name)
         assert regionsrv_setup.get('instance', 'dataProvider') == \
-            '/usr/bin/azuremetadata --api latest --subscriptionId --billingTag ' \
-            '--attestedData --signature --xml --device /dev/sdb'
+            '/usr/bin/azuremetadata --api latest --subscriptionId ' \
+            '--billingTag --attestedData --signature --xml --device /dev/sdb'
 
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
     @patch('os.listdir')
     @patch('os.path.isdir')
     @patch('os.path.exists')
@@ -413,9 +449,13 @@ class TestSetupPrepare(object):
     ):
         mock_path_isdir.side_effect = [False, True]
         mock_os_listdir.return_value = ['fooSMT']
-        assert get_regionsrv_client_file_location('/foo') == \
+        assert self.prepare.get_regionsrv_client_file_location() == \
             '/foo/var/lib/cloudregister'
 
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
     @patch('os.path.isdir')
     @patch('os.path.exists')
     def test_get_regionsrv_client_file_location_raises(
@@ -425,8 +465,12 @@ class TestSetupPrepare(object):
     ):
         mock_path_isdir.side_effect = [False, False]
         with raises(DistMigrationZypperMetaDataException):
-            get_regionsrv_client_file_location('/foo')
+            self.prepare.get_regionsrv_client_file_location()
 
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
     def test_get_regionsrv_certs_path_certlocation(
         self,
         mock_Command_run,
@@ -434,19 +478,16 @@ class TestSetupPrepare(object):
         mock_logger_setup,
         mock_update_regionsrv_setup,
     ):
+        self.prepare.suse_cloud_regionsrv_setup = \
+            '/some/file/that/does/not/exist'
         tmp_regionserverclnt = NamedTemporaryFile()
 
         # assert fallback path returned if client config is missing
-        assert get_regionsrv_certs_path(
-            '/some/file/that/does/not/exist',
-            'foo'
-        ) == 'foo'
+        assert self.prepare.get_regionsrv_certs_path('foo') == 'foo'
 
         # assert fallback path returned if client config is empty
-        assert get_regionsrv_certs_path(
-            tmp_regionserverclnt.name,
-            'foo'
-        ) == 'foo'
+        self.prepare.suse_cloud_regionsrv_setup = tmp_regionserverclnt.name
+        assert self.prepare.get_regionsrv_certs_path('foo') == 'foo'
 
         # test we get the fallback certlocation when none specified in config
         shutil.copy(
@@ -454,10 +495,7 @@ class TestSetupPrepare(object):
             tmp_regionserverclnt.name
         )
 
-        assert get_regionsrv_certs_path(
-            tmp_regionserverclnt.name,
-            'foo'
-        ) == 'foo'
+        assert self.prepare.get_regionsrv_certs_path('foo') == 'foo'
 
         # test we get the standard certlocation from the config
         shutil.copy(
@@ -465,10 +503,8 @@ class TestSetupPrepare(object):
             tmp_regionserverclnt.name
         )
 
-        assert get_regionsrv_certs_path(
-            tmp_regionserverclnt.name,
-            'foo'
-        ) == '/usr/lib/regionService/certs'
+        assert self.prepare.get_regionsrv_certs_path('foo') == \
+            '/usr/lib/regionService/certs'
 
         # test we get the old certlocation from an old config
         shutil.copy(
@@ -476,11 +512,13 @@ class TestSetupPrepare(object):
             tmp_regionserverclnt.name
         )
 
-        assert get_regionsrv_certs_path(
-            tmp_regionserverclnt.name,
-            'foo'
-        ) == '/var/lib/regionService/certs'
+        assert self.prepare.get_regionsrv_certs_path('foo') == \
+            '/var/lib/regionService/certs'
 
+    @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.prepare.Fstab')
+    @patch('suse_migration_services.command.Command.run')
     def test_report_if_regionsrv_certs_not_found(
         self,
         mock_Command_run,
@@ -490,20 +528,18 @@ class TestSetupPrepare(object):
     ):
         tmp_certs_dir = mkdtemp()
 
-        log = Mock(spec=['info'])
-
         # verify that log.info() is called when dir has no pem files
-        report_if_regionsrv_certs_not_found(tmp_certs_dir, log)
-        assert len(log.info.call_args_list) == 1
+        self.prepare.report_if_regionsrv_certs_not_found(tmp_certs_dir)
+        assert len(self.log.info.call_args_list) == 1
 
         # reset the log mock object
-        log.reset_mock()
+        self.log.reset_mock()
 
         # verify that log.info() is not called when dir has pem files
         tmp_pem_path = os.path.join(tmp_certs_dir, 'dummy_cert.pem')
         open(tmp_pem_path, 'w').close()
-        report_if_regionsrv_certs_not_found(tmp_certs_dir, log)
-        assert len(log.info.call_args_list) == 0
+        self.prepare.report_if_regionsrv_certs_not_found(tmp_certs_dir)
+        assert len(self.log.info.call_args_list) == 0
 
         # cleanup tmp_certs_dir
         shutil.rmtree(tmp_certs_dir, ignore_errors=True)

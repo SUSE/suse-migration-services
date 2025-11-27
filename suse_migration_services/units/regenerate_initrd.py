@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
-"""systemd service to build a host independant initrd"""
+import os
 import logging
 
 # project
@@ -29,101 +29,79 @@ from suse_migration_services.exceptions import (
 )
 
 
-def main():
-    """
-    DistMigration create a new initrd with added modules
+class RegenerateBootImage:
+    def __init__(self):
+        """
+        DistMigration create a new initrd with added modules
 
-    Run dracut to build a new initrd that includes multipath modules
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    log.info('Running initrd creation service')
+        Run dracut to build a new initrd that includes multipath modules
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
 
-    if MigrationConfig().is_host_independent_initd_requested():
-        log.info('Creating a new host independent initrd')
-        root_path = Defaults.get_system_root_path()
+    def perform(self):
+        self.log.info('Running initrd creation service')
+        if MigrationConfig().is_host_independent_initd_requested():
+            self.log.info('Creating a new host independent initrd')
+            self._dracut_bind_mounts()
+            self._run_dracut()
 
-        dracut_bind_mounts(root_path)
-        run_dracut(root_path)
+    def _dracut_bind_mounts(self):
+        """
+        Function to do bind mounts needed before running dracut
+        """
+        for bind_dir in ['/dev', '/proc', '/sys']:
+            try:
+                self.log.info(
+                    'Running mount --bind {0} {1}'.format(
+                        bind_dir, self.root_path + bind_dir
+                    )
+                )
+                Command.run(
+                    [
+                        'mount', '--bind', bind_dir,
+                        os.path.normpath(
+                            os.sep.join([self.root_path, bind_dir])
+                        )
+                    ]
+                )
+            except Exception as issue:
+                message = 'Unable to mount: {0}'.format(issue)
+                self.log.error(message)
+                raise DistMigrationCommandException(message)
 
-
-def dracut_bind_mounts(root_path,):
-    """Function to do bind mounts needed before running dracut"""
-
-    log = logging.getLogger(Defaults.get_migration_log_name())
-
-    BIND_DIRS = ['/dev', '/proc', '/sys']
-
-    for bind_dir in BIND_DIRS:
+    def _run_dracut(self):
+        """
+        Call dracut as chroot operation
+        """
         try:
-            log.info(
-                'Running mount --bind {0} {1}'.format(bind_dir, root_path + bind_dir)
+            self.log.info('Running dracut service')
+            log_file = Defaults.get_migration_log_file(
+                system_root=False
             )
-            Command.run(
+            command_string = ' '.join(
                 [
-                    'mount',
-                    '--bind',
-                    bind_dir,
-                    root_path + bind_dir
+                    'chroot',
+                    self.root_path,
+                    'dracut',
+                    '--force',
+                    '--verbose',
+                    '--no-host-only',
+                    '--no-hostonly-cmdline',
+                    '--regenerate-all',
+                    '&>>', log_file
                 ]
             )
+            Command.run(
+                ['bash', '-c', command_string]
+            )
         except Exception as issue:
-            log.error(
-                'Unable to mount: {0}'.format(issue)
-            )
-            raise DistMigrationCommandException(
-                'Unable to mount: {0}'.format(
-                    issue
-                )
-            ) from issue
+            message = 'Failed to create new initrd: {}'.format(issue)
+            self.log.error(message)
+            raise DistMigrationCommandException(message)
 
 
-def run_dracut(root_path):
-    """Function run dracut"""
-
-    log = logging.getLogger(Defaults.get_migration_log_name())
-
-    try:
-        log.info(
-            'Running chroot {0} dracut --no-kernel --no-host-only --no-hostonly-cmdline'
-            '--regenerate-all --logfile /tmp/host_independent_initrd.log -f'.format(root_path)
-        )
-        Command.run(
-            [
-                'chroot',
-                root_path,
-                'dracut',
-                '--no-host-only',
-                '--no-hostonly-cmdline',
-                '--regenerate-all',
-                '--logfile',
-                '/tmp/host_independent_initrd.log',
-                '-f'
-            ]
-        )
-        Command.run(
-            [
-                'chroot',
-                root_path,
-                'cat',
-                '/tmp/host_independent_initrd.log',
-                '>> /var/log/distro_migration.log'
-            ]
-        )
-        Command.run(
-            [
-                'chroot',
-                root_path,
-                'rm',
-                '/tmp/host_independent_initrd.log'
-            ]
-        )
-    except Exception as issue:
-        log.error(
-            'Unable to create new initrd with dracut: {0}'.format(issue)
-        )
-        raise DistMigrationCommandException(
-            'Failed to create new initrd: {0}'.format(
-                issue
-            )
-        ) from issue
+def main():
+    boot_image = RegenerateBootImage()
+    boot_image.perform()

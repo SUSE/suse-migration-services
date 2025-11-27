@@ -25,64 +25,67 @@ from suse_migration_services.logger import Logger
 from suse_migration_services.zypper import Zypper
 
 
+class UpdateBootLoader:
+    def __init__(self):
+        """
+        DistMigration install the shim pacakge, enable "Secure boot"
+        and update the bootloader
+        """
+        Logger.setup()
+        self.log = logging.getLogger(Defaults.get_migration_log_name())
+        self.root_path = Defaults.get_system_root_path()
+
+    def perform(self):
+        self.log.info('Running update bootloader service')
+        self.log.info('Installing the shim package')
+        self.install_shim_package()
+        self.log.info('Updating the shimbootloader')
+        self.install_secure_bootloader()
+        self.log.info('Updating the bootloader')
+        self.update_bootloader_config()
+
+    def install_shim_package(self):
+        """
+        Install the shim package
+        """
+        Zypper.run(
+            [
+                '--no-cd',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--root', self.root_path,
+                'install',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download', 'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+                'shim',
+            ]
+        )
+
+    def install_secure_bootloader(self):
+        """
+        Perform shim-install from inside the upgraded system.
+        If the system is not suitable to be setup for shim e.g.
+        not EFI based, we don't consider it as a fatal error
+        and continue while keeping the log information about the
+        attempt.
+        """
+        Command.run(
+            ['chroot', self.root_path, 'shim-install', '--removable'],
+            raise_on_error=False
+        )
+
+    def update_bootloader_config(self):
+        """
+        Perform update-bootloader from inside of the upgraded system
+        """
+        Command.run(
+            ['chroot', self.root_path, '/sbin/update-bootloader', '--reinit']
+        )
+
+
 def main():
-    """
-    DistMigration install the shim pacakge, enable "Secure boot"
-    and update the bootloader
-    """
-    Logger.setup()
-    log = logging.getLogger(Defaults.get_migration_log_name())
-    log.info('Running update bootloader service')
-
-    root_path = Defaults.get_system_root_path()
-
-    log.info('Installing the shim package')
-    install_shim_package(root_path)
-    log.info('Updating the shimbootloader')
-    install_secure_bootloader(root_path)
-    log.info('Updating the bootloader')
-    update_bootloader_config(root_path)
-
-
-def install_shim_package(root_path):
-    """
-    Install the shim package
-    """
-    Zypper.run(
-        [
-            '--no-cd',
-            '--non-interactive',
-            '--gpg-auto-import-keys',
-            '--root', root_path,
-            'install',
-            '--auto-agree-with-licenses',
-            '--allow-vendor-change',
-            '--download', 'in-advance',
-            '--replacefiles',
-            '--allow-downgrade',
-            'shim',
-        ]
-    )
-
-
-def install_secure_bootloader(root_path):
-    """
-    Perform shim-install from inside the upgraded system.
-    If the system is not suitable to be setup for shim e.g.
-    not EFI based, we don't consider it as a fatal error
-    and continue while keeping the log information about the
-    attempt.
-    """
-    Command.run(
-        ['chroot', root_path, 'shim-install', '--removable'],
-        raise_on_error=False
-    )
-
-
-def update_bootloader_config(root_path):
-    """
-    Perform update-bootloader from inside of the upgraded system
-    """
-    Command.run(
-        ['chroot', root_path, '/sbin/update-bootloader', '--reinit']
-    )
+    update_bootloader = UpdateBootLoader()
+    update_bootloader.perform()
