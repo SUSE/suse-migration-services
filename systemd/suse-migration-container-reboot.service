@@ -1,6 +1,6 @@
 [Unit]
 Description=Reboot System
-After=suse-migration-container.service suse-migration-container-apparmor-selinux.service
+After=suse-migration-container.service suse-migration-container-apparmor-selinux.service suse-migration-container-wicked-networkmanager.service suse-migration-container-regenerate-initrd.service suse-migration-container-pam-config.service suse-migration-container-ha.service suse-migration-container-grub-setup.service
 Requires=suse-migration-container.service
 
 [Service]

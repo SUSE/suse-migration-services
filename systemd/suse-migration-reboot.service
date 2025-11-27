@@ -1,6 +1,6 @@
 [Unit]
 Description=Reboot System
-After=suse-migration-kernel-load.service suse-migration-update-bootloader.service suse-migration-apparmor-selinux.service
+After=suse-migration-kernel-load.service suse-migration-update-bootloader.service suse-migration-apparmor-selinux.service suse-migration-wicked-networkmanager.service suse-migration-regenerate-initrd.service suse-migration-pam-config.service suse-migration-ha.service suse-migration-grub-setup.service
 ConditionKernelCommandLine=!migration.noreboot
 
 [Service]
