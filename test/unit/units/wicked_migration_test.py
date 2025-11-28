@@ -51,7 +51,11 @@ class TestMigrationWicked:
                 ]
             )
         ]
-        mock_drop_package.assert_called_once_with('wicked')
+        assert mock_drop_package.call_args_list == [
+            call('wicked'),
+            call('wicked-service'),
+            call('biosdevname'),
+        ]
         mock_drop_perform.assert_called_once_with()
 
     @patch('suse_migration_services.logger.Logger.setup')

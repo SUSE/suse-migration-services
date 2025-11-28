@@ -75,10 +75,9 @@ class WickedToNetworkManager(DropComponents):
                     ['cp', connection, nm_connections_path]
                 )
             self.log.info('Drop wicked from migrated system')
-            # TODO: Please help me identifying all required packages
-            # files and or directories to drop related to the former
-            # wicked system.
             self.drop_package('wicked')
+            self.drop_package('wicked-service')
+            self.drop_package('biosdevname')
             self.drop_perform()
         except Exception as issue:
             message = 'wicked to NetworkManager migration failed with {}'.format(
