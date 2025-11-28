@@ -82,7 +82,7 @@ class MountSystem:
         self.activate_lvm()
 
         self.mount_system(
-            self.root_path, self.read_system_fstab(self.root_path)
+            self.read_system_fstab()
         )
 
         migration_config = MigrationConfig()

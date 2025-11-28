@@ -72,7 +72,7 @@ class TestMountSystem():
             ['mount', '-o', 'remount,rw', '/run/initramfs/isoscan']
         )
         mock_mount_system.assert_called_once_with(
-            '/system-root', mock_read_system_fstab.return_value
+            mock_read_system_fstab.return_value
         )
         mock_update_migration_config_file.assert_called_once_with()
         mock_activate_lvm.assert_called_once_with()
