@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "suse_migration_services"
-version = "2.1.27"
+version = "2.1.28"
 description = "SUSE Distribution Migration Services"
 license = "GPL-3.0-or-later"
 readme = "README.rst"
