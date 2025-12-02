@@ -10,7 +10,10 @@ if level == 'patch':
     patch = int(patch) + 1
 elif level == 'minor':
     minor = int(minor) + 1
+    patch = 0
 elif level == 'major':
     major = int(major) + 1
+    minor = 0
+    patch = 0
 
 print(f'{major}.{minor}.{patch}')
