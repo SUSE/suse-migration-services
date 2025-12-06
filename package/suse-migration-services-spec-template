@@ -93,7 +93,7 @@ Requires:         %{pythonpkgname} = %{version}-%{release}
 Requires:         %{pythons}-Cerberus
 Requires:         %{pythons}-PyYAML
 Requires:         %{pythons}-setuptools
-%if %{sle_version} >= 150700 || %{suse_version} >= 1600
+%if 0%{?sle_version} >= 150700 || 0%{?suse_version} >= 1600
 Requires:         wicked2nm
 %endif
 Conflicts:        suse-migration-sle15-activation < 2.0.33
