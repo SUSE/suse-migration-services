@@ -12,8 +12,15 @@ class TestDropComponents:
     def setup_method(self, cls):
         self.setup()
 
-    def test_drop_package(self):
+    @patch('suse_migration_services.drop_components.Command.run')
+    def test_drop_package(self, mock_Command_run):
+        package_call = Mock()
+        package_call.returncode = 0
+        mock_Command_run.return_value = package_call
         self.drop.drop_package('some')
+        assert self.drop.drop_packages == ['some']
+        package_call.returncode = 1
+        self.drop.drop_package('some_not_installed')
         assert self.drop.drop_packages == ['some']
 
     def test_drop_path(self):
@@ -21,9 +28,13 @@ class TestDropComponents:
         assert self.drop.drop_files_and_directories == ['/system-root/some']
 
     @patch('suse_migration_services.drop_components.Zypper.run')
+    @patch('suse_migration_services.drop_components.Command.run')
     def test_drop_perform_package(
-        self, mock_Zypper_run
+        self, mock_Command_run, mock_Zypper_run
     ):
+        package_call = Mock()
+        package_call.returncode = 0
+        mock_Command_run.return_value = package_call
         self.drop.drop_package('some')
         self.drop.drop_package('some_other')
         self.drop.drop_perform()

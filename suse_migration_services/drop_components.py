@@ -18,10 +18,14 @@
 import os
 import shutil
 import pathlib
+import logging
 
 # project
 from suse_migration_services.zypper import Zypper
+from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
+
+log = logging.getLogger(Defaults.get_migration_log_name())
 
 
 class DropComponents:
@@ -44,7 +48,18 @@ class DropComponents:
         self.root_path = Defaults.get_system_root_path()
 
     def drop_package(self, name):
-        self.drop_packages.append(name)
+        package_call = Command.run(
+            ['chroot', self.root_path, 'rpm', '-q', name],
+            raise_on_error=False
+        )
+        if package_call.returncode == 0:
+            self.drop_packages.append(name)
+        else:
+            log.warning(
+                'Package {} not added to drop list: not installed'.format(
+                    name
+                )
+            )
 
     def drop_path(self, path):
         if self.root_path:
