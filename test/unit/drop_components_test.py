@@ -12,16 +12,18 @@ class TestDropComponents:
     def setup_method(self, cls):
         self.setup()
 
+    def test_drop_package(self):
+        self.drop.drop_package('some')
+        assert self.drop.drop_packages == ['some']
+
     @patch('suse_migration_services.drop_components.Command.run')
-    def test_drop_package(self, mock_Command_run):
+    def test_package_installed(self, mock_Command_run):
         package_call = Mock()
         package_call.returncode = 0
         mock_Command_run.return_value = package_call
-        self.drop.drop_package('some')
-        assert self.drop.drop_packages == ['some']
+        assert self.drop.package_installed('some') is True
         package_call.returncode = 1
-        self.drop.drop_package('some_not_installed')
-        assert self.drop.drop_packages == ['some']
+        assert self.drop.package_installed('some_not_installed') is False
 
     def test_drop_path(self):
         self.drop.drop_path('some')
