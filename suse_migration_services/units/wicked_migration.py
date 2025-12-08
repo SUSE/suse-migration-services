@@ -41,8 +41,18 @@ class WickedToNetworkManager(DropComponents):
         super().__init__()
 
     def perform(self):
-        try:
+        self.log.info('Checking if wicked is setup for network management')
+        wicked_service_path = os.path.join(
+            self.root_path,
+            '/etc/systemd/system/network-online.target.wants/wicked.service'
+        )
+        if os.path.exists(wicked_service_path):
             self.log.info('Running wicked to NetworkManager migration')
+        else:
+            self.log.info('wicked is not setup as network config engine, '
+                          'nothing to do')
+            return
+        try:
             self.log.info('Enabling NetworkManager in migrated system')
             Command.run(
                 [
