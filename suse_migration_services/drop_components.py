@@ -48,18 +48,16 @@ class DropComponents:
         self.root_path = Defaults.get_system_root_path()
 
     def drop_package(self, name):
+        self.drop_packages.append(name)
+
+    def package_installed(self, name):
         package_call = Command.run(
             ['chroot', self.root_path, 'rpm', '-q', name],
             raise_on_error=False
         )
         if package_call.returncode == 0:
-            self.drop_packages.append(name)
-        else:
-            log.warning(
-                'Package {} not added to drop list: not installed'.format(
-                    name
-                )
-            )
+            return True
+        return False
 
     def drop_path(self, path):
         if self.root_path:
