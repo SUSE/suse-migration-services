@@ -19,8 +19,11 @@ import os
 import shutil
 import pathlib
 import logging
+from tempfile import NamedTemporaryFile
+from datetime import datetime
 
 # project
+from suse_migration_services.path import Path
 from suse_migration_services.zypper import Zypper
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
@@ -46,6 +49,16 @@ class DropComponents:
         self.drop_packages = []
         self.drop_files_and_directories = []
         self.root_path = Defaults.get_system_root_path()
+        self.backup_data = NamedTemporaryFile()
+        self.backup_path = os.path.normpath(
+            os.sep.join(
+                [
+                    self.root_path,
+                    Defaults.get_migration_backup_path(),
+                    datetime.now().strftime('%Y-%m-%d')
+                ]
+            )
+        )
 
     def drop_package(self, name):
         self.drop_packages.append(name)
@@ -61,9 +74,13 @@ class DropComponents:
 
     def drop_path(self, path):
         if self.root_path:
-            self.drop_files_and_directories.append(
-                os.path.normpath(os.sep.join([self.root_path, path]))
+            target_path = os.path.normpath(
+                os.sep.join([self.root_path, path])
             )
+            with open(self.backup_data.name, 'a') as backup:
+                backup.write('{}{}'.format(target_path, os.linesep))
+
+            self.drop_files_and_directories.append(target_path)
 
     def drop_perform(self):
         self._uninstall_packages()
@@ -85,6 +102,15 @@ class DropComponents:
 
     def _delete_paths(self):
         if self.drop_files_and_directories:
+            Path.create(self.backup_path)
+            Command.run(
+                [
+                    'rsync', '-avr', '--ignore-missing-args',
+                    '--files-from', self.backup_data.name,
+                    self.root_path,
+                    '{}/'.format(self.backup_path)
+                ]
+            )
             for element in self.drop_files_and_directories:
                 if os.path.isdir(element):
                     shutil.rmtree(element)

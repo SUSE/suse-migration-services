@@ -35,6 +35,10 @@ class Defaults:
         return '/var/log/zypper.solverTestCase'
 
     @staticmethod
+    def get_migration_backup_path():
+        return '/var/migration'
+
+    @staticmethod
     def get_migration_config_file():
         return '/etc/migration-config.yml'
 
