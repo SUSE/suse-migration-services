@@ -29,14 +29,15 @@ class Logger:
         logger = logging.getLogger(Defaults.get_migration_log_name())
         logger.setLevel(logging.INFO)
 
-        log_file = Defaults.get_migration_log_file(system_root)
-        Path.create(os.path.dirname(log_file))
+        if not logger.handlers:
+            log_file = Defaults.get_migration_log_file(system_root)
+            Path.create(os.path.dirname(log_file))
 
-        log_to_file = logging.FileHandler(log_file)
-        log_to_file.setLevel(logging.INFO)
+            log_to_file = logging.FileHandler(log_file)
+            log_to_file.setLevel(logging.INFO)
 
-        log_to_stream = logging.StreamHandler()
-        log_to_stream.setLevel(logging.INFO)
+            log_to_stream = logging.StreamHandler()
+            log_to_stream.setLevel(logging.INFO)
 
-        logger.addHandler(log_to_stream)
-        logger.addHandler(log_to_file)
+            logger.addHandler(log_to_stream)
+            logger.addHandler(log_to_file)
