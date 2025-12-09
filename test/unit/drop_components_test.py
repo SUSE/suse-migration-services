@@ -37,7 +37,7 @@ class TestDropComponents:
             file_handle = mock_open.return_value.__enter__.return_value
             self.drop.drop_path('some/')
             mock_open.assert_called_once_with('tmpfile', 'a')
-            file_handle.write.assert_called_once_with('/system-root/some\n')
+            file_handle.write.assert_called_once_with('some/\n')
         assert self.drop.drop_files_and_directories == ['/system-root/some']
 
     @patch('suse_migration_services.drop_components.Zypper.run')
