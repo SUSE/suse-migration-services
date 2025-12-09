@@ -12,6 +12,7 @@ from suse_migration_services.exceptions import (
 
 class TestMigrationWicked:
     @patch.object(DropComponents, 'drop_package')
+    @patch.object(DropComponents, 'drop_path')
     @patch.object(DropComponents, 'drop_perform')
     @patch.object(DropComponents, 'package_installed')
     @patch('suse_migration_services.logger.Logger.setup')
@@ -24,6 +25,7 @@ class TestMigrationWicked:
         mock_logger_setup,
         mock_package_installed,
         mock_drop_perform,
+        mock_drop_path,
         mock_drop_package
     ):
         mock_package_installed.return_value = True
@@ -63,6 +65,7 @@ class TestMigrationWicked:
             call('wicked-service'),
             call('biosdevname'),
         ]
+        mock_drop_path.assert_called_once_with('/etc/sysconfig/network/')
         mock_drop_perform.assert_called_once_with()
 
     @patch('suse_migration_services.logger.Logger.setup')
