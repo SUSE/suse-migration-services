@@ -4,13 +4,15 @@ from unittest.mock import (
 )
 
 from suse_migration_services.drop_components import DropComponents
-from suse_migration_services.units.wicked_migration import main
+from suse_migration_services.units.wicked_migration import main, WickedToNetworkManager
 from suse_migration_services.exceptions import (
     DistMigrationWickedMigrationException
 )
 
 
 class TestMigrationWicked:
+    @patch('os.readlink')
+    @patch('os.path.exists')
     @patch.object(DropComponents, 'drop_package')
     @patch.object(DropComponents, 'drop_perform')
     @patch.object(DropComponents, 'package_installed')
@@ -24,12 +26,15 @@ class TestMigrationWicked:
         mock_logger_setup,
         mock_package_installed,
         mock_drop_perform,
-        mock_drop_package
+        mock_drop_package,
+        mock_os_exists,
+        mock_os_readlink,
     ):
         mock_package_installed.return_value = True
         mock_iglob.return_value = [
             '/etc/NetworkManager/system-connections/some.nmconnection'
         ]
+        mock_os_readlink.return_value = '/usr/lib/systemd/system/wicked.service'
         main()
         assert mock_Command_run.call_args_list == [
             call(
@@ -64,6 +69,27 @@ class TestMigrationWicked:
             call('biosdevname'),
         ]
         mock_drop_perform.assert_called_once_with()
+
+    @patch('os.readlink')
+    @patch('os.path.exists')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('glob.iglob')
+    def test_is_wicked_enabled(
+        self,
+        mock_iglob,
+        mock_Command_run,
+        mock_logger_setup,
+        mock_os_exists,
+        mock_os_readlink,
+    ):
+        network_migration = WickedToNetworkManager()
+
+        mock_os_readlink.return_value = '/etc/systemd/system/NetworkManager.service'
+        assert not network_migration.is_wicked_enabled()
+
+        mock_os_readlink.return_value = '/etc/systemd/system/wicked.service'
+        assert network_migration.is_wicked_enabled()
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
