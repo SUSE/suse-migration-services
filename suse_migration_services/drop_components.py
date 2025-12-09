@@ -78,7 +78,7 @@ class DropComponents:
                 os.sep.join([self.root_path, path])
             )
             with open(self.backup_data.name, 'a') as backup:
-                backup.write('{}{}'.format(target_path, os.linesep))
+                backup.write('{}{}'.format(path, os.linesep))
 
             self.drop_files_and_directories.append(target_path)
 
