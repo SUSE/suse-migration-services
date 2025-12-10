@@ -17,8 +17,10 @@ class TestMigrationWicked:
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('glob.iglob')
+    @patch('os.path.exists')
     def test_main(
         self,
+        mock_os_path_exists,
         mock_iglob,
         mock_Command_run,
         mock_logger_setup,
@@ -26,6 +28,7 @@ class TestMigrationWicked:
         mock_drop_perform,
         mock_drop_package
     ):
+        mock_os_path_exists.return_value = True
         mock_package_installed.return_value = True
         mock_iglob.return_value = [
             '/etc/NetworkManager/system-connections/some.nmconnection'
@@ -67,9 +70,21 @@ class TestMigrationWicked:
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
+    @patch('os.path.exists')
     def test_main_raises(
-        self, mock_Command_run, mock_logger_setup
+        self, mock_os_path_exists, mock_Command_run, mock_logger_setup
     ):
+        mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationWickedMigrationException):
             main()
+
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('os.path.exists')
+    def test_main_skip(
+            self, mock_os_path_exists, mock_Command_run, mock_logger_setup
+    ):
+        mock_os_path_exists.return_value = False
+        main()
+        assert not mock_Command_run.called
