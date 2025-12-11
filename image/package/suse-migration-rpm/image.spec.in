@@ -12,6 +12,7 @@ License:        SUSE-EULA
 Source0:        __SOURCE__
 Requires:       __PRODUCT__
 Requires:       suse-migration-pre-checks
+Requires:       suse-migration-scripts
 Provides:       Migration = __VERSION__
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
