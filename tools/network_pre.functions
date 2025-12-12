@@ -89,7 +89,7 @@ function setup_wicked_to_NetworkManager_prereqs {
     #
     # Only applies for SLE16
     # """
-    if [ -x "$(command -v wicked)" ]; then
+    if [ -e "/etc/systemd/system/network-online.target.wants/wicked.service" ]; then
         mkdir -p /var/cache/wicked_config
         wicked show-config > /var/cache/wicked_config/config.xml
     fi
