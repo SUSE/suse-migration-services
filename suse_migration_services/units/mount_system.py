@@ -230,26 +230,31 @@ class MountSystem:
                     self.root_path
                 )
             )
-            os.makedirs(
-                os.sep.join([self.root_path, 'run', 'NetworkManager']),
-                exist_ok=True
+            run_network_manager = '/run/NetworkManager'
+            run_netconfig = '/run/netconfig'
+            root_run_network_manager = os.path.normpath(
+                os.sep.join([self.root_path, run_network_manager])
             )
-            Command.run(
-                [
-                    'mount', '-o', 'bind', '/run/NetworkManager',
-                    os.sep.join([self.root_path, 'run', 'NetworkManager'])
-                ]
+            root_run_netconfig = os.path.normpath(
+                os.sep.join([self.root_path, run_netconfig])
             )
-            os.makedirs(
-                os.sep.join([self.root_path, 'run', 'netconfig']),
-                exist_ok=True
-            )
-            Command.run(
-                [
-                    'mount', '-o', 'bind', '/run/netconfig',
-                    os.sep.join([self.root_path, 'run', 'netconfig'])
-                ]
-            )
+            if os.path.exists(run_network_manager):
+                os.makedirs(root_run_network_manager, exist_ok=True)
+                Command.run(
+                    [
+                        'mount', '-o', 'bind',
+                        run_network_manager, root_run_network_manager
+                    ]
+                )
+
+            if os.path.exists(run_netconfig):
+                os.makedirs(root_run_netconfig, exist_ok=True)
+                Command.run(
+                    [
+                        'mount', '-o', 'bind',
+                        run_netconfig, root_run_netconfig
+                    ]
+                )
         except Exception as issue:
             self.log.error(
                 'Mounting system for upgrade failed with {0}'.format(issue)
