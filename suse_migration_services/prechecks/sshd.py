@@ -20,6 +20,7 @@ from textwrap import dedent
 
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.command import Command
+from suse_migration_services.migration_target import MigrationTarget
 
 log = logging.getLogger(Defaults.get_migration_log_name())
 
@@ -30,10 +31,14 @@ def root_login(migration_system=False):
     warn user that they might want to enable it back before starting
     the migration.
     """
-
     if migration_system:
         # Running on migration system does not make sense for this check
         # since there is no chance for user to do anything anyway
+        return
+
+    target = MigrationTarget.get_migration_target()
+    if not target.get('version').startswith('16'):
+        # This check is only necessary for migration to SLE16
         return
 
     sshd_is_enabled = Command.run(

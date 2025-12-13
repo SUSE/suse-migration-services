@@ -1003,35 +1003,42 @@ class TestPreChecks():
         mock_Command_run.assert_not_called()
 
     @patch('suse_migration_services.command.Command.run')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_sshd_root_login_disabled(
-            self, mock_Command_run,
-            mock_os_getuid, mock_log
+        self,
+        mock_get_migration_target,
+        mock_Command_run,
+        mock_os_getuid,
+        mock_log
     ):
-        mock_Command_run.return_value.returncode = 1  # Disabled
-
+        mock_get_migration_target.return_value = {'version': '16.0'}
+        mock_Command_run.return_value.returncode = 1
         with self._caplog.at_level(logging.WARNING):
             check_sshd.root_login(migration_system=False)
-            assert 'Root login by ssh will be disabled by default in SLE16' not in self._caplog.text
+            assert 'Root login by ssh will be disabled' not in self._caplog.text
         mock_Command_run.assert_called_once_with(
             ['systemctl', '--quiet', 'is-enabled', 'sshd'],
             raise_on_error=False
         )
 
     @patch('suse_migration_services.command.Command.run')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_sshd_root_login_yes(
-            self, mock_Command_run,
-            mock_os_getuid, mock_log
+        self,
+        mock_get_migration_target,
+        mock_Command_run,
+        mock_os_getuid,
+        mock_log
     ):
-
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_systemctl_run = Mock()
         mock_systemctl_run.returncode = 0
         mock_sshd_run = Mock()
         mock_sshd_run.output = 'permitrootlogin yes\n'
         mock_Command_run.side_effect = [mock_systemctl_run, mock_sshd_run]
-
         with self._caplog.at_level(logging.WARNING):
             check_sshd.root_login(migration_system=False)
-            assert 'Root login by ssh will be disabled by default in SLE16' in self._caplog.text
+            assert 'Root login by ssh will be disabled ' in self._caplog.text
         mock_Command_run.assert_has_calls(
             [
                 call(
@@ -1043,10 +1050,15 @@ class TestPreChecks():
         )
 
     @patch('suse_migration_services.command.Command.run')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_sshd_root_login_no(
-            self, mock_Command_run,
-            mock_os_getuid, mock_log
+        self,
+        mock_get_migration_target,
+        mock_Command_run,
+        mock_os_getuid,
+        mock_log
     ):
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_systemctl_run = Mock()
         mock_systemctl_run.returncode = 0
         mock_sshd_run = Mock()
@@ -1055,7 +1067,7 @@ class TestPreChecks():
 
         with self._caplog.at_level(logging.WARNING):
             check_sshd.root_login(migration_system=False)
-            assert 'Root login by ssh will be disabled by default in SLE16' not in self._caplog.text
+            assert 'Root login by ssh will be disabled' not in self._caplog.text
         mock_Command_run.assert_has_calls(
             [
                 call(
@@ -1068,8 +1080,23 @@ class TestPreChecks():
 
     @patch('suse_migration_services.command.Command.run')
     def test_check_sshd_root_login_in_migration_system(
-            self, mock_Command_run,
-            mock_os_getuid, mock_log
+        self,
+        mock_Command_run,
+        mock_os_getuid,
+        mock_log
     ):
         check_sshd.root_login(migration_system=True)
+        mock_Command_run.assert_not_called()
+
+    @patch('suse_migration_services.command.Command.run')
+    @patch.object(MigrationTarget, 'get_migration_target')
+    def test_check_sshd_root_login_old_sles(
+        self,
+        mock_get_migration_target,
+        mock_Command_run,
+        mock_os_getuid,
+        mock_log
+    ):
+        mock_get_migration_target.return_value = {'version': '15.7'}
+        check_sshd.root_login(migration_system=False)
         mock_Command_run.assert_not_called()
