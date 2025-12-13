@@ -34,27 +34,29 @@ class TestSetupHostNetwork:
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationHostNetworkException):
-            main()
+            self.host_network.perform(container=False)
         assert not mock_shutil_copy.called
 
-    @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.setup_host_network.Path')
+    @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_host_network.Fstab')
     @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('glob.glob')
     @patch('os.path.isfile')
-    def test_container(
+    @patch('os.path.islink')
+    def test_perform_in_container(
         self,
+        mock_islink,
         mock_isfile,
         mock_glob,
         mock_shutil_copy,
         mock_os_path_exists,
         mock_Fstab,
         mock_Command_run,
-        mock_logger_setup,
-        mock_get_migration_config_file
+        mock_MigrationConfig,
+        mock_Path
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
@@ -64,7 +66,7 @@ class TestSetupHostNetwork:
         ]
         mock_isfile.return_value = True
         mock_os_path_exists.return_value = True
-        container()
+        self.host_network.perform(container=True)
 
         mock_glob.assert_called_once_with(
             '/system-root/etc/sysconfig/network/*'
@@ -80,6 +82,20 @@ class TestSetupHostNetwork:
             )
         ]
         assert mock_Command_run.call_args_list == [
+            call(
+                [
+                    'mount', '--bind',
+                    '/system-root/etc/NetworkManager',
+                    '/etc/NetworkManager'
+                ]
+            ),
+            call(
+                [
+                    'mount', '--bind',
+                    '/system-root/usr/lib/NetworkManager',
+                    '/usr/lib/NetworkManager'
+                ]
+            ),
             call(
                 [
                     'mount', '--bind',
@@ -98,32 +114,44 @@ class TestSetupHostNetwork:
         fstab.read.assert_called_once_with(
             '/etc/system-root.fstab'
         )
-        fstab.add_entry.assert_called_once_with(
-            '/system-root/etc/sysconfig/network/providers',
-            '/etc/sysconfig/network/providers'
-        )
+        assert fstab.add_entry.call_args_list == [
+            call(
+                '/system-root/etc/NetworkManager',
+                '/etc/NetworkManager'
+            ),
+            call(
+                '/system-root/usr/lib/NetworkManager',
+                '/usr/lib/NetworkManager'
+            ),
+            call(
+                '/system-root/etc/sysconfig/network/providers',
+                '/etc/sysconfig/network/providers'
+            )
+        ]
         fstab.export.assert_called_once_with(
             '/etc/system-root.fstab'
         )
 
-    @patch.object(Defaults, 'get_migration_config_file')
-    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.units.setup_host_network.Path')
+    @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_host_network.Fstab')
     @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('glob.glob')
     @patch('os.path.isfile')
-    def test_main(
+    @patch('os.path.islink')
+    def test_perform_in_live_system(
         self,
+        mock_islink,
         mock_isfile,
         mock_glob,
         mock_shutil_copy,
         mock_os_path_exists,
         mock_Fstab,
         mock_Command_run,
-        mock_logger_setup,
-        mock_get_migration_config_file
+        mock_MigrationConfig,
+        mock_Path
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
@@ -133,7 +161,7 @@ class TestSetupHostNetwork:
         ]
         mock_isfile.return_value = True
         mock_os_path_exists.return_value = True
-        main()
+        self.host_network.perform(container=False)
 
         mock_glob.assert_called_once_with(
             '/system-root/etc/sysconfig/network/*'
@@ -152,12 +180,29 @@ class TestSetupHostNetwork:
             call(
                 [
                     'mount', '--bind',
+                    '/system-root/etc/NetworkManager',
+                    '/etc/NetworkManager'
+                ]
+            ),
+            call(
+                [
+                    'mount', '--bind',
+                    '/system-root/usr/lib/NetworkManager',
+                    '/usr/lib/NetworkManager'
+                ]
+            ),
+            call(
+                [
+                    'mount', '--bind',
                     '/system-root/etc/sysconfig/network/providers',
                     '/etc/sysconfig/network/providers'
                 ]
             ),
             call(
-                ['systemctl', 'reload', 'network']
+                ['systemctl', 'restart', 'network']
+            ),
+            call(
+                ['nm-online', '-q']
             ),
             call(
                 ['rpm', '--query', '--quiet', 'wicked2nm'],
@@ -167,10 +212,20 @@ class TestSetupHostNetwork:
         fstab.read.assert_called_once_with(
             '/etc/system-root.fstab'
         )
-        fstab.add_entry.assert_called_once_with(
-            '/system-root/etc/sysconfig/network/providers',
-            '/etc/sysconfig/network/providers'
-        )
+        assert fstab.add_entry.call_args_list == [
+            call(
+                '/system-root/etc/NetworkManager',
+                '/etc/NetworkManager'
+            ),
+            call(
+                '/system-root/usr/lib/NetworkManager',
+                '/usr/lib/NetworkManager'
+            ),
+            call(
+                '/system-root/etc/sysconfig/network/providers',
+                '/etc/sysconfig/network/providers'
+            )
+        ]
         fstab.export.assert_called_once_with(
             '/etc/system-root.fstab'
         )
@@ -368,3 +423,17 @@ class TestSetupHostNetwork:
             ],
             raise_on_error=False
         ) in mock_Command_run.call_args_list
+
+    @patch('suse_migration_services.units.setup_host_network.SetupHostNetwork')
+    def test_main(self, mock_SetupHostNetwork):
+        host_network = Mock()
+        mock_SetupHostNetwork.return_value = host_network
+        main()
+        host_network.perform.assert_called_once_with(False)
+
+    @patch('suse_migration_services.units.setup_host_network.SetupHostNetwork')
+    def test_container(self, mock_SetupHostNetwork):
+        host_network = Mock()
+        mock_SetupHostNetwork.return_value = host_network
+        container()
+        host_network.perform.assert_called_once_with(True)

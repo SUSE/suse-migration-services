@@ -26,6 +26,7 @@ from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.migration_config import MigrationConfig
+from suse_migration_services.path import Path
 
 from suse_migration_services.exceptions import (
     DistMigrationHostNetworkException
@@ -57,29 +58,79 @@ class SetupHostNetwork:
         sysconfig_network_setup = os.sep.join(
             [self.root_path, 'etc', 'sysconfig', 'network', '*']
         )
+        etc_network_manager = os.sep.join(
+            [self.root_path, 'etc', 'NetworkManager']
+        )
+        usr_lib_network_manager = os.sep.join(
+            [self.root_path, 'usr', 'lib', 'NetworkManager']
+        )
+        network_manager_service = os.sep.join(
+            [
+                self.root_path, 'etc', 'systemd', 'system',
+                'network-online.target.wants',
+                'NetworkManager-wait-online.service'
+            ]
+        )
+        wicked_service = os.sep.join(
+            [
+                self.root_path, 'etc', 'systemd', 'system',
+                'network-online.target.wants', 'wicked.service'
+            ]
+        )
         try:
             self.log.info('Running setup host network service')
-            Command.run(
-                [
-                    'mount', '--bind', sysconfig_network_providers,
-                    '/etc/sysconfig/network/providers'
-                ]
-            )
-            system_mount.add_entry(
-                sysconfig_network_providers, '/etc/sysconfig/network/providers'
-            )
-            for network_setup in glob.glob(sysconfig_network_setup):
-                if os.path.isfile(network_setup):
-                    shutil.copy(
-                        network_setup, '/etc/sysconfig/network'
-                    )
-            if not container:
+            if os.path.islink(network_manager_service):
+                Path.create('/etc/NetworkManager')
+                Path.create('/usr/lib/NetworkManager')
                 Command.run(
-                    ['systemctl', 'reload', 'network']
+                    [
+                        'mount', '--bind', etc_network_manager,
+                        '/etc/NetworkManager'
+                    ]
                 )
-            self.wicked2nm_migrate(
-                activate_connections=False if container else True
-            )
+                Command.run(
+                    [
+                        'mount', '--bind', usr_lib_network_manager,
+                        '/usr/lib/NetworkManager'
+                    ]
+                )
+                system_mount.add_entry(
+                    etc_network_manager, '/etc/NetworkManager'
+                )
+                system_mount.add_entry(
+                    usr_lib_network_manager, '/usr/lib/NetworkManager'
+                )
+
+            if os.path.exists(sysconfig_network_providers):
+                Command.run(
+                    [
+                        'mount', '--bind', sysconfig_network_providers,
+                        '/etc/sysconfig/network/providers'
+                    ]
+                )
+                system_mount.add_entry(
+                    sysconfig_network_providers,
+                    '/etc/sysconfig/network/providers'
+                )
+                for network_setup in glob.glob(sysconfig_network_setup):
+                    if os.path.isfile(network_setup):
+                        shutil.copy(
+                            network_setup, '/etc/sysconfig/network'
+                        )
+            if not container:
+                action = 'reload'
+                if os.path.islink(network_manager_service):
+                    action = 'restart'
+                Command.run(
+                    ['systemctl', action, 'network']
+                )
+                if os.path.islink(network_manager_service):
+                    # wait for NetworkManager to be online
+                    Command.run(['nm-online', '-q'])
+            if os.path.islink(wicked_service):
+                self.wicked2nm_migrate(
+                    activate_connections=False if container else True
+                )
             system_mount.export(
                 Defaults.get_system_mount_info_file()
             )

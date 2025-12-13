@@ -19,8 +19,10 @@ class TestMigrationWicked:
     @patch('suse_migration_services.command.Command.run')
     @patch('glob.iglob')
     @patch('os.path.exists')
+    @patch('os.path.islink')
     def test_main(
         self,
+        mock_os_path_islink,
         mock_os_path_exists,
         mock_iglob,
         mock_Command_run,
@@ -30,6 +32,7 @@ class TestMigrationWicked:
         mock_drop_path,
         mock_drop_package
     ):
+        mock_os_path_islink.return_value = True
         mock_os_path_exists.return_value = True
         mock_package_installed.return_value = True
         mock_iglob.return_value = [
@@ -74,8 +77,13 @@ class TestMigrationWicked:
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.exists')
+    @patch('os.path.islink')
     def test_main_raises(
-        self, mock_os_path_exists, mock_Command_run, mock_logger_setup
+        self,
+        mock_os_path_islink,
+        mock_os_path_exists,
+        mock_Command_run,
+        mock_logger_setup
     ):
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
@@ -84,10 +92,10 @@ class TestMigrationWicked:
 
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
-    @patch('os.path.exists')
+    @patch('os.path.islink')
     def test_main_skip(
-            self, mock_os_path_exists, mock_Command_run, mock_logger_setup
+        self, mock_os_path_islink, mock_Command_run, mock_logger_setup
     ):
-        mock_os_path_exists.return_value = False
+        mock_os_path_islink.return_value = False
         main()
         assert not mock_Command_run.called
