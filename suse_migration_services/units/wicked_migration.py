@@ -24,6 +24,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.drop_components import DropComponents
+from suse_migration_services.zypper import Zypper
 
 from suse_migration_services.exceptions import DistMigrationWickedMigrationException
 
@@ -56,6 +57,13 @@ class WickedToNetworkManager(DropComponents):
             self.log.info('wicked is not setup as network config engine, nothing to do')
             return
         try:
+            self.log.info('Ensuring NetworkManager is installed in migrated system')
+            Zypper.install(
+                'NetworkManager',
+                'NetworkManager-config-server',
+                system_root=self.root_path
+            )
+
             self.log.info('Enabling NetworkManager in migrated system')
             Command.run(
                 [
