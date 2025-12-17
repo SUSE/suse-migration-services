@@ -1,0 +1,42 @@
+[
+  # OS, patterns, saptune status, sapconf status, marker content, valid config
+  ['SLES', ['base'], 'not-found', 'enabled', 'base', True],
+  ['SLES', ['base'], 'not-found', 'disabled', 'none', True],
+  ['SLES', ['base'], 'not-found', 'not-found', null, True],
+  ['SLES', ['base'], 'enabled', 'enabled', null, False],
+  ['SLES', ['base'], 'enabled', 'disabled', null, False],
+  ['SLES', ['base'], 'enabled', 'not-found', null, False],
+  ['SLES', ['base'], 'disabled', 'enabled', null, False],
+  ['SLES', ['base'], 'disabled', 'disabled', null, False],
+  ['SLES', ['base'], 'disabled', 'not-found', null, False],
+
+  ['SLES', ['sap-server'], 'not-found', 'enabled', 'base', True],
+  ['SLES', ['sap-server'], 'not-found', 'disabled', 'none', True],
+  ['SLES', ['sap-server'], 'not-found', 'not-found', 'base', True],
+  ['SLES', ['sap-server'], 'enabled', 'enabled', null, False],
+  ['SLES', ['sap-server'], 'enabled', 'disabled', null, False],
+  ['SLES', ['sap-server'], 'enabled', 'not-found', null, False],
+  ['SLES', ['sap-server'], 'disabled', 'enabled', null, False],
+  ['SLES', ['sap-server'], 'disabled', 'disabled', null, False],
+  ['SLES', ['sap-server'], 'disabled', 'not-found', null, False],
+
+  ['SLES_SAP', ['base'], 'not-found', 'enabled', 'base', True],
+  ['SLES_SAP', ['base'], 'not-found', 'disabled', 'none', True],
+  ['SLES_SAP', ['base'], 'not-found', 'not-found', 'none', True],
+  ['SLES_SAP', ['base'], 'enabled', 'enabled', 'base', True],
+  ['SLES_SAP', ['base'], 'enabled', 'disabled', 'keep', True],
+  ['SLES_SAP', ['base'], 'enabled', 'not-found', 'keep', True],
+  ['SLES_SAP', ['base'], 'disabled', 'enabled', 'base', True],
+  ['SLES_SAP', ['base'], 'disabled', 'disabled', 'none', True],
+  ['SLES_SAP', ['base'], 'disabled', 'not-found', 'none', True],
+
+  ['SLES_SAP', ['sap-server'], 'not-found', 'enabled', 'base', True],
+  ['SLES_SAP', ['sap-server'], 'not-found', 'disabled', 'none', True],
+  ['SLES_SAP', ['sap-server'], 'not-found', 'not-found', 'none', True],
+  ['SLES_SAP', ['sap-server'], 'enabled', 'enabled', 'base', True],
+  ['SLES_SAP', ['sap-server'], 'enabled', 'disabled', 'keep', True],
+  ['SLES_SAP', ['sap-server'], 'enabled', 'not-found', 'keep', True],
+  ['SLES_SAP', ['sap-server'], 'disabled', 'enabled', 'base', True],
+  ['SLES_SAP', ['sap-server'], 'disabled', 'disabled', 'none', True],
+  ['SLES_SAP', ['sap-server'], 'disabled', 'not-found', 'none', True]
+]
