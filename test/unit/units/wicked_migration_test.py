@@ -16,6 +16,7 @@ class TestMigrationWicked:
     @patch.object(DropComponents, 'drop_perform')
     @patch.object(DropComponents, 'package_installed')
     @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.zypper.Zypper.run')
     @patch('suse_migration_services.command.Command.run')
     @patch('glob.iglob')
     @patch('os.path.exists')
@@ -26,6 +27,7 @@ class TestMigrationWicked:
         mock_os_path_exists,
         mock_iglob,
         mock_Command_run,
+        mock_Zypper_run,
         mock_logger_setup,
         mock_package_installed,
         mock_drop_perform,
@@ -39,6 +41,22 @@ class TestMigrationWicked:
             '/etc/NetworkManager/system-connections/some.nmconnection'
         ]
         main()
+        mock_Zypper_run.assert_called_once_with(
+            [
+                '--no-cd',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                'install',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download', 'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+                '--no-recommends',
+                'NetworkManager',
+                'NetworkManager-config-server'
+            ], chroot='/system-root'
+        )
         assert mock_Command_run.call_args_list == [
             call(
                 [
