@@ -1,4 +1,4 @@
-# Copyright (c) 2022
+# Copyright (c) 2025
 #
 # SUSE Linux LLC.  All rights reserved.
 #
@@ -21,8 +21,8 @@
 Determines the state (enabled/disabled/not-found) of saptune and sapconf service and
 predicts the migration outcome for SAP tuning (how saptune will be configured).
 When called from the migration system the script writes a marker file
-(/var/tmp/migration-saptune) for the saptune package to configure itself when
-installed/upgraded.
+(/var/tmp/migration-saptune) on the system to be migrated for the saptune package to
+configure itself when installed/upgraded.
 
 If the migration prediction cannot be determined, a warning is printed and no
 marker file is written.
@@ -71,7 +71,7 @@ def check_saptune(migration_system=False):
     if os == 'SLES':
         lookup = {'saptune:not-found sapconf:enabled': base_tuning_tuple,
                   'saptune:not-found sapconf:disabled': no_tuning_tuple}
-        if 'sap-server' in patterns:
+        if 'sap_server' in patterns:
             lookup['saptune:not-found sapconf:not-found'] = base_tuning_tuple
         else:
             lookup['saptune:not-found sapconf:not-found'] = not_installed_tuple
@@ -127,12 +127,12 @@ def _get_installed_patterns(path_prefix: str = '') -> List[str]:
     patterns = []
     cmd = ['zypper', '--root', path_prefix] if path_prefix else ['zypper']
     cmd.extend(['--terse', '--no-refresh', 'patterns', '-i'])
-    for line in Command.run(cmd).output.split('\n'):
-        if line.startswith('i'):
-            try:
+    try:
+        for line in Command.run(cmd).output.split('\n'):
+            if line.startswith('i'):
                 patterns.append(line.split('|')[1].strip())
-            except:  # noqa: E722
-                pass  # don't care about errors...
+    except:  # noqa: E722
+        pass  # don't care about errors...
     return patterns
 
 
@@ -141,7 +141,10 @@ def _get_service_enabled_state(service: str, path_prefix: str = '') -> str:
     the link in the default target wants directory."""
     if not os.path.exists(f'{path_prefix}/usr/lib/systemd/system/{service}'):
         return 'not-found'
-    default_target = os.path.basename(os.path.realpath(f'{path_prefix}/etc/systemd/system/default.target'))
+    try:
+        default_target = Command.run(['systemctl', '--root', path_prefix, 'get-default']).output.strip()
+    except:  # noqa: E722
+        return 'not-found'
     service_link = f'{path_prefix}/etc/systemd/system/{default_target}.wants/{service}'
     return 'enabled' if os.path.lexists(service_link) else 'disabled'
 
