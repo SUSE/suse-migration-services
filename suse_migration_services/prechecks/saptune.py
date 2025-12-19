@@ -137,16 +137,13 @@ def _get_installed_patterns(path_prefix: str = '') -> List[str]:
 
 
 def _get_service_enabled_state(service: str, path_prefix: str = '') -> str:
-    """Returns if the systemd service is enabled, disabled or missing by checking
-    the link in the default target wants directory."""
-    if not os.path.exists(f'{path_prefix}/usr/lib/systemd/system/{service}'):
-        return 'not-found'
+    """Returns if the systemd service is enabled, disabled or missing."""
+    cmd = ['systemctl', '--root', path_prefix] if path_prefix else ['systemctl']
+    cmd.extend(['is-enabled', service])
     try:
-        default_target = Command.run(['systemctl', '--root', path_prefix, 'get-default']).output.strip()
+        return Command.run(cmd).output.strip()
     except:  # noqa: E722
         return 'not-found'
-    service_link = f'{path_prefix}/etc/systemd/system/{default_target}.wants/{service}'
-    return 'enabled' if os.path.lexists(service_link) else 'disabled'
 
 
 def _write_marker(marker_content: str, path_prefix: str = '') -> bool:

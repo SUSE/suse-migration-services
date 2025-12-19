@@ -1103,17 +1103,18 @@ class TestPreChecks():
         check_sshd.root_login(migration_system=False)
         mock_Command_run.assert_not_called()
 
-    @patch('os.path.exists')
-    @patch('os.path.lexists')
-    def test__get_service_enabled_state(self, mock_os_path_lexists,
-                                        mock_os_path_exists, 
+    @patch('suse_migration_services.command.Command.run')
+    def test__get_service_enabled_state(self, mock_Command_run,
                                         mock_os_getuid, mock_log):
-        for result, return_values in [('not-found', [False, None]),
-                                      ('enabled', [True, True]),
-                                      ('disabled', [True, False])]:
-            mock_os_path_exists.return_value = return_values[0]
-            mock_os_path_lexists.return_value = return_values[1]
-            assert check_saptune._get_service_enabled_state(None) == result
+        mock = Mock()
+        mock_Command_run.return_value = mock
+        for state in ['not-found', 'enabled', 'disabled']:
+            mock.output = state
+            assert check_saptune._get_service_enabled_state('foobar.service') == state
+            mock_Command_run.assert_called_with(['systemctl', 'is-enabled', 'foobar.service'])
+        mock.output = 'not-found'
+        assert check_saptune._get_service_enabled_state('foobar.service', '/foobar') == 'not-found'
+        mock_Command_run.assert_called_with(['systemctl', '--root', '/foobar', 'is-enabled', 'foobar.service'])
 
     @patch('builtins.open')
     def test__write_marker(self, mock_open, mock_os_getuid, mock_log):
