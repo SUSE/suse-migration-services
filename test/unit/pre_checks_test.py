@@ -1152,12 +1152,14 @@ class TestPreChecks():
                                               mock_get_os, mock_os_getuid, mock_log):
         mock_get_os.return_value = 'SLES'
 
-        for retval in [['base'], []]:
+        for retval in [['base'], ['sap_server'], [], None]:
             mock_get_installed_patterns.return_value = retval
-            with self._caplog.at_level(logging.WARNING):
+            with self._caplog.at_level(logging.INFO):
                 check_saptune.check_saptune()
-                if not retval:
+                if retval is None:
                     assert "Could not get installed patterns!" in self._caplog.text
+                else:
+                    assert "Installed patterns:" in self._caplog.text
 
     @staticmethod
     def _test_data_generator(datafile):

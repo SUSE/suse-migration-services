@@ -55,7 +55,7 @@ def check_saptune(migration_system=False):
 
     # Get pattern.
     patterns = _get_installed_patterns(path_prefix)
-    if not patterns:
+    if patterns is None:
         log.warning('Could not get installed patterns!')
         return  # no migration hint
 
@@ -131,9 +131,10 @@ def _get_installed_patterns(path_prefix: str = '') -> List[str]:
         for line in Command.run(cmd).output.split('\n'):
             if line.startswith('i'):
                 patterns.append(line.split('|')[1].strip())
+        return patterns
     except:  # noqa: E722
         pass  # don't care about errors...
-    return patterns
+        return None
 
 
 def _get_service_enabled_state(service: str, path_prefix: str = '') -> str:
