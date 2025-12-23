@@ -1,0 +1,18 @@
+Refreshing service 'Basesystem_Module_15_SP7_x86_64'.
+Refreshing service 'Desktop_Applications_Module_15_SP7_x86_64'.
+Refreshing service 'Development_Tools_Module_15_SP7_x86_64'.
+Refreshing service 'Python_3_Module_15_SP7_x86_64'.
+Refreshing service 'SAP_Applications_Module_15_SP7_x86_64'.
+Refreshing service 'SUSE_Linux_Enterprise_High_Availability_Extension_15_SP7_x86_64'.
+Refreshing service 'SUSE_Linux_Enterprise_Server_for_SAP_Applications_15_SP7_x86_64'.
+Refreshing service 'SUSE_Package_Hub_15_SP7_x86_64'.
+Refreshing service 'Server_Applications_Module_15_SP7_x86_64'.
+Refreshing service 'Systems_Management_Module_15_SP7_x86_64'.
+Loading repository data...
+Reading installed packages...
+S  | Name        | Version                | Repository                                | Dependency
+---+-------------+------------------------+-------------------------------------------+-----------
+i+ | base        | 20200124-150700.36.1   | SLE-Module-Basesystem15-SP7-Pool          | 
+i+ | sap_server  | 20230902-150100.12.9.1 | SLE-Module-Server-Applications15-SP7-Pool | 
+i  | yast2_basis | 20220411-150400.1.4    | SLE-Module-Basesystem15-SP7-Pool          | 
+

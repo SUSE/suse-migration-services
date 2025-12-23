@@ -133,8 +133,7 @@ def _get_installed_patterns(path_prefix: str = '') -> List[str]:
                 patterns.append(line.split('|')[1].strip())
         return patterns
     except:  # noqa: E722
-        pass  # don't care about errors...
-        return None
+        return None  # don't care about errors...
 
 
 def _get_service_enabled_state(service: str, path_prefix: str = '') -> str:
@@ -142,7 +141,7 @@ def _get_service_enabled_state(service: str, path_prefix: str = '') -> str:
     cmd = ['systemctl', '--root', path_prefix] if path_prefix else ['systemctl']
     cmd.extend(['is-enabled', service])
     try:
-        return Command.run(cmd).output.strip()
+        return Command.run(cmd, raise_on_error=False).output.strip()
     except:  # noqa: E722
         return 'not-found'
 
