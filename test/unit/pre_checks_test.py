@@ -3,10 +3,11 @@ import argparse
 import logging
 import os
 import subprocess
+import yaml
 from unittest.mock import (
     patch, call, Mock, MagicMock, mock_open
 )
-from pytest import fixture
+from pytest import fixture, mark
 
 from suse_migration_services.command import Command
 from suse_migration_services.fstab import Fstab
@@ -19,6 +20,7 @@ import suse_migration_services.prechecks.ha as check_ha
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
 import suse_migration_services.prechecks.sshd as check_sshd
+import suse_migration_services.prechecks.saptune as check_saptune
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
@@ -1100,3 +1102,116 @@ class TestPreChecks():
         mock_get_migration_target.return_value = {'version': '15.7'}
         check_sshd.root_login(migration_system=False)
         mock_Command_run.assert_not_called()
+
+    @patch('os.path.exists')
+    def test__get_os(self, mock_os_path_exists,
+                     mock_os_getuid, mock_log):
+        for retvals, result in [([True, True], 'SLES'),
+                                ([True, False], 'SLES'),
+                                ([False, True], 'SLES_SAP'),
+                                ([False, False], None)]:
+            mock_os_path_exists.side_effect = retvals
+            assert check_saptune._get_os() == result
+
+    @patch('suse_migration_services.command.Command.run')
+    def test__get_installed_patterns(self, mock_Command_run,
+                                        mock_os_getuid, mock_log):
+        mock = Mock()
+        mock_Command_run.return_value = mock
+        for output_file, patterns in [('standard', ['base', 'sap_server', 'yast2_basis']),
+                                      ('no_patterns', [])]:
+            with open(os.path.join('../data/zypper_installed_patterns', output_file), 'r') as f:
+                mock.output = f.read()
+            assert check_saptune._get_installed_patterns() == patterns
+        mock.output = Exception()
+        assert check_saptune._get_installed_patterns() == None
+
+    @patch('suse_migration_services.command.Command.run')
+    def test__get_service_enabled_state(self, mock_Command_run,
+                                        mock_os_getuid, mock_log):
+        mock = Mock()
+        mock_Command_run.return_value = mock
+        for state in ['enabled', 'not-found', 'disabled']:
+            mock.output = state
+            assert check_saptune._get_service_enabled_state('foobar.service') == state
+            mock_Command_run.assert_called_with(['systemctl', 'is-enabled', 'foobar.service'], raise_on_error = False)
+        mock_Command_run.return_value = Exception()
+        assert check_saptune._get_service_enabled_state('foobar.service') == 'not-found'
+
+    @patch('builtins.open')
+    def test__write_marker(self, mock_open, mock_os_getuid, mock_log):
+        with self._caplog.at_level(logging.CRITICAL):
+            result = check_saptune._write_marker('foobar', '/root')
+            assert result == True
+            assert self._caplog.text == ''
+        mock_open.return_value.__enter__.return_value.write.assert_called_once_with('foobar')
+        mock_open.assert_called_with('/root/var/tmp/migration-saptune', 'w')
+        
+        mock_open.side_effect = IOError()
+        with self._caplog.at_level(logging.CRITICAL):
+            result = check_saptune._write_marker('foobar')
+            assert result == False
+            assert 'Could not write migration marker. Tuning is not as expected after migration!' in self._caplog.text
+        mock_open.return_value.__enter__.return_value.write.assert_called_once_with('foobar')
+        mock_open.assert_called_with('/var/tmp/migration-saptune', 'w')
+
+    @patch('suse_migration_services.prechecks.saptune._get_os')
+    @patch('suse_migration_services.prechecks.saptune._get_installed_patterns')
+    def test_check_saptune_os(self, mock_get_installed_patterns, mock_get_os,
+                              mock_os_getuid, mock_log):
+        mock_get_installed_patterns.return_value = []
+
+        for retval in ['SLES', 'SLES_SAP', None]:
+            mock_get_os.return_value = retval
+            with self._caplog.at_level(logging.WARNING):
+                check_saptune.check_saptune()
+                if not retval:
+                    assert "Could not determine OS!" in self._caplog.text
+
+    @patch('suse_migration_services.prechecks.saptune._get_os')
+    @patch('suse_migration_services.prechecks.saptune._get_installed_patterns')
+    def test_check_saptune_installed_patterns(self, mock_get_installed_patterns, 
+                                              mock_get_os, mock_os_getuid, mock_log):
+        mock_get_os.return_value = 'SLES'
+
+        for retval in [['base'], ['sap_server'], [], None]:
+            mock_get_installed_patterns.return_value = retval
+            with self._caplog.at_level(logging.INFO):
+                check_saptune.check_saptune()
+                if retval is None:
+                    assert "Could not get installed patterns!" in self._caplog.text
+
+    @staticmethod
+    def _test_data_generator(datafile):
+        with open(datafile, 'r') as f:
+            for dataset in yaml.safe_load(f):
+                yield dataset
+
+    @patch('suse_migration_services.prechecks.saptune._get_os')
+    @patch('suse_migration_services.prechecks.saptune._get_installed_patterns')
+    @patch('suse_migration_services.prechecks.saptune._get_service_enabled_state')
+    @patch('suse_migration_services.prechecks.saptune._write_marker')
+    @mark.parametrize("os_name, patterns, saptune_state, sapconf_state, marker_content, valid", 
+                      _test_data_generator('../data/saptune_test_data.yaml'))
+    def test_check_saptune_sapconf_saptune(self, mock_write_marker,
+                                           mock_get_service_enabled_state,
+                                           mock_get_installed_patterns,
+                                           mock_get_os, mock_os_getuid, mock_log,
+                                           os_name, patterns, saptune_state, 
+                                           sapconf_state, marker_content, valid):
+        mock_get_os.return_value = os_name
+        mock_get_installed_patterns.return_value = patterns
+        mock_get_service_enabled_state.side_effect = [sapconf_state, saptune_state]
+
+        with self._caplog.at_level(logging.INFO):
+            check_saptune.check_saptune(migration_system=True)
+            if marker_content:
+                assert f'Marker content: {marker_content}' in self._caplog.text
+                assert f'Unknown configuration' not in self._caplog.text
+                mock_write_marker.assert_called_with(marker_content, path_prefix='/system-root')
+            else:
+                assert f'Marker content:' not in self._caplog.text
+                if valid:
+                    assert f'Unknown configuration' not in self._caplog.text
+                else:
+                    assert f'Unknown configuration' in self._caplog.text
