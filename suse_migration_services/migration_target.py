@@ -45,9 +45,7 @@ class MigrationTarget:
                 'arch': product[2]
             }
         migration_iso = glob('/migration-image/*-*Migration.*.iso')
-        if not migration_iso:
-            return {}
-        migration_iso = migration_iso[0]
+        migration_iso = migration_iso[0] if migration_iso else ''
 
         if fnmatch(migration_iso, '*SLES16*-*Migration*.iso'):
             # return default migration target
