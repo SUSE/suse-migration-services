@@ -24,6 +24,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.drop_components import DropComponents
+from suse_migration_services.zypper import Zypper
 
 from suse_migration_services.exceptions import (
     DistMigrationWickedMigrationException
@@ -56,6 +57,24 @@ class WickedToNetworkManager(DropComponents):
             )
             return
         try:
+            self.log.info('Ensuring NetworkManager is installed in migrated system')
+            Zypper.run(
+                [
+                    '--no-cd',
+                    '--non-interactive',
+                    '--gpg-auto-import-keys',
+                    'install',
+                    '--auto-agree-with-licenses',
+                    '--allow-vendor-change',
+                    '--download', 'in-advance',
+                    '--replacefiles',
+                    '--allow-downgrade',
+                    '--no-recommends',
+                    'NetworkManager',
+                    'NetworkManager-config-server'
+                ], chroot=self.root_path
+            )
+
             self.log.info('Enabling NetworkManager in migrated system')
             Command.run(
                 [
