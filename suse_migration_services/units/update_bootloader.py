@@ -48,21 +48,7 @@ class UpdateBootLoader:
         """
         Install the shim package
         """
-        Zypper.run(
-            [
-                '--no-cd',
-                '--non-interactive',
-                '--gpg-auto-import-keys',
-                '--root', self.root_path,
-                'install',
-                '--auto-agree-with-licenses',
-                '--allow-vendor-change',
-                '--download', 'in-advance',
-                '--replacefiles',
-                '--allow-downgrade',
-                'shim',
-            ]
-        )
+        Zypper.install('shim', system_root=self.root_path)
 
     def install_secure_bootloader(self):
         """

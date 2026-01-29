@@ -71,6 +71,32 @@ class Zypper:
             )
         return ZypperCall(args, command_string, result)
 
+    @staticmethod
+    def install(*pkgs: str,
+                raise_on_error=True,
+                system_root: str | None = None,
+                chroot='',
+                extra_args: List[str] = []):
+        zypper_args = [
+            '--no-cd',
+            '--non-interactive',
+            '--gpg-auto-import-keys',
+        ]
+        if system_root:
+            zypper_args += ['--root', system_root]
+        return Zypper.run(
+            zypper_args + [
+                'install',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download', 'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+            ] + extra_args + list(pkgs),
+            raise_on_error=raise_on_error,
+            chroot=chroot
+        )
+
 
 class ZypperCall:
     def __init__(self, args: List[str], command, result):

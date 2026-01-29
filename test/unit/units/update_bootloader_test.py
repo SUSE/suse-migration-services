@@ -11,24 +11,12 @@ class TestUpdateBootloader:
         self._caplog = caplog
 
     @patch('suse_migration_services.logger.Logger.setup')
-    @patch('suse_migration_services.zypper.Zypper.run')
+    @patch('suse_migration_services.zypper.Zypper.install')
     @patch('suse_migration_services.command.Command.run')
-    def test_main(self, mock_Command_run, mock_Zypper_run, mock_logger_setup):
+    def test_main(self, mock_Command_run, mock_Zypper_install, mock_logger_setup):
         main()
-        mock_Zypper_run.assert_called_once_with(
-            [
-                '--no-cd',
-                '--non-interactive',
-                '--gpg-auto-import-keys',
-                '--root', '/system-root',
-                'install',
-                '--auto-agree-with-licenses',
-                '--allow-vendor-change',
-                '--download', 'in-advance',
-                '--replacefiles',
-                '--allow-downgrade',
-                'shim'
-            ]
+        mock_Zypper_install.assert_called_once_with(
+            'shim', system_root='/system-root'
         )
         assert mock_Command_run.call_args_list == [
             call(

@@ -13,6 +13,49 @@ from suse_migration_services.exceptions import (
 
 @patch('suse_migration_services.command.Command.run')
 class TestCommand(object):
+    @patch('suse_migration_services.zypper.Zypper.run')
+    def test_zypper_install(self, mock_Zypper_run, mock_Command_run):
+        Zypper.install(
+            'package_a', 'package_b',
+            raise_on_error=False, chroot='root',
+            extra_args=['--extra-arg-1', '--extra-arg-2']
+        )
+        mock_Zypper_run.assert_called_once_with(
+            [
+                '--no-cd',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                'install',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download', 'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+                '--extra-arg-1',
+                '--extra-arg-2',
+                'package_a', 'package_b'
+            ], raise_on_error=False, chroot='root'
+        )
+
+    @patch('suse_migration_services.zypper.Zypper.run')
+    def test_zypper_install_system_root(self, mock_Zypper_run, mock_Command_run):
+        Zypper.install('package', system_root='/root')
+        mock_Zypper_run.assert_called_once_with(
+            [
+                '--no-cd',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--root', '/root',
+                'install',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download', 'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+                'package'
+            ], raise_on_error=True, chroot=''
+        )
+
     def test_zypper_run(self, mock_Command_run):
         command_run_result = namedtuple(
             'command', ['output', 'error', 'returncode']
