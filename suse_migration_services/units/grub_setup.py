@@ -23,9 +23,7 @@ from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 
-from suse_migration_services.exceptions import (
-    DistMigrationGrubConfigException
-)
+from suse_migration_services.exceptions import DistMigrationGrubConfigException
 
 
 class GrubSetup:
@@ -45,29 +43,36 @@ class GrubSetup:
     def perform(self):
         try:
             self.log.info('Running grub setup service')
-            migration_packages = [
-                'SLE*Migration',
-                'suse-migration-*-activation'
-            ]
+            migration_packages = ['SLE*Migration', 'suse-migration-*-activation']
             self.log.info(
                 'Uninstalling migration: {0}{1}'.format(
-                    os.linesep, Command.run(
+                    os.linesep,
+                    Command.run(
                         [
-                            'chroot', self.root_path, 'zypper',
-                            '--non-interactive', '--no-gpg-checks',
-                            'remove'
-                        ] + migration_packages, raise_on_error=False
-                    ).output
+                            'chroot',
+                            self.root_path,
+                            'zypper',
+                            '--non-interactive',
+                            '--no-gpg-checks',
+                            'remove',
+                        ]
+                        + migration_packages,
+                        raise_on_error=False,
+                    ).output,
                 )
             )
             self.log.info(
                 'Creating new grub menu: {0}{1}'.format(
-                    os.linesep, Command.run(
+                    os.linesep,
+                    Command.run(
                         [
-                            'chroot', self.root_path, 'grub2-mkconfig', '-o',
-                            '{0}{1}'.format(os.sep, self.grub_config_file)
+                            'chroot',
+                            self.root_path,
+                            'grub2-mkconfig',
+                            '-o',
+                            '{0}{1}'.format(os.sep, self.grub_config_file),
                         ]
-                    ).error
+                    ).error,
                 )
             )
         except Exception as issue:

@@ -1,25 +1,16 @@
 import os
 import shutil
-from tempfile import (
-    NamedTemporaryFile,
-    mkdtemp
-)
+from tempfile import NamedTemporaryFile, mkdtemp
 from configparser import ConfigParser
-from unittest.mock import (
-    patch, call, Mock, MagicMock, mock_open
-)
+from unittest.mock import patch, call, Mock, MagicMock, mock_open
 
 from pytest import raises
 
-from suse_migration_services.units.prepare import (
-    main, PrepareMigration
-)
+from suse_migration_services.units.prepare import main, PrepareMigration
 
 from suse_migration_services.suse_connect import SUSEConnect
 from suse_migration_services.fstab import Fstab
-from suse_migration_services.exceptions import (
-    DistMigrationZypperMetaDataException
-)
+from suse_migration_services.exceptions import DistMigrationZypperMetaDataException
 
 
 class TestSetupPrepare:
@@ -38,16 +29,24 @@ class TestSetupPrepare:
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
+    @patch(
+        'suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location'
+    )
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('builtins.open')
     @patch('os.path.exists')
     def test_main_raises_on_zypp_bind(
-        self, mock_os_path_exists, mock_open, mock_os_listdir,
-        mock_shutil_copy, mock_get_regionsrv_client_file_location,
-        mock_Command_run, mock_Fstab, mock_logger_setup,
-        mock_update_regionsrv_setup
+        self,
+        mock_os_path_exists,
+        mock_open,
+        mock_os_listdir,
+        mock_shutil_copy,
+        mock_get_regionsrv_client_file_location,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup,
     ):
         mock_os_listdir.return_value = None
         mock_os_path_exists.return_value = True
@@ -56,7 +55,7 @@ class TestSetupPrepare:
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            Exception
+            Exception,
         ]
         with raises(DistMigrationZypperMetaDataException):
             main()
@@ -66,32 +65,38 @@ class TestSetupPrepare:
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_certs_path')
-    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
+    @patch(
+        'suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location'
+    )
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('os.path.exists')
     def test_main_raises_on_get_regionsrv_client_file_location(
-        self, mock_os_path_exists, mock_os_listdir, mock_shutil_copy,
+        self,
+        mock_os_path_exists,
+        mock_os_listdir,
+        mock_shutil_copy,
         mock_get_regionsrv_client_file_location,
         mock_get_regionsrv_certs_path,
         mock_Command_run,
-        mock_Fstab, mock_logger_setup,
-        mock_update_regionsrv_setup
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup,
     ):
         mock_os_listdir.return_value = None
         # need to override the get_regionsrv_certs_path() call to avoid
         # introducing a additional open()
-        mock_get_regionsrv_certs_path.return_value = \
-            '/var/lib/regionService/certs'
-        mock_get_regionsrv_client_file_location.side_effect = \
-            [DistMigrationZypperMetaDataException('foo')]
+        mock_get_regionsrv_certs_path.return_value = '/var/lib/regionService/certs'
+        mock_get_regionsrv_client_file_location.side_effect = [
+            DistMigrationZypperMetaDataException('foo')
+        ]
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = [
             MagicMock(),
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            Exception
+            Exception,
         ]
         with patch('builtins.open', mock_open(read_data='foo.susecloud.net')):
             with raises(DistMigrationZypperMetaDataException):
@@ -101,24 +106,29 @@ class TestSetupPrepare:
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
+    @patch(
+        'suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location'
+    )
     @patch('shutil.copy')
     @patch('os.listdir')
     def test_main_raises_on_regionsrv_client_file_exists(
-        self, mock_os_listdir, mock_shutil_copy,
-        mock_get_regionsrv_client_file_location, mock_Command_run,
-        mock_Fstab, mock_logger_setup,
-        mock_update_regionsrv_setup
+        self,
+        mock_os_listdir,
+        mock_shutil_copy,
+        mock_get_regionsrv_client_file_location,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup,
     ):
         mock_os_listdir.return_value = None
-        mock_get_regionsrv_client_file_location.return_value = \
-            ['/foo']
+        mock_get_regionsrv_client_file_location.return_value = ['/foo']
         mock_Command_run.side_effect = [
             MagicMock(),
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            Exception
+            Exception,
         ]
         with patch('builtins.open', mock_open(read_data='foo.susecloud.net')):
             with raises(DistMigrationZypperMetaDataException):
@@ -128,16 +138,24 @@ class TestSetupPrepare:
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
+    @patch(
+        'suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location'
+    )
     @patch('shutil.copy')
     @patch('os.listdir')
     @patch('builtins.open')
     @patch('os.path.exists')
     def test_main_raises_and_umount_file_system(
-        self, mock_os_path_exists, mock_open_hosts_file, mock_os_listdir,
-        mock_shutil_copy, mock_get_regionsrv_client_file_location,
-        mock_Command_run, mock_Fstab,
-        mock_logger_setup, mock_update_regionsrv_setup
+        self,
+        mock_os_path_exists,
+        mock_open_hosts_file,
+        mock_os_listdir,
+        mock_shutil_copy,
+        mock_get_regionsrv_client_file_location,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup,
     ):
         fstab = Fstab()
         fstab_mock = Mock()
@@ -155,7 +173,7 @@ class TestSetupPrepare:
                 call(['cat', '/proc/net/bonding/bond*'], raise_on_error=False),
                 call(['umount', '/system-root/sys'], raise_on_error=False),
                 call(['umount', '/system-root/proc'], raise_on_error=False),
-                call(['umount', '/system-root/dev'], raise_on_error=False)
+                call(['umount', '/system-root/dev'], raise_on_error=False),
             ]
 
     @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
@@ -174,36 +192,34 @@ class TestSetupPrepare:
     @patch('os.readlink')
     @patch('os.path.exists')
     def test_main(
-        self, mock_os_path_exists, mock_readlink, mock_os_path_islink,
-        mock_path_isdir, mock_os_listdir,
-        mock_shutil_copy, mock_Path, mock_MigrationConfig,
-        mock_is_registered, mock_is_file,
+        self,
+        mock_os_path_exists,
+        mock_readlink,
+        mock_os_path_islink,
+        mock_path_isdir,
+        mock_os_listdir,
+        mock_shutil_copy,
+        mock_Path,
+        mock_MigrationConfig,
+        mock_is_registered,
+        mock_is_file,
         mock_get_regionsrv_certs_path,
         mock_Command_run,
-        mock_Fstab, mock_logger_setup,
-        mock_update_regionsrv_setup
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup,
     ):
 
         mock_readlink.return_value = 'link_target'
         mock_path_isdir.side_effect = [True, True, True, True]
         migration_config = Mock()
-        migration_config.is_zypper_migration_plugin_requested.return_value = \
-            True
+        migration_config.is_zypper_migration_plugin_requested.return_value = True
         mock_MigrationConfig.return_value = migration_config
         fstab = Mock()
         mock_Fstab.return_value = fstab
-        mock_os_listdir.side_effect = [
-            ['foo', 'bar'],
-            ['foo', 'bar'],
-            ['fooSMT'],
-            ['fooSMT']
-        ]
-        mock_os_path_islink.side_effect = [
-            False, False, False, True
-        ]
-        mock_os_path_exists.side_effect = [
-            True, True, True, True, False, True, True, True
-        ]
+        mock_os_listdir.side_effect = [['foo', 'bar'], ['foo', 'bar'], ['fooSMT'], ['fooSMT']]
+        mock_os_path_islink.side_effect = [False, False, False, True]
+        mock_os_path_exists.side_effect = [True, True, True, True, False, True, True, True]
         mock_is_registered.return_value = True
         mock_Command_run.side_effect = [
             MagicMock(),
@@ -217,7 +233,7 @@ class TestSetupPrepare:
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            MagicMock()
+            MagicMock(),
         ]
         mock_shutil_copy.side_effect = [
             MagicMock(),
@@ -226,120 +242,79 @@ class TestSetupPrepare:
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            FileNotFoundError('cert copy failed')
+            FileNotFoundError('cert copy failed'),
         ]
         mock_is_file.return_value = True
         # need to override the get_regionsrv_certs_path() call to avoid
         # introducing a additional open() call
-        mock_get_regionsrv_certs_path.return_value = \
-            '/var/lib/regionService/certs'
+        mock_get_regionsrv_certs_path.return_value = '/var/lib/regionService/certs'
         with patch('builtins.open', mock_open(read_data='foo.susecloud.net')):
             main()
         assert mock_shutil_copy.call_args_list == [
             call('/system-root/etc/SUSEConnect', '/etc/SUSEConnect'),
-            call(
-                '/system-root/etc/regionserverclnt.cfg',
-                '/etc/regionserverclnt.cfg'
-            ),
+            call('/system-root/etc/regionserverclnt.cfg', '/etc/regionserverclnt.cfg'),
             call('/system-root/etc/hosts', '/etc/hosts'),
-            call(
-                '/system-root/usr/share/pki/trust/anchors/foo',
-                '/usr/share/pki/trust/anchors/'
-            ),
-            call(
-                '/system-root/usr/share/pki/trust/anchors/bar',
-                '/usr/share/pki/trust/anchors/'
-            ),
-            call(
-                '/system-root/etc/pki/trust/anchors/foo',
-                '/etc/pki/trust/anchors/'
-            ),
-            call(
-                '/system-root/link_target',
-                '/etc/pki/trust/anchors/'
-            )
+            call('/system-root/usr/share/pki/trust/anchors/foo', '/usr/share/pki/trust/anchors/'),
+            call('/system-root/usr/share/pki/trust/anchors/bar', '/usr/share/pki/trust/anchors/'),
+            call('/system-root/etc/pki/trust/anchors/foo', '/etc/pki/trust/anchors/'),
+            call('/system-root/link_target', '/etc/pki/trust/anchors/'),
         ]
         mock_Path.call_args_list == [
             call(['/var/cache/cloudregister']),
             call(['/usr/share/pki/trust/anchors']),
-            call(['/etc/pki/trust/anchors'])
+            call(['/etc/pki/trust/anchors']),
         ]
         assert mock_Command_run.call_args_list == [
-            call(
-                ['update-ca-certificates']
-            ),
-            call(
-                ['update-ca-certificates']
-            ),
-            call(
-                [
-                    'mount', '--bind', '/system-root/var/log/zypper.log',
-                    '/var/log/zypper.log'
-                ]
-            ),
-            call(
-                ['ip', 'a'], raise_on_error=False
-            ),
-            call(
-                ['ip', 'r'], raise_on_error=False
-            ),
-            call(
-                ['cat', '/etc/resolv.conf'], raise_on_error=False
-            ),
-            call(
-                ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
-            ),
-            call(
-                ['mount', '--bind', '/system-root/etc/zypp', '/etc/zypp']
-            ),
+            call(['update-ca-certificates']),
+            call(['update-ca-certificates']),
+            call(['mount', '--bind', '/system-root/var/log/zypper.log', '/var/log/zypper.log']),
+            call(['ip', 'a'], raise_on_error=False),
+            call(['ip', 'r'], raise_on_error=False),
+            call(['cat', '/etc/resolv.conf'], raise_on_error=False),
+            call(['cat', '/proc/net/bonding/bond*'], raise_on_error=False),
+            call(['mount', '--bind', '/system-root/etc/zypp', '/etc/zypp']),
             call(
                 [
-                    'mount', '--bind',
+                    'mount',
+                    '--bind',
                     '/system-root/usr/lib/zypp/plugins/services',
-                    '/usr/lib/zypp/plugins/services'
+                    '/usr/lib/zypp/plugins/services',
                 ]
             ),
             call(
                 [
-                    'mount', '--bind', '/system-root/var/cache/cloudregister',
-                    '/var/cache/cloudregister'
+                    'mount',
+                    '--bind',
+                    '/system-root/var/cache/cloudregister',
+                    '/var/cache/cloudregister',
                 ]
             ),
             call(
                 [
-                    'mount', '--bind', '/system-root/var/lib/regionService/certs',
-                    '/var/lib/regionService/certs'
+                    'mount',
+                    '--bind',
+                    '/system-root/var/lib/regionService/certs',
+                    '/var/lib/regionService/certs',
                 ]
             ),
-            call(
-                ['/usr/sbin/updatesmtcache']
-            )
+            call(['/usr/sbin/updatesmtcache']),
         ]
-        fstab.read.assert_called_once_with(
-            '/etc/system-root.fstab'
-        )
+        fstab.read.assert_called_once_with('/etc/system-root.fstab')
         assert fstab.add_entry.call_args_list == [
-            call(
-                '/system-root/etc/zypp', '/etc/zypp'
-            ),
-            call(
-                '/system-root/usr/lib/zypp/plugins/services',
-                '/usr/lib/zypp/plugins/services'
-            )
+            call('/system-root/etc/zypp', '/etc/zypp'),
+            call('/system-root/usr/lib/zypp/plugins/services', '/usr/lib/zypp/plugins/services'),
         ]
-        fstab.export.assert_called_once_with(
-            '/etc/system-root.fstab'
-        )
-        mock_Command_run.assert_any_call(
-            ['cat', '/proc/net/bonding/bond*'], raise_on_error=False
-        )
+        fstab.export.assert_called_once_with('/etc/system-root.fstab')
+        mock_Command_run.assert_any_call(['cat', '/proc/net/bonding/bond*'], raise_on_error=False)
 
     @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_certs_path')
-    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
+    @patch(
+        'suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location'
+    )
     @patch.object(SUSEConnect, 'is_registered')
     @patch('suse_migration_services.units.prepare.MigrationConfig')
     @patch('suse_migration_services.units.prepare.Path')
@@ -347,22 +322,28 @@ class TestSetupPrepare:
     @patch('os.listdir')
     @patch('os.path.exists')
     def test_main_no_registered_instance(
-        self, mock_os_path_exists, mock_os_listdir, mock_shutil_copy,
-        mock_Path, mock_MigrationConfig, mock_is_registered,
+        self,
+        mock_os_path_exists,
+        mock_os_listdir,
+        mock_shutil_copy,
+        mock_Path,
+        mock_MigrationConfig,
+        mock_is_registered,
         mock_get_regionsrv_client_file_location,
-        mock_get_regionsrv_certs_path, mock_Command_run,
-        mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup
+        mock_get_regionsrv_certs_path,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
+        mock_update_regionsrv_setup,
     ):
         migration_config = Mock()
-        migration_config.is_zypper_migration_plugin_requested.return_value = \
-            True
+        migration_config.is_zypper_migration_plugin_requested.return_value = True
         mock_MigrationConfig.return_value = migration_config
         fstab = Mock()
         mock_Fstab.return_value = fstab
         # need to override the get_regionsrv_certs_path() call to avoid
         # introducing a additional open() call
-        mock_get_regionsrv_certs_path.return_value = \
-            '/var/lib/regionService/certs'
+        mock_get_regionsrv_certs_path.return_value = '/var/lib/regionService/certs'
         mock_os_listdir.return_value = ['foo', 'bar']
         mock_os_path_exists.return_value = True
         mock_is_registered.return_value = False
@@ -373,16 +354,22 @@ class TestSetupPrepare:
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.command.Command.run')
-    @patch('suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location')
+    @patch(
+        'suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location'
+    )
     @patch('os.path.exists')
     def test_update_regionsrv_setup(
-        self, mock_os_path_exists, mock_get_regionsrv_client_file_location,
-        mock_Command_run, mock_Fstab, mock_logger_setup
+        self,
+        mock_os_path_exists,
+        mock_get_regionsrv_client_file_location,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
     ):
         # test with volume based block device returned from findmnt
         mock_command_return_values = [
             Mock(output='/dev/sda3 part\n/dev/sda disk'),
-            Mock(output='dev/sda3[/@/.snapshots/1/snapshot]\n')
+            Mock(output='dev/sda3[/@/.snapshots/1/snapshot]\n'),
         ]
 
         def command_returns(arg):
@@ -391,9 +378,7 @@ class TestSetupPrepare:
         mock_Command_run.side_effect = command_returns
 
         tmp_regionserverclnt = NamedTemporaryFile()
-        shutil.copy(
-            '../data/regionserverclnt-azure.cfg', tmp_regionserverclnt.name
-        )
+        shutil.copy('../data/regionserverclnt-azure.cfg', tmp_regionserverclnt.name)
         self.prepare.root_path = '/system-root'
         self.prepare.suse_cloud_regionsrv_setup = tmp_regionserverclnt.name
 
@@ -402,38 +387,40 @@ class TestSetupPrepare:
         assert mock_Command_run.call_args_list == [
             call(
                 [
-                    'findmnt', '--first', '--noheadings',
-                    '--output', 'SOURCE', '--mountpoint', '/system-root'
+                    'findmnt',
+                    '--first',
+                    '--noheadings',
+                    '--output',
+                    'SOURCE',
+                    '--mountpoint',
+                    '/system-root',
                 ]
             ),
-            call(
-                [
-                    'lsblk', '-p', '-n', '-r', '-s',
-                    '-o', 'NAME,TYPE', 'dev/sda3'
-                ]
-            )
+            call(['lsblk', '-p', '-n', '-r', '-s', '-o', 'NAME,TYPE', 'dev/sda3']),
         ]
         regionsrv_setup = ConfigParser()
         regionsrv_setup.read(tmp_regionserverclnt.name)
-        assert regionsrv_setup.get('instance', 'dataProvider') == \
-            '/usr/bin/azuremetadata --api latest --subscriptionId ' \
+        assert (
+            regionsrv_setup.get('instance', 'dataProvider')
+            == '/usr/bin/azuremetadata --api latest --subscriptionId '
             '--billingTag --attestedData --signature --xml --device /dev/sda'
+        )
 
         # test with standard block device returned from findmnt
         mock_command_return_values = [
             Mock(output='/dev/sdb7 part\n/dev/sdb disk'),
-            Mock(output='dev/sdb7\n')
+            Mock(output='dev/sdb7\n'),
         ]
-        shutil.copy(
-            '../data/regionserverclnt-azure.cfg', tmp_regionserverclnt.name
-        )
+        shutil.copy('../data/regionserverclnt-azure.cfg', tmp_regionserverclnt.name)
         self.prepare.update_regionsrv_setup()
 
         regionsrv_setup = ConfigParser()
         regionsrv_setup.read(tmp_regionserverclnt.name)
-        assert regionsrv_setup.get('instance', 'dataProvider') == \
-            '/usr/bin/azuremetadata --api latest --subscriptionId ' \
+        assert (
+            regionsrv_setup.get('instance', 'dataProvider')
+            == '/usr/bin/azuremetadata --api latest --subscriptionId '
             '--billingTag --attestedData --signature --xml --device /dev/sdb'
+        )
 
     @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
@@ -443,14 +430,18 @@ class TestSetupPrepare:
     @patch('os.path.isdir')
     @patch('os.path.exists')
     def test_old_regionsrv_client_file_location(
-        self, mock_os_path_exists, mock_path_isdir, mock_os_listdir,
-        mock_Command_run, mock_Fstab, mock_logger_setup,
+        self,
+        mock_os_path_exists,
+        mock_path_isdir,
+        mock_os_listdir,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
         mock_update_regionsrv_setup,
     ):
         mock_path_isdir.side_effect = [False, True]
         mock_os_listdir.return_value = ['fooSMT']
-        assert self.prepare.get_regionsrv_client_file_location() == \
-            '/foo/var/lib/cloudregister'
+        assert self.prepare.get_regionsrv_client_file_location() == '/foo/var/lib/cloudregister'
 
     @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
@@ -459,8 +450,12 @@ class TestSetupPrepare:
     @patch('os.path.isdir')
     @patch('os.path.exists')
     def test_get_regionsrv_client_file_location_raises(
-        self, mock_os_path_exists, mock_path_isdir,
-        mock_Command_run, mock_Fstab, mock_logger_setup,
+        self,
+        mock_os_path_exists,
+        mock_path_isdir,
+        mock_Command_run,
+        mock_Fstab,
+        mock_logger_setup,
         mock_update_regionsrv_setup,
     ):
         mock_path_isdir.side_effect = [False, False]
@@ -478,8 +473,7 @@ class TestSetupPrepare:
         mock_logger_setup,
         mock_update_regionsrv_setup,
     ):
-        self.prepare.suse_cloud_regionsrv_setup = \
-            '/some/file/that/does/not/exist'
+        self.prepare.suse_cloud_regionsrv_setup = '/some/file/that/does/not/exist'
         tmp_regionserverclnt = NamedTemporaryFile()
 
         # assert fallback path returned if client config is missing
@@ -490,41 +484,26 @@ class TestSetupPrepare:
         assert self.prepare.get_regionsrv_certs_path('foo') == 'foo'
 
         # test we get the fallback certlocation when none specified in config
-        shutil.copy(
-            '../data/regionserverclnt-nocertlocation.cfg',
-            tmp_regionserverclnt.name
-        )
+        shutil.copy('../data/regionserverclnt-nocertlocation.cfg', tmp_regionserverclnt.name)
 
         assert self.prepare.get_regionsrv_certs_path('foo') == 'foo'
 
         # test we get the standard certlocation from the config
-        shutil.copy(
-            '../data/regionserverclnt-certlocation.cfg',
-            tmp_regionserverclnt.name
-        )
+        shutil.copy('../data/regionserverclnt-certlocation.cfg', tmp_regionserverclnt.name)
 
-        assert self.prepare.get_regionsrv_certs_path('foo') == \
-            '/usr/lib/regionService/certs'
+        assert self.prepare.get_regionsrv_certs_path('foo') == '/usr/lib/regionService/certs'
 
         # test we get the old certlocation from an old config
-        shutil.copy(
-            '../data/regionserverclnt-oldcertlocation.cfg',
-            tmp_regionserverclnt.name
-        )
+        shutil.copy('../data/regionserverclnt-oldcertlocation.cfg', tmp_regionserverclnt.name)
 
-        assert self.prepare.get_regionsrv_certs_path('foo') == \
-            '/var/lib/regionService/certs'
+        assert self.prepare.get_regionsrv_certs_path('foo') == '/var/lib/regionService/certs'
 
     @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.units.prepare.Fstab')
     @patch('suse_migration_services.command.Command.run')
     def test_report_if_regionsrv_certs_not_found(
-        self,
-        mock_Command_run,
-        mock_Fstab,
-        mock_logger_setup,
-        mock_update_regionsrv_setup
+        self, mock_Command_run, mock_Fstab, mock_logger_setup, mock_update_regionsrv_setup
     ):
         tmp_certs_dir = mkdtemp()
 

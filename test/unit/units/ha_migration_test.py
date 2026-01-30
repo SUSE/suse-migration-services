@@ -15,13 +15,13 @@ class TestMigrationHa(TestCase):
         mock_os_access.return_value = True
         ha_setup = HighAvailabilityExtension()
         self.assertTrue(ha_setup._corosync_conf_exists())
-        mock_os_access.assert_called_once_with(
-            '/etc/corosync/corosync.conf', os.F_OK
-        )
+        mock_os_access.assert_called_once_with('/etc/corosync/corosync.conf', os.F_OK)
 
     @patch('suse_migration_services.command.Command.run')
     @patch('os.chroot')
-    @patch('suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists')
+    @patch(
+        'suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists'
+    )
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     def test_main(
         self,
@@ -35,11 +35,15 @@ class TestMigrationHa(TestCase):
         mock_corosync_conf_exists.return_value = True
         ha_migration.main()
         mock_chroot.assert_called_once_with('/foo')
-        mock_command_run.assert_called_once_with(['crm', 'cluster', 'health', 'sles16', '--local', '--fix'])
+        mock_command_run.assert_called_once_with(
+            ['crm', 'cluster', 'health', 'sles16', '--local', '--fix']
+        )
 
     @patch('suse_migration_services.command.Command.run')
     @patch('os.chroot')
-    @patch('suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists')
+    @patch(
+        'suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists'
+    )
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     def test_main_no_corosync_conf(
         self,
@@ -57,7 +61,9 @@ class TestMigrationHa(TestCase):
 
     @patch('suse_migration_services.command.Command.run')
     @patch('os.chroot')
-    @patch('suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists')
+    @patch(
+        'suse_migration_services.units.ha_migration.HighAvailabilityExtension._corosync_conf_exists'
+    )
     @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
     def test_main_failure(
         self,
@@ -72,6 +78,10 @@ class TestMigrationHa(TestCase):
         mock_command_run.side_effect = Exception('bar')
         with self.assertRaises(DistMigrationException) as ctx:
             ha_migration.main()
-            self.assertEqual('Migration for high availability failed with bar', ctx.exception.message)
+            self.assertEqual(
+                'Migration for high availability failed with bar', ctx.exception.message
+            )
         mock_chroot.assert_called_once_with('/foo')
-        mock_command_run.assert_called_once_with(['crm', 'cluster', 'health', 'sles16', '--local', '--fix'])
+        mock_command_run.assert_called_once_with(
+            ['crm', 'cluster', 'health', 'sles16', '--local', '--fix']
+        )

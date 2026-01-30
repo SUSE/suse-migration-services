@@ -1,4 +1,3 @@
-
 # Copyright (c) 2025 SUSE Linux LLC.  All rights reserved.
 #
 # This file is part of suse-migration-services.
@@ -31,33 +30,20 @@ class MigrationTarget:
     """
     Implements the detection of migration target
     """
+
     @staticmethod
     def get_migration_target():
         migration_config = MigrationConfig()
-        migration_product = migration_config.config_data.get(
-            'migration_product'
-        )
+        migration_product = migration_config.config_data.get('migration_product')
         if migration_product:
             product = migration_product.split('/')
-            return {
-                'identifier': product[0],
-                'version': product[1],
-                'arch': product[2]
-            }
+            return {'identifier': product[0], 'version': product[1], 'arch': product[2]}
         migration_iso = glob('/migration-image/*-*Migration.*.iso')
         migration_iso = migration_iso[0] if migration_iso else ''
 
         if fnmatch(migration_iso, '*SLES16*-*Migration*.iso'):
             # return default migration target
-            return {
-                'identifier': 'SLES',
-                'version': '16.0',
-                'arch': platform.machine()
-            }
+            return {'identifier': 'SLES', 'version': '16.0', 'arch': platform.machine()}
         else:
             # return default migration target
-            return {
-                'identifier': 'SLES',
-                'version': '15.4',
-                'arch': platform.machine()
-            }
+            return {'identifier': 'SLES', 'version': '15.4', 'arch': platform.machine()}

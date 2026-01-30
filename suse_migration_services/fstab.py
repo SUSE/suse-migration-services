@@ -17,9 +17,7 @@
 #
 import logging
 import os
-from collections import (
-    namedtuple, OrderedDict
-)
+from collections import namedtuple, OrderedDict
 
 # project
 from suse_migration_services.defaults import Defaults
@@ -31,13 +29,11 @@ class Fstab:
     """
     **Managing fstab values**
     """
+
     def __init__(self):
         self.fstab = []
         self.fstab_entry_type = namedtuple(
-            'fstab_entry_type', [
-                'fstype', 'mountpoint', 'device', 'options',
-                'eligible_for_mount'
-            ]
+            'fstab_entry_type', ['fstype', 'mountpoint', 'device', 'options', 'eligible_for_mount']
         )
 
     def read(self, filename):
@@ -54,8 +50,11 @@ class Fstab:
             with open(filename) as fstab:
                 for line in fstab.readlines():
                     mount_record = line.split()
-                    if not mount_record or mount_record[0].startswith('#') or \
-                            mount_record[2].lower() == 'none':
+                    if (
+                        not mount_record
+                        or mount_record[0].startswith('#')
+                        or mount_record[2].lower() == 'none'
+                    ):
                         continue
                     device = mount_record[0]
                     mountpoint = mount_record[1]
@@ -73,17 +72,11 @@ class Fstab:
                             # from this fstab instance
                             eligible_for_mount = False
                         if device.startswith('UUID'):
-                            device_path = ''.join(
-                                ['/dev/disk/by-uuid/', device.split('=')[1]]
-                            )
+                            device_path = ''.join(['/dev/disk/by-uuid/', device.split('=')[1]])
                         elif device.startswith('LABEL'):
-                            device_path = ''.join(
-                                ['/dev/disk/by-label/', device.split('=')[1]]
-                            )
+                            device_path = ''.join(['/dev/disk/by-label/', device.split('=')[1]])
                         elif device.startswith('PARTUUID'):
-                            device_path = ''.join(
-                                ['/dev/disk/by-partuuid/', device.split('=')[1]]
-                            )
+                            device_path = ''.join(['/dev/disk/by-partuuid/', device.split('=')[1]])
                         else:
                             device_path = device
 
@@ -94,28 +87,21 @@ class Fstab:
                                     mountpoint=mountpoint,
                                     device=device_path,
                                     options=options,
-                                    eligible_for_mount=eligible_for_mount
+                                    eligible_for_mount=eligible_for_mount,
                                 )
                             )
                         else:
-                            log.warning(
-                                'Device path {0} not found and skipped'.format(
-                                    device_path
-                                )
-                            )
+                            log.warning('Device path {0} not found and skipped'.format(device_path))
                             continue
 
-    def add_entry(
-        self, device, mountpoint, fstype=None, options=None,
-        eligible_for_mount=True
-    ):
+    def add_entry(self, device, mountpoint, fstype=None, options=None, eligible_for_mount=True):
         self.fstab.append(
             self.fstab_entry_type(
                 fstype=fstype or 'none',
                 mountpoint=mountpoint,
                 device=device,
                 options=options or 'defaults',
-                eligible_for_mount=eligible_for_mount
+                eligible_for_mount=eligible_for_mount,
             )
         )
 
@@ -129,9 +115,7 @@ class Fstab:
             for entry in self._get_canonical_mount_list():
                 fstab.write(
                     '{0} {1} {2} {3} 0 0{4}'.format(
-                        entry.device, entry.mountpoint,
-                        entry.fstype, entry.options,
-                        os.linesep
+                        entry.device, entry.mountpoint, entry.fstype, entry.options, os.linesep
                     )
                 )
 
@@ -178,9 +162,7 @@ class Fstab:
             if path_depth not in paths_at_depth:
                 paths_at_depth[path_depth] = []
             paths_at_depth[path_depth].append(path)
-        ordered_paths_at_depth = OrderedDict(
-            sorted(paths_at_depth.items())
-        )
+        ordered_paths_at_depth = OrderedDict(sorted(paths_at_depth.items()))
         ordered_paths = []
         for path_depth in ordered_paths_at_depth:
             for path in ordered_paths_at_depth[path_depth]:

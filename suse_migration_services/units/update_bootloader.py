@@ -58,18 +58,13 @@ class UpdateBootLoader:
         and continue while keeping the log information about the
         attempt.
         """
-        Command.run(
-            ['chroot', self.root_path, 'shim-install', '--removable'],
-            raise_on_error=False
-        )
+        Command.run(['chroot', self.root_path, 'shim-install', '--removable'], raise_on_error=False)
 
     def update_bootloader_config(self):
         """
         Perform update-bootloader from inside of the upgraded system
         """
-        Command.run(
-            ['chroot', self.root_path, '/sbin/update-bootloader', '--reinit']
-        )
+        Command.run(['chroot', self.root_path, '/sbin/update-bootloader', '--reinit'])
 
 
 def main():

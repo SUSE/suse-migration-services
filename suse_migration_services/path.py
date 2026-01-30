@@ -25,6 +25,7 @@ class Path:
     """
     **Directory path helpers**
     """
+
     @staticmethod
     def create(path):
         """
@@ -32,9 +33,7 @@ class Path:
 
         :param string path: path name
         """
-        Command.run(
-            ['mkdir', '-p', path]
-        )
+        Command.run(['mkdir', '-p', path])
 
     @staticmethod
     def wipe(path):
@@ -43,9 +42,7 @@ class Path:
 
         :param string path: path name
         """
-        Command.run(
-            ['rm', '-r', '-f', path]
-        )
+        Command.run(['rm', '-r', '-f', path])
 
     @staticmethod
     def remove(path):
@@ -54,15 +51,10 @@ class Path:
 
         :param string path: path name
         """
-        Command.run(
-            ['rmdir', path]
-        )
+        Command.run(['rmdir', path])
 
     @staticmethod
-    def which(
-        filename, alternative_lookup_paths=None,
-        custom_env=None, access_mode=None
-    ):
+    def which(filename, alternative_lookup_paths=None, custom_env=None, access_mode=None):
         """
         Lookup file name in PATH
 
@@ -78,9 +70,7 @@ class Path:
         :rtype: str
         """
         lookup_paths = []
-        multipart_message = [
-            '"%s": ' % filename, 'exists: unknown', 'mode match: not checked'
-        ]
+        multipart_message = ['"%s": ' % filename, 'exists: unknown', 'mode match: not checked']
         system_path = os.environ.get('PATH')
         if custom_env:
             system_path = custom_env.get('PATH')

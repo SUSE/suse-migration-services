@@ -25,9 +25,7 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.drop_components import DropComponents
 
-from suse_migration_services.exceptions import (
-    DistMigrationWickedMigrationException
-)
+from suse_migration_services.exceptions import DistMigrationWickedMigrationException
 
 
 class WickedToNetworkManager(DropComponents):
@@ -44,49 +42,43 @@ class WickedToNetworkManager(DropComponents):
         self.log.info('Checking if wicked is setup for network management')
         wicked_service_path = os.sep.join(
             [
-                self.root_path, 'etc', 'systemd', 'system',
-                'network-online.target.wants', 'wicked.service'
+                self.root_path,
+                'etc',
+                'systemd',
+                'system',
+                'network-online.target.wants',
+                'wicked.service',
             ]
         )
         if os.path.islink(wicked_service_path):
             self.log.info('Running wicked to NetworkManager migration')
         else:
-            self.log.info(
-                'wicked is not setup as network config engine, nothing to do'
-            )
+            self.log.info('wicked is not setup as network config engine, nothing to do')
             return
         try:
             self.log.info('Enabling NetworkManager in migrated system')
             Command.run(
                 [
-                    'systemctl', '--root', self.root_path, 'enable',
-                    '--force', 'NetworkManager.service'
+                    'systemctl',
+                    '--root',
+                    self.root_path,
+                    'enable',
+                    '--force',
+                    'NetworkManager.service',
                 ]
             )
 
             self.log.info('Disable wicked service completely')
-            Command.run(
-                [
-                    'systemctl', '--root', self.root_path, 'mask',
-                    'wicked.service'
-                ]
-            )
+            Command.run(['systemctl', '--root', self.root_path, 'mask', 'wicked.service'])
 
             self.log.info('Copy connections to migrated system')
-            nm_connection_pattern = \
-                '/etc/NetworkManager/system-connections/*.nmconnection'
+            nm_connection_pattern = '/etc/NetworkManager/system-connections/*.nmconnection'
             nm_connections_path = os.path.normpath(
-                os.sep.join(
-                    [self.root_path, 'etc/NetworkManager/system-connections']
-                )
+                os.sep.join([self.root_path, 'etc/NetworkManager/system-connections'])
             )
-            Command.run(
-                ['mkdir', '-p', nm_connections_path]
-            )
+            Command.run(['mkdir', '-p', nm_connections_path])
             for connection in sorted(glob.iglob(nm_connection_pattern)):
-                Command.run(
-                    ['cp', connection, nm_connections_path]
-                )
+                Command.run(['cp', connection, nm_connections_path])
             self.log.info('Drop wicked from migrated system')
             self.drop_package('wicked')
             self.drop_package('wicked-service')
@@ -101,9 +93,7 @@ class WickedToNetworkManager(DropComponents):
             self.drop_path('/etc/sysconfig/network/')
             self.drop_perform()
         except Exception as issue:
-            message = 'wicked to NetworkManager migration failed with {}'.format(
-                issue
-            )
+            message = 'wicked to NetworkManager migration failed with {}'.format(issue)
             self.log.error(message)
             raise DistMigrationWickedMigrationException(message)
 

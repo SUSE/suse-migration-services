@@ -45,6 +45,7 @@ class DropComponents:
     interfere in the upgrade process, rather than just driving
     the upgrade process.
     """
+
     def __init__(self):
         self.drop_packages = []
         self.drop_files_and_directories = []
@@ -55,7 +56,7 @@ class DropComponents:
                 [
                     self.root_path,
                     Defaults.get_migration_backup_path(),
-                    datetime.now().strftime('%Y-%m-%d')
+                    datetime.now().strftime('%Y-%m-%d'),
                 ]
             )
         )
@@ -65,8 +66,7 @@ class DropComponents:
 
     def package_installed(self, name):
         package_call = Command.run(
-            ['chroot', self.root_path, 'rpm', '-q', name],
-            raise_on_error=False
+            ['chroot', self.root_path, 'rpm', '-q', name], raise_on_error=False
         )
         if package_call.returncode == 0:
             return True
@@ -74,9 +74,7 @@ class DropComponents:
 
     def drop_path(self, path):
         if self.root_path:
-            target_path = os.path.normpath(
-                os.sep.join([self.root_path, path])
-            )
+            target_path = os.path.normpath(os.sep.join([self.root_path, path]))
             with open(self.backup_data.name, 'a') as backup:
                 backup.write('{}{}'.format(path, os.linesep))
 
@@ -93,10 +91,13 @@ class DropComponents:
                     '--no-cd',
                     '--non-interactive',
                     '--gpg-auto-import-keys',
-                    '--root', self.root_path,
+                    '--root',
+                    self.root_path,
                     'remove',
-                    '--clean-deps'
-                ] + self.drop_packages, raise_on_error=False
+                    '--clean-deps',
+                ]
+                + self.drop_packages,
+                raise_on_error=False,
             )
             zypper_call.raise_if_failed()
 
@@ -105,10 +106,13 @@ class DropComponents:
             Path.create(self.backup_path)
             Command.run(
                 [
-                    'rsync', '-avr', '--ignore-missing-args',
-                    '--files-from', self.backup_data.name,
+                    'rsync',
+                    '-avr',
+                    '--ignore-missing-args',
+                    '--files-from',
+                    self.backup_data.name,
                     self.root_path,
-                    '{}/'.format(self.backup_path)
+                    '{}/'.format(self.backup_path),
                 ]
             )
             for element in self.drop_files_and_directories:

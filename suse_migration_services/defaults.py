@@ -26,6 +26,7 @@ class Defaults:
 
     Provides class methods for default values
     """
+
     @staticmethod
     def get_system_root_path():
         return '/system-root'
@@ -63,18 +64,14 @@ class Defaults:
         migration_log_file = 'var/log/distro_migration.log'
 
         if system_root:
-            migration_log_file = os.sep.join(
-                [Defaults.get_system_root_path(), migration_log_file]
-            )
+            migration_log_file = os.sep.join([Defaults.get_system_root_path(), migration_log_file])
         else:
             migration_log_file = os.sep + migration_log_file
         return migration_log_file
 
     @staticmethod
     def get_system_migration_custom_config_file():
-        return os.sep.join(
-            [Defaults.get_system_root_path(), 'etc/sle-migration-service.yml']
-        )
+        return os.sep.join([Defaults.get_system_root_path(), 'etc/sle-migration-service.yml'])
 
     @staticmethod
     def get_system_mount_info_file():
@@ -97,9 +94,7 @@ class Defaults:
             return 'boot/image'
         else:
             raise NotImplementedError(
-                'get_target_kernel not implemented for machine type {}'.format(
-                    machine
-                )
+                'get_target_kernel not implemented for machine type {}'.format(machine)
             )
 
     @staticmethod
@@ -108,10 +103,7 @@ class Defaults:
 
     @staticmethod
     def get_ssh_keys_paths():
-        return [
-            Defaults._get_ssh_keys_path('home/*'),
-            Defaults._get_ssh_keys_path('root')
-        ]
+        return [Defaults._get_ssh_keys_path('home/*'), Defaults._get_ssh_keys_path('root')]
 
     @staticmethod
     def get_migration_ssh_file():
@@ -119,18 +111,11 @@ class Defaults:
 
     @staticmethod
     def _get_ssh_keys_path(prefix_path):
-        return os.sep.join(
-            [
-                Defaults.get_system_root_path(), prefix_path,
-                '.ssh/authorized_keys'
-            ]
-        )
+        return os.sep.join([Defaults.get_system_root_path(), prefix_path, '.ssh/authorized_keys'])
 
     @staticmethod
     def get_system_ssh_host_keys_glob_path():
-        return os.sep.join(
-            [Defaults.get_system_root_path(), 'etc/ssh/ssh_host_*']
-        )
+        return os.sep.join([Defaults.get_system_root_path(), 'etc/ssh/ssh_host_*'])
 
     @staticmethod
     def get_system_sshd_config_path():
@@ -180,11 +165,7 @@ class Defaults:
 
     @staticmethod
     def get_grub_default_file():
-        return os.path.normpath(
-            os.sep.join(
-                [Defaults.get_system_root_path(), '/etc/default/grub']
-            )
-        )
+        return os.path.normpath(os.sep.join([Defaults.get_system_root_path(), '/etc/default/grub']))
 
     @staticmethod
     def update_env(preserve_info):
@@ -199,10 +180,9 @@ class Defaults:
                         if not (line.startswith('#') or line.startswith(os.linesep)):
                             # DMS currently takes http, https and ftp protocols
                             # into consideration, so lower case them is ok
-                            key_value = line.lower(). \
-                                replace(os.linesep, ''). \
-                                replace('"', ''). \
-                                split('=')
+                            key_value = (
+                                line.lower().replace(os.linesep, '').replace('"', '').split('=')
+                            )
                             proxy_env.update(dict([key_value]))
         if proxy_env.get('proxy_enabled') == 'yes':
             del proxy_env['proxy_enabled']
@@ -216,7 +196,5 @@ class Defaults:
         log.info('Env variables')
         env = ''
         for key, value in sorted(os.environ.items()):
-            env += '{key}: {value}{newline}'.format(
-                key=key, value=value, newline=os.linesep
-            )
+            env += '{key}: {value}{newline}'.format(key=key, value=value, newline=os.linesep)
         log.info(env)

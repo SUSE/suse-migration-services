@@ -1,65 +1,24 @@
 schema = {
-    'debug': {
-        'required': False,
-        'type': 'boolean'
-    },
-    'migration_product': {
-        'required': False,
-        'type': 'string'
-    },
+    'debug': {'required': False, 'type': 'boolean'},
+    'migration_product': {'required': False, 'type': 'string'},
     'preserve': {
         'required': False,
         'type': 'dict',
         'schema': {
-            'rules': {
-                'required': False,
-                'type': 'list',
-                'nullable': False
-            },
-            'static': {
-                'required': False,
-                'type': 'list',
-                'nullable': False
-            },
-            'sysctl': {
-                'required': False,
-                'type': 'list',
-                'nullable': False
-            }
-        }
+            'rules': {'required': False, 'type': 'list', 'nullable': False},
+            'static': {'required': False, 'type': 'list', 'nullable': False},
+            'sysctl': {'required': False, 'type': 'list', 'nullable': False},
+        },
     },
-    'soft_reboot': {
-        'required': False,
-        'type': 'boolean'
-    },
-    'use_zypper_migration': {
-        'required': False,
-        'type': 'boolean'
-    },
-    'verbose_migration': {
-        'required': False,
-        'type': 'boolean'
-    },
-    'build_host_independent_initrd': {
-        'required': False,
-        'type': 'boolean'
-    },
-    'pre_checks_fix': {
-        'required': False,
-        'type': 'boolean'
-    },
-    'debug_solver': {
-        'required': False,
-        'type': 'boolean'
-    },
+    'soft_reboot': {'required': False, 'type': 'boolean'},
+    'use_zypper_migration': {'required': False, 'type': 'boolean'},
+    'verbose_migration': {'required': False, 'type': 'boolean'},
+    'build_host_independent_initrd': {'required': False, 'type': 'boolean'},
+    'pre_checks_fix': {'required': False, 'type': 'boolean'},
+    'debug_solver': {'required': False, 'type': 'boolean'},
     'network': {
         'required': False,
         'type': 'dict',
-        'schema': {
-            'wicked2nm-continue-migration': {
-                'required': False,
-                'type': 'boolean'
-            }
-        }
-    }
+        'schema': {'wicked2nm-continue-migration': {'required': False, 'type': 'boolean'}},
+    },
 }

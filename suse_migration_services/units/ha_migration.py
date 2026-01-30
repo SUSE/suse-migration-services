@@ -40,14 +40,17 @@ class HighAvailabilityExtension:
         os.chroot(self.root_path)
 
         if not self._corosync_conf_exists():
-            self.log.info(
-                'corosync.conf not found. Skipped HA extension migration.'
-            )
+            self.log.info('corosync.conf not found. Skipped HA extension migration.')
             return
         try:
             Command.run(
                 [
-                    'crm', 'cluster', 'health', 'sles16', '--local', '--fix',
+                    'crm',
+                    'cluster',
+                    'health',
+                    'sles16',
+                    '--local',
+                    '--fix',
                 ]
             )
         except Exception as issue:

@@ -41,9 +41,7 @@ def remote_repos(migration_system=False):
 
         migration_accepted_prefixes = ('http', 'ftp', 'plugin:/susecloud')
         for repo in repos_list:
-            repo_path = os.sep.join(
-                [repos_path, repo]
-            )
+            repo_path = os.sep.join([repos_path, repo])
             config.read(repo_path)
             repo_section = dict(config)
             for section in repo_section.keys():
@@ -60,5 +58,6 @@ def remote_repos(migration_system=False):
             'may not be available during the migration:\n%s\nPlease, check those '
             'before starting the migration\nTo see all the repositories and '
             'their urls, you can run "%s"\n',
-            '\n'.join(no_remote_repos), zypper_cmd,
+            '\n'.join(no_remote_repos),
+            zypper_cmd,
         )

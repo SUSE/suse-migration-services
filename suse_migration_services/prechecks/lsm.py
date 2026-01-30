@@ -72,22 +72,24 @@ def check_lsm(migration_system=False):
             _apparmor_primitive_check()
             return
         try:
-            aa_status_output = Command.run(
-                ['aa-status', '--json']
-            ).output
+            aa_status_output = Command.run(['aa-status', '--json']).output
             if aa_status_output:
                 aa_data = json.loads(aa_status_output)
 
                 manual_check_needed = _apparmor_standard_profiles_modified()
-                if _apparmor_additional_profiles(aa_data) \
-                   and _apparmor_extended_profiles_modified():
+                if (
+                    _apparmor_additional_profiles(aa_data)
+                    and _apparmor_extended_profiles_modified()
+                ):
                     manual_check_needed = True
 
                 if manual_check_needed:
-                    message = dedent('''\n
+                    message = dedent(
+                        '''\n
                         Non-default AppArmor setup detected,
                         please review the details above.
-                    ''')
+                    '''
+                    )
                     log.error(message)
         except Exception as issue:
             log.warn('aa-status failed with: {}'.format(issue))
@@ -108,15 +110,15 @@ def _apparmor_enabled():
 
 def _apparmor_primitive_check():
     # check amount of files in /etc/apparmor.d/
-    apparmor_files = Command.run(
-        ['find', '/etc/apparmor.d/'], raise_on_error=False
-    ).output
+    apparmor_files = Command.run(['find', '/etc/apparmor.d/'], raise_on_error=False).output
     if apparmor_files and apparmor_files.count('\n') > DEFAULT_ETC_FILE_COUNT:
-        message = dedent('''\n
+        message = dedent(
+            '''\n
             Looks like customized AppArmor setup is in use:
             please install "apparmor-parser" as aa-status is
             needed to perform a proper check.
-        ''')
+        '''
+        )
         log.error(message)
         return True
 
@@ -125,10 +127,12 @@ def _apparmor_standard_profiles_modified():
     # verify AA files against rpm db
     profile_package = 'apparmor-profiles'
     if _find_modified_profiles(profile_package):
-        message = dedent('''\n
+        message = dedent(
+            '''\n
             Modified AppArmor profiles found,
             please verify changes to the files from: "rpm -V {}".
-        ''')
+        '''
+        )
         log.error(message.format(profile_package))
         return True
 
@@ -138,22 +142,22 @@ def _apparmor_extended_profiles_modified():
     for pkg in ADDITIONAL_AA_PROFILES:
         path_filter = '/etc/apparmor.d'
         if _find_modified_profiles(pkg, path_filter):
-            message = dedent('''\n
+            message = dedent(
+                '''\n
                 Modified AppArmor profiles found,
                 please verify changes to profiles from "{}": "rpm -V {}".
-            ''')
+            '''
+            )
             log.error(message.format(path_filter, pkg))
             return True
 
 
 def _find_modified_profiles(pkg, path_filter=None):
-    modified_files = Command.run(
-        ['rpm', '-V', pkg], raise_on_error=False
-    ).output
+    modified_files = Command.run(['rpm', '-V', pkg], raise_on_error=False).output
     for line in modified_files.splitlines():
         if path_filter and line.find(path_filter) == -1:
             continue
-        if (line[2] == "5"):
+        if line[2] == "5":
             return True
 
 
