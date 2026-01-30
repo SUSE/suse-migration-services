@@ -149,5 +149,8 @@ test: setup
 		--cov-fail-under=100 \
 		--cov-config .coveragerc'
 
+black: setup
+	poetry run black --skip-string-normalization --line-length 100 suse_migration_services test/unit/
+
 clean:
 	rm -rf dist
