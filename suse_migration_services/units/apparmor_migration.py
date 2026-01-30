@@ -59,20 +59,10 @@ class ApparmorToSelinux(DropComponents):
             self.log.info('Installing patterns-base-selinux')
             # selinux migration is allowed to fail, it can be fixed
             # after the migration
-            zypper_call = Zypper.run(
-                [
-                    '--no-cd',
-                    '--non-interactive',
-                    '--gpg-auto-import-keys',
-                    'install',
-                    '--auto-agree-with-licenses',
-                    '--allow-vendor-change',
-                    '--download', 'in-advance',
-                    '--replacefiles',
-                    '--allow-downgrade',
-                    '--no-recommends',
-                    'patterns-base-selinux'
-                ], raise_on_error=False, chroot=self.root_path
+            zypper_call = Zypper.install(
+                'patterns-base-selinux',
+                extra_args=['--no-recommends'],
+                raise_on_error=False, chroot=self.root_path
             )
             zypper_call.log_if_failed(self.log)
         except Exception as issue:
