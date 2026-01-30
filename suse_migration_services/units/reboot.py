@@ -52,32 +52,27 @@ class Reboot:
             migration_config = MigrationConfig()
             migration_config.update_migration_config_file()
             self.log.info(
-                'Config file content:\n{content}\n'. format(
+                'Config file content:\n{content}\n'.format(
                     content=migration_config.get_migration_config_file_content()
                 )
             )
             # stop console dialog log. The service holds a busy state
             # on system-root and stands in our way in case of debug
             # mode because it grabs the master console in/output
-            Command.run(
-                ['systemctl', 'stop', 'suse-migration-console-log'],
-                raise_on_error=False
-            )
+            Command.run(['systemctl', 'stop', 'suse-migration-console-log'], raise_on_error=False)
             if migration_config.is_debug_requested():
                 self.log.info('Reboot skipped due to debug flag set')
             else:
                 self.log.info('Umounting system')
                 system_mount = Fstab()
-                system_mount.read(
-                    Defaults.get_system_mount_info_file()
-                )
+                system_mount.read(Defaults.get_system_mount_info_file())
                 for mount in reversed(system_mount.get_devices()):
                     self.log.info(
                         'Umounting {0}: {1}'.format(
-                            mount.mountpoint, Command.run(
-                                ['umount', '--lazy', mount.mountpoint],
-                                raise_on_error=False
-                            )
+                            mount.mountpoint,
+                            Command.run(
+                                ['umount', '--lazy', mount.mountpoint], raise_on_error=False
+                            ),
                         )
                     )
                 if not migration_config.is_soft_reboot_requested():
@@ -86,9 +81,7 @@ class Reboot:
                     restart_system = 'kexec'
                 self.log.info(
                     'Reboot system: {0}{1}'.format(
-                        os.linesep, Command.run(
-                            ['systemctl', restart_system]
-                        )
+                        os.linesep, Command.run(['systemctl', restart_system])
                     )
                 )
         except Exception:
@@ -96,9 +89,7 @@ class Reboot:
             # want to be stuck in the migration live system.
             # Keep fingers crossed:
             self.log.warning('Reboot system: [Force Reboot]')
-            Command.run(
-                ['systemctl', '--force', 'reboot']
-            )
+            Command.run(['systemctl', '--force', 'reboot'])
 
 
 def main():

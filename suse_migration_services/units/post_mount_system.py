@@ -54,37 +54,19 @@ class PostMountSystem:
         if preserve_info:
             for _, preserve_files in preserve_info.items():
                 for preserve_file in preserve_files:
-                    source_glob = os.path.normpath(
-                        os.sep.join([self.root_path, preserve_file])
-                    )
+                    source_glob = os.path.normpath(os.sep.join([self.root_path, preserve_file]))
                     for source_file in glob.glob(source_glob):
-                        target_dir = os.path.dirname(
-                            source_file
-                        )[len(self.root_path):]
-                        self.log.info(
-                            'Copy file: {0} to: {1}'.format(
-                                source_file, target_dir
-                            )
-                        )
+                        target_dir = os.path.dirname(source_file)[len(self.root_path) :]
+                        self.log.info('Copy file: {0} to: {1}'.format(source_file, target_dir))
                         if not os.path.exists(target_dir):
-                            Command.run(
-                                ['mkdir', '-p', target_dir]
-                            )
+                            Command.run(['mkdir', '-p', target_dir])
                         shutil.copy(source_file, target_dir)
             if 'rules' in preserve_info.keys():
-                Command.run(
-                    ['udevadm', 'control', '--reload']
-                )
-                Command.run(
-                    ['udevadm', 'trigger', '--type=subsystems', '--action=add']
-                )
-                Command.run(
-                    ['udevadm', 'trigger', '--type=devices', '--action=add']
-                )
+                Command.run(['udevadm', 'control', '--reload'])
+                Command.run(['udevadm', 'trigger', '--type=subsystems', '--action=add'])
+                Command.run(['udevadm', 'trigger', '--type=devices', '--action=add'])
             if 'sysctl' in preserve_info.keys():
-                Command.run(
-                    ['sysctl', '--system']
-                )
+                Command.run(['sysctl', '--system'])
 
 
 def main():

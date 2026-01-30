@@ -21,15 +21,14 @@ from typing import List
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.exceptions import (
-    DistMigrationZypperException
-)
+from suse_migration_services.exceptions import DistMigrationZypperException
 
 
 class Zypper:
     """
     **Implements zypper invocation**
     """
+
     @staticmethod
     def run(args: List[str], raise_on_error=True, chroot=''):
         """
@@ -46,9 +45,7 @@ class Zypper:
         chroot:
             run zypper chrooted against the given path
         """
-        log_file = Defaults.get_migration_log_file(
-            system_root=False if chroot else True
-        )
+        log_file = Defaults.get_migration_log_file(system_root=False if chroot else True)
         command_string = ' '.join(['zypper'] + list(args) + ['&>>', log_file])
         command = []
         if chroot:
@@ -62,21 +59,20 @@ class Zypper:
             command += ['chroot', chroot]
         try:
             result = Command.run(
-                command + ['bash', '-c', command_string],
-                raise_on_error=raise_on_error
+                command + ['bash', '-c', command_string], raise_on_error=raise_on_error
             )
         except Exception as issue:
-            raise DistMigrationZypperException(
-                'zypper failed with: {}'.format(issue)
-            )
+            raise DistMigrationZypperException('zypper failed with: {}'.format(issue))
         return ZypperCall(args, command_string, result)
 
     @staticmethod
-    def install(*pkgs: str,
-                raise_on_error=True,
-                system_root: str | None = None,
-                chroot='',
-                extra_args: List[str] = []):
+    def install(
+        *pkgs: str,
+        raise_on_error=True,
+        system_root: str | None = None,
+        chroot='',
+        extra_args: List[str] = []
+    ):
         zypper_args = [
             '--no-cd',
             '--non-interactive',
@@ -85,16 +81,20 @@ class Zypper:
         if system_root:
             zypper_args += ['--root', system_root]
         return Zypper.run(
-            zypper_args + [
+            zypper_args
+            + [
                 'install',
                 '--auto-agree-with-licenses',
                 '--allow-vendor-change',
-                '--download', 'in-advance',
+                '--download',
+                'in-advance',
                 '--replacefiles',
                 '--allow-downgrade',
-            ] + extra_args + list(pkgs),
+            ]
+            + extra_args
+            + list(pkgs),
             raise_on_error=raise_on_error,
-            chroot=chroot
+            chroot=chroot,
         )
 
 
@@ -147,9 +147,7 @@ class ZypperCall:
             return
 
         raise DistMigrationZypperException(
-            '{0}: failed with: {1}: {2}'.format(
-                self.command, self.output, self.error
-            )
+            '{0}: failed with: {1}: {2}'.format(self.command, self.output, self.error)
         )
 
     def log_if_failed(self, log):
@@ -157,8 +155,4 @@ class ZypperCall:
         log output and error when failed
         """
         if not self.success:
-            log.error(
-                '{0}: failed with: {1}: {2}'.format(
-                    self.command, self.output, self.error
-                )
-            )
+            log.error('{0}: failed with: {1}: {2}'.format(self.command, self.output, self.error))

@@ -44,43 +44,31 @@ def migration(migration_system=False):
     installed_products = get_installed_products()
     installed_products['target_base_product'] = MigrationTarget.get_migration_target()
 
-    if installed_products.get('installed_products') and \
-       installed_products.get('target_base_product'):
+    if installed_products.get('installed_products') and installed_products.get(
+        'target_base_product'
+    ):
         registration_server = get_registration_server_url()
         registration_credentials = get_scc_credentials()
         if registration_server and registration_credentials:
             request_migration_offer(
-                installed_products,
-                registration_credentials,
-                registration_server
+                installed_products, registration_credentials, registration_server
             )
             return
     log.info('System not registered, skipped')
 
 
-def request_migration_offer(
-    installed_products, registration_credentials, registration_server
-):
+def request_migration_offer(installed_products, registration_credentials, registration_server):
     data = {
-        'installed_products':
-            installed_products['installed_products'],
-        'target_base_product':
-            installed_products['target_base_product']
+        'installed_products': installed_products['installed_products'],
+        'target_base_product': installed_products['target_base_product'],
     }
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
+    headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
     response = None
     try:
-        uri = '{}/connect/systems/products/offline_migrations'.format(
-            registration_server
-        )
+        uri = '{}/connect/systems/products/offline_migrations'.format(registration_server)
         user = registration_credentials['username']
         secret = registration_credentials['password']
-        response = requests.post(
-            uri, json=data, auth=(user, secret), headers=headers
-        )
+        response = requests.post(uri, json=data, auth=(user, secret), headers=headers)
         offline_migrations = response.json()
         if isinstance(offline_migrations, dict):
             result_error = offline_migrations.get('error')
@@ -89,8 +77,7 @@ def request_migration_offer(
     except Exception as issue:
         log.error(
             'Post request to {} failed with {}'.format(
-                registration_server,
-                response.text if response else issue
+                registration_server, response.text if response else issue
             )
         )
 
@@ -129,16 +116,14 @@ def get_registration_server_url():
 
 
 def get_installed_products():
-    installed_products = {
-        'installed_products': []
-    }
+    installed_products = {'installed_products': []}
     for prod_file in glob.glob('/etc/products.d/*.prod'):
         product_tree = etree.parse(prod_file)
         installed_products['installed_products'].append(
             {
                 'identifier': product_tree.find('name').text,
                 'version': product_tree.find('version').text,
-                'arch': product_tree.find('arch').text
+                'arch': product_tree.find('arch').text,
             }
         )
     return installed_products

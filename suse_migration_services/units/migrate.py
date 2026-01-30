@@ -50,7 +50,7 @@ class MigrateSystem:
             migration_config = MigrationConfig()
             migration_config.update_migration_config_file()
             self.log.info(
-                'Config file content:\n{content}\n'. format(
+                'Config file content:\n{content}\n'.format(
                     content=migration_config.get_migration_config_file_content()
                 )
             )
@@ -65,10 +65,8 @@ class MigrateSystem:
             solver_case = Defaults.get_zypp_gen_solver_test_case()
             if migration_config.is_zypp_solver_test_case_requested():
                 solver_case = '--debug-solver'
-            os.environ['ZYPP_SINGLE_RPMTRANS'] = \
-                self.is_single_rpmtrans_requested()
-            os.environ['ZYPP_NO_USRMERGE_PROTECT'] = \
-                self.is_single_rpmtrans_requested()
+            os.environ['ZYPP_SINGLE_RPMTRANS'] = self.is_single_rpmtrans_requested()
+            os.environ['ZYPP_NO_USRMERGE_PROTECT'] = self.is_single_rpmtrans_requested()
 
             if migration_config.is_zypper_migration_plugin_requested():
                 Zypper.run(
@@ -83,8 +81,10 @@ class MigrateSystem:
                         '--allow-vendor-change',
                         '--strict-errors-dist-migration',
                         '--replacefiles',
-                        '--product', migration_config.get_migration_product(),
-                        '--root', self.root_path
+                        '--product',
+                        migration_config.get_migration_product(),
+                        '--root',
+                        self.root_path,
                     ]
                 )
             else:
@@ -93,23 +93,24 @@ class MigrateSystem:
                         '--no-cd',
                         '--non-interactive',
                         '--gpg-auto-import-keys',
-                        '--root', self.root_path,
+                        '--root',
+                        self.root_path,
                         'dup',
                         '--auto-agree-with-licenses',
                         '--allow-vendor-change',
-                        '--download', 'in-advance',
+                        '--download',
+                        'in-advance',
                         '--replacefiles',
-                        '--allow-downgrade'
-                    ], raise_on_error=False
+                        '--allow-downgrade',
+                    ],
+                    raise_on_error=False,
                 )
                 zypper_call.raise_if_failed()
             # report success(0) return code
             with open(self.exit_code_file, 'w') as exit_code:
                 exit_code.write('0{}'.format(os.linesep))
         except Exception as issue:
-            etc_issue_path = os.sep.join(
-                [self.root_path, 'etc/issue']
-            )
+            etc_issue_path = os.sep.join([self.root_path, 'etc/issue'])
             log_path_migrated_system = os.sep + os.path.relpath(
                 Defaults.get_migration_log_file(), self.root_path
             )
@@ -123,9 +124,7 @@ class MigrateSystem:
             with open(self.exit_code_file, 'w') as exit_code:
                 exit_code.write('1{}'.format(os.linesep))
             self.log.error('migrate service failed with {0}'.format(issue))
-            raise DistMigrationZypperException(
-                'Migration failed with {0}'.format(issue)
-            )
+            raise DistMigrationZypperException('Migration failed with {0}'.format(issue))
         finally:
             self.duplicate_solver_test_case_data()
 
@@ -139,12 +138,8 @@ class MigrateSystem:
         test_case_dir = Defaults.get_zypper_solver_test_case_dir()
 
         if os.path.isdir(test_case_dir):
-            target = os.sep.join(
-                [Defaults.get_system_root_path(), test_case_dir]
-            )
-            Command.run(
-                ['cp', '-r', test_case_dir, target]
-            )
+            target = os.sep.join([Defaults.get_system_root_path(), test_case_dir])
+            Command.run(['cp', '-r', test_case_dir, target])
 
     def is_single_rpmtrans_requested(self):
         """

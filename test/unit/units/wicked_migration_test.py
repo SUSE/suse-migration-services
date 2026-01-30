@@ -1,13 +1,9 @@
 from pytest import raises
-from unittest.mock import (
-    patch, call
-)
+from unittest.mock import patch, call
 
 from suse_migration_services.drop_components import DropComponents
 from suse_migration_services.units.wicked_migration import main
-from suse_migration_services.exceptions import (
-    DistMigrationWickedMigrationException
-)
+from suse_migration_services.exceptions import DistMigrationWickedMigrationException
 
 
 class TestMigrationWicked:
@@ -30,41 +26,33 @@ class TestMigrationWicked:
         mock_package_installed,
         mock_drop_perform,
         mock_drop_path,
-        mock_drop_package
+        mock_drop_package,
     ):
         mock_os_path_islink.return_value = True
         mock_os_path_exists.return_value = True
         mock_package_installed.return_value = True
-        mock_iglob.return_value = [
-            '/etc/NetworkManager/system-connections/some.nmconnection'
-        ]
+        mock_iglob.return_value = ['/etc/NetworkManager/system-connections/some.nmconnection']
         main()
         assert mock_Command_run.call_args_list == [
             call(
                 [
-                    'systemctl', '--root', '/system-root',
-                    'enable', '--force', 'NetworkManager.service'
+                    'systemctl',
+                    '--root',
+                    '/system-root',
+                    'enable',
+                    '--force',
+                    'NetworkManager.service',
                 ]
             ),
-            call(
-                [
-                    'systemctl', '--root', '/system-root',
-                    'mask', 'wicked.service'
-                ]
-            ),
-            call(
-                [
-                    'mkdir', '-p',
-                    '/system-root/etc/NetworkManager/system-connections'
-                ]
-            ),
+            call(['systemctl', '--root', '/system-root', 'mask', 'wicked.service']),
+            call(['mkdir', '-p', '/system-root/etc/NetworkManager/system-connections']),
             call(
                 [
                     'cp',
                     '/etc/NetworkManager/system-connections/some.nmconnection',
-                    '/system-root/etc/NetworkManager/system-connections'
+                    '/system-root/etc/NetworkManager/system-connections',
                 ]
-            )
+            ),
         ]
         assert mock_drop_package.call_args_list == [
             call('wicked'),
@@ -79,11 +67,7 @@ class TestMigrationWicked:
     @patch('os.path.exists')
     @patch('os.path.islink')
     def test_main_raises(
-        self,
-        mock_os_path_islink,
-        mock_os_path_exists,
-        mock_Command_run,
-        mock_logger_setup
+        self, mock_os_path_islink, mock_os_path_exists, mock_Command_run, mock_logger_setup
     ):
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
@@ -93,9 +77,7 @@ class TestMigrationWicked:
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.islink')
-    def test_main_skip(
-        self, mock_os_path_islink, mock_Command_run, mock_logger_setup
-    ):
+    def test_main_skip(self, mock_os_path_islink, mock_Command_run, mock_logger_setup):
         mock_os_path_islink.return_value = False
         main()
         assert not mock_Command_run.called

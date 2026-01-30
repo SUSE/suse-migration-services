@@ -24,7 +24,7 @@ from collections import namedtuple
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.exceptions import (
     DistMigrationCommandException,
-    DistMigrationCommandNotFoundException
+    DistMigrationCommandNotFoundException,
 )
 
 log = logging.getLogger(Defaults.get_migration_log_name())
@@ -38,6 +38,7 @@ class Command:
     commands in blocking and non blocking mode. Control of
     stdout and stderr is given to the caller
     """
+
     @staticmethod
     def run(command, custom_env=None, raise_on_error=True):
         """
@@ -67,34 +68,22 @@ class Command:
         :rtype: namedtuple
         """
         from .path import Path
-        command_type = namedtuple(
-            'command', ['output', 'error', 'returncode']
-        )
+
+        command_type = namedtuple('command', ['output', 'error', 'returncode'])
         environment = os.environ
         if custom_env:
             environment = custom_env
-        if not Path.which(
-            command[0], custom_env=environment, access_mode=os.X_OK
-        ):
+        if not Path.which(command[0], custom_env=environment, access_mode=os.X_OK):
             message = 'Command "%s" not found in the environment' % command[0]
             if not raise_on_error:
-                return command_type(
-                    output=None,
-                    error=None,
-                    returncode=-1
-                )
+                return command_type(output=None, error=None, returncode=-1)
             else:
                 log.error(message)
-                raise DistMigrationCommandNotFoundException(
-                    message
-                )
+                raise DistMigrationCommandNotFoundException(message)
         try:
             log.info('Calling: {0}'.format(command))
             process = subprocess.Popen(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=environment
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment
             )
         except Exception as issue:
             raise DistMigrationCommandException(
@@ -107,17 +96,11 @@ class Command:
             output = bytes(b'(no output on stdout)')
         if process.returncode != 0 and raise_on_error:
             log.error(
-                'EXEC: Failed with stderr: {0}, stdout: {1}'.format(
-                    error.decode(), output.decode()
-                )
+                'EXEC: Failed with stderr: {0}, stdout: {1}'.format(error.decode(), output.decode())
             )
             raise DistMigrationCommandException(
-                '{0}: stderr: {1}, stdout: {2}'.format(
-                    command[0], error.decode(), output.decode()
-                )
+                '{0}: stderr: {1}, stdout: {2}'.format(command[0], error.decode(), output.decode())
             )
         return command_type(
-            output=output.decode(),
-            error=error.decode(),
-            returncode=process.returncode
+            output=output.decode(), error=error.decode(), returncode=process.returncode
         )

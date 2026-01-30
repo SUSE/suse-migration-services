@@ -1,9 +1,5 @@
-from unittest.mock import (
-    patch, MagicMock
-)
-from pytest import (
-    raises, fixture
-)
+from unittest.mock import patch, MagicMock
+from pytest import raises, fixture
 import logging
 import io
 import os
@@ -22,12 +18,10 @@ class TestDefaults(object):
         self.defaults = Defaults()
 
     def test_get_migration_config_file(self):
-        assert self.defaults.get_migration_config_file() == \
-            '/etc/migration-config.yml'
+        assert self.defaults.get_migration_config_file() == '/etc/migration-config.yml'
 
     def test_get_grub_default_file(self):
-        assert self.defaults.get_grub_default_file() == \
-            '/system-root/etc/default/grub'
+        assert self.defaults.get_grub_default_file() == '/system-root/etc/default/grub'
 
     def test_get_target_kernel(self):
         with patch('platform.machine') as mock_platform_machine:
@@ -45,16 +39,27 @@ class TestDefaults(object):
 
     def test_get_os_release(self):
         os_release_tuple = namedtuple(
-            'OSRelease', [
-                'name', 'version', 'version_id',
-                'pretty_name', 'id', 'id_like', 'ansi_color', 'cpe_name'
-            ]
+            'OSRelease',
+            [
+                'name',
+                'version',
+                'version_id',
+                'pretty_name',
+                'id',
+                'id_like',
+                'ansi_color',
+                'cpe_name',
+            ],
         )
         os_release_result = os_release_tuple(
-            name='SLES', version='15-SP3', version_id='15.3',
+            name='SLES',
+            version='15-SP3',
+            version_id='15.3',
             pretty_name='SUSE Linux Enterprise Server 15 SP3',
-            id='sles', id_like='suse', ansi_color='0;32',
-            cpe_name='cpe:/o:suse:sles:15:sp3'
+            id='sles',
+            id_like='suse',
+            ansi_color='0;32',
+            cpe_name='cpe:/o:suse:sles:15:sp3',
         )
         os_release_content = (
             'NAME="SLES"\n'
@@ -74,8 +79,7 @@ class TestDefaults(object):
                     return mock_open_os_release.return_value
 
             mock_open.side_effect = open_file
-            file_handle = \
-                mock_open_os_release.return_value.__enter__.return_value
+            file_handle = mock_open_os_release.return_value.__enter__.return_value
             file_handle.read.return_value = os_release_content
             assert self.defaults.get_os_release() == os_release_result
 
@@ -92,12 +96,12 @@ class TestDefaults(object):
             'MALFORMED_LINE_NO_EQUALS\n'  # This line will be skipped
         )
         # Expected order of fields based on valid lines in os_release_content
-        ordered_os_release_tuple = namedtuple(
-            'OSRelease', ['name', 'id', 'id_like', 'version_id']
-        )
+        ordered_os_release_tuple = namedtuple('OSRelease', ['name', 'id', 'id_like', 'version_id'])
         expected_result = ordered_os_release_tuple(
-            name='openSUSE Tumbleweed', id='opensuse-tumbleweed',
-            id_like='opensuse suse', version_id='20250505'
+            name='openSUSE Tumbleweed',
+            id='opensuse-tumbleweed',
+            id_like='opensuse suse',
+            version_id='20250505',
         )
 
         with patch('builtins.open', create=True) as mock_open:
@@ -111,14 +115,11 @@ class TestDefaults(object):
                 return MagicMock(spec=io.IOBase)
 
             mock_open.side_effect = open_file
-            file_handle = \
-                mock_open_os_release.return_value.__enter__.return_value
+            file_handle = mock_open_os_release.return_value.__enter__.return_value
             file_handle.read.return_value = os_release_content
             parsed_result = self.defaults.get_os_release()
             assert parsed_result == expected_result
-            assert parsed_result._fields == (
-                'name', 'id', 'id_like', 'version_id'
-            )
+            assert parsed_result._fields == ('name', 'id', 'id_like', 'version_id')
 
     def test_get_os_release_empty_file(self):
         os_release_content = ""
@@ -132,8 +133,7 @@ class TestDefaults(object):
                 return MagicMock(spec=io.IOBase)
 
             mock_open.side_effect = open_file
-            file_handle = \
-                mock_open_os_release.return_value.__enter__.return_value
+            file_handle = mock_open_os_release.return_value.__enter__.return_value
             file_handle.read.return_value = os_release_content
             assert self.defaults.get_os_release() == expected_empty_tuple
 
@@ -147,15 +147,14 @@ class TestDefaults(object):
                 if filename == '/etc/os-release':
                     return mock_open_os_release.return_value
                 return MagicMock(spec=io.IOBase)
+
             mock_open.side_effect = open_file
-            file_handle = \
-                mock_open_os_release.return_value.__enter__.return_value
+            file_handle = mock_open_os_release.return_value.__enter__.return_value
             file_handle.read.return_value = os_release_content
             assert self.defaults.get_os_release() == expected_empty_tuple
 
     def test_get_proxy_path(self):
-        assert self.defaults.get_proxy_path() == \
-            '/etc/sysconfig/proxy'
+        assert self.defaults.get_proxy_path() == '/etc/sysconfig/proxy'
 
     @patch.dict(os.environ, {'foo': 'bar', 'a': 'b'}, clear=True)
     def test_log_env(self):

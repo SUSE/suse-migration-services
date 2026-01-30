@@ -27,7 +27,7 @@ from suse_migration_services.suse_product import SUSEBaseProduct
 from suse_migration_services.schema import schema
 from suse_migration_services.exceptions import (
     DistMigrationConfigDataException,
-    DistMigrationProductNotFoundException
+    DistMigrationProductNotFoundException,
 )
 
 log = logging.getLogger(Defaults.get_migration_log_name())
@@ -43,16 +43,12 @@ class MigrationConfig:
     live image system. It is usually provided as a pre-setup
     version as part of the live migration image build.
     """
+
     def __init__(self):
-        self.migration_config_file = \
-            Defaults.get_migration_config_file()
-        self.migration_config_dir = \
-            Defaults.get_migration_config_dir()
-        self.migration_custom_file = \
-            Defaults.get_system_migration_custom_config_file()
-        self.config_data = self._parse_config_file(
-            self.migration_config_file
-        )
+        self.migration_config_file = Defaults.get_migration_config_file()
+        self.migration_config_dir = Defaults.get_migration_config_dir()
+        self.migration_custom_file = Defaults.get_system_migration_custom_config_file()
+        self.config_data = self._parse_config_file(self.migration_config_file)
         self._merge_configs(self._list_dropin_configs())
 
     def _parse_config_file(self, config_file):
@@ -70,9 +66,7 @@ class MigrationConfig:
                     log.error(message)
                     raise DistMigrationConfigDataException(message)
                 if validator.errors:
-                    message = 'Validating {0} failed: {1}'.format(
-                        config_file, validator.errors
-                    )
+                    message = 'Validating {0} failed: {1}'.format(config_file, validator.errors)
                     log.error(message)
                     raise DistMigrationConfigDataException(message)
         return config_data
@@ -135,9 +129,7 @@ class MigrationConfig:
             migration_product = SUSEBaseProduct(log).get_product_name()
             if not migration_product:
                 # auto detection went wrong
-                message = (
-                    'Migration product not found, aborting migration attempt.'
-                )
+                message = 'Migration product not found, aborting migration attempt.'
                 log.error(message)
                 raise DistMigrationProductNotFoundException(message)
 
@@ -172,13 +164,13 @@ class MigrationConfig:
 
                 self._write_config_file()
 
-                message = dedent('''
+                message = dedent(
+                    '''
                     The migration file '{0}' has been updated with '{1}' info
-                ''')
+                '''
+                )
                 log.info(
-                    message.format(
-                        self.migration_config_file, self.migration_custom_file
-                    ).lstrip()
+                    message.format(self.migration_config_file, self.migration_custom_file).lstrip()
                 )
 
     def is_debug_requested(self):

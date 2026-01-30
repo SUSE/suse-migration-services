@@ -94,6 +94,7 @@ flake8 = ">=4.0.0"
 [tool.poetry.group.development.dependencies]
 python-dateutil = "*"
 bumpversion = "*"
+black = ">=22.3.0"
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

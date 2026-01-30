@@ -1,14 +1,8 @@
-from unittest.mock import (
-    patch, call, Mock
-)
+from unittest.mock import patch, call, Mock
 from pytest import raises
 
-from suse_migration_services.units.setup_host_network import (
-    main, container, SetupHostNetwork
-)
-from suse_migration_services.exceptions import (
-    DistMigrationHostNetworkException
-)
+from suse_migration_services.units.setup_host_network import main, container, SetupHostNetwork
+from suse_migration_services.exceptions import DistMigrationHostNetworkException
 from suse_migration_services.defaults import Defaults
 
 
@@ -28,8 +22,7 @@ class TestSetupHostNetwork:
     @patch('os.path.exists')
     @patch('shutil.copy')
     def test_main_raises_on_host_network_activation(
-        self, mock_shutil_copy, mock_os_path_exists,
-        mock_Fstab, mock_Command_run, mock_logger_setup
+        self, mock_shutil_copy, mock_os_path_exists, mock_Fstab, mock_Command_run, mock_logger_setup
     ):
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
@@ -56,81 +49,53 @@ class TestSetupHostNetwork:
         mock_Fstab,
         mock_Command_run,
         mock_MigrationConfig,
-        mock_Path
+        mock_Path,
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_glob.return_value = [
             '/system-root/etc/sysconfig/network/ifcfg-eth0',
-            '/system-root/etc/sysconfig/network/dhcp'
+            '/system-root/etc/sysconfig/network/dhcp',
         ]
         mock_isfile.return_value = True
         mock_os_path_exists.return_value = True
         self.host_network.perform(container=True)
 
-        mock_glob.assert_called_once_with(
-            '/system-root/etc/sysconfig/network/*'
-        )
+        mock_glob.assert_called_once_with('/system-root/etc/sysconfig/network/*')
         assert mock_shutil_copy.call_args_list == [
-            call(
-                '/system-root/etc/sysconfig/network/ifcfg-eth0',
-                '/etc/sysconfig/network'
-            ),
-            call(
-                '/system-root/etc/sysconfig/network/dhcp',
-                '/etc/sysconfig/network'
-            )
+            call('/system-root/etc/sysconfig/network/ifcfg-eth0', '/etc/sysconfig/network'),
+            call('/system-root/etc/sysconfig/network/dhcp', '/etc/sysconfig/network'),
         ]
         assert mock_Command_run.call_args_list == [
+            call(['mount', '--bind', '/system-root/etc/NetworkManager', '/etc/NetworkManager']),
             call(
                 [
-                    'mount', '--bind',
-                    '/system-root/etc/NetworkManager',
-                    '/etc/NetworkManager'
-                ]
-            ),
-            call(
-                [
-                    'mount', '--bind',
+                    'mount',
+                    '--bind',
                     '/system-root/usr/lib/NetworkManager',
-                    '/usr/lib/NetworkManager'
+                    '/usr/lib/NetworkManager',
                 ]
             ),
             call(
                 [
-                    'mount', '--bind',
+                    'mount',
+                    '--bind',
                     '/system-root/etc/sysconfig/network/providers',
-                    '/etc/sysconfig/network/providers'
+                    '/etc/sysconfig/network/providers',
                 ]
             ),
-            call(
-                ['rpm', '--query', '--quiet', 'wicked2nm'],
-                raise_on_error=False
-            ),
-            call(
-                ['systemctl', 'stop', 'NetworkManager']
-            )
+            call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
+            call(['systemctl', 'stop', 'NetworkManager']),
         ]
-        fstab.read.assert_called_once_with(
-            '/etc/system-root.fstab'
-        )
+        fstab.read.assert_called_once_with('/etc/system-root.fstab')
         assert fstab.add_entry.call_args_list == [
+            call('/system-root/etc/NetworkManager', '/etc/NetworkManager'),
+            call('/system-root/usr/lib/NetworkManager', '/usr/lib/NetworkManager'),
             call(
-                '/system-root/etc/NetworkManager',
-                '/etc/NetworkManager'
+                '/system-root/etc/sysconfig/network/providers', '/etc/sysconfig/network/providers'
             ),
-            call(
-                '/system-root/usr/lib/NetworkManager',
-                '/usr/lib/NetworkManager'
-            ),
-            call(
-                '/system-root/etc/sysconfig/network/providers',
-                '/etc/sysconfig/network/providers'
-            )
         ]
-        fstab.export.assert_called_once_with(
-            '/etc/system-root.fstab'
-        )
+        fstab.export.assert_called_once_with('/etc/system-root.fstab')
 
     @patch('suse_migration_services.units.setup_host_network.Path')
     @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
@@ -151,84 +116,54 @@ class TestSetupHostNetwork:
         mock_Fstab,
         mock_Command_run,
         mock_MigrationConfig,
-        mock_Path
+        mock_Path,
     ):
         fstab = Mock()
         mock_Fstab.return_value = fstab
         mock_glob.return_value = [
             '/system-root/etc/sysconfig/network/ifcfg-eth0',
-            '/system-root/etc/sysconfig/network/dhcp'
+            '/system-root/etc/sysconfig/network/dhcp',
         ]
         mock_isfile.return_value = True
         mock_os_path_exists.return_value = True
         self.host_network.perform(container=False)
 
-        mock_glob.assert_called_once_with(
-            '/system-root/etc/sysconfig/network/*'
-        )
+        mock_glob.assert_called_once_with('/system-root/etc/sysconfig/network/*')
         assert mock_shutil_copy.call_args_list == [
-            call(
-                '/system-root/etc/sysconfig/network/ifcfg-eth0',
-                '/etc/sysconfig/network'
-            ),
-            call(
-                '/system-root/etc/sysconfig/network/dhcp',
-                '/etc/sysconfig/network'
-            )
+            call('/system-root/etc/sysconfig/network/ifcfg-eth0', '/etc/sysconfig/network'),
+            call('/system-root/etc/sysconfig/network/dhcp', '/etc/sysconfig/network'),
         ]
         assert mock_Command_run.call_args_list == [
+            call(['mount', '--bind', '/system-root/etc/NetworkManager', '/etc/NetworkManager']),
             call(
                 [
-                    'mount', '--bind',
-                    '/system-root/etc/NetworkManager',
-                    '/etc/NetworkManager'
-                ]
-            ),
-            call(
-                [
-                    'mount', '--bind',
+                    'mount',
+                    '--bind',
                     '/system-root/usr/lib/NetworkManager',
-                    '/usr/lib/NetworkManager'
+                    '/usr/lib/NetworkManager',
                 ]
             ),
             call(
                 [
-                    'mount', '--bind',
+                    'mount',
+                    '--bind',
                     '/system-root/etc/sysconfig/network/providers',
-                    '/etc/sysconfig/network/providers'
+                    '/etc/sysconfig/network/providers',
                 ]
             ),
-            call(
-                ['systemctl', 'restart', 'network']
-            ),
-            call(
-                ['nm-online', '-q']
-            ),
-            call(
-                ['rpm', '--query', '--quiet', 'wicked2nm'],
-                raise_on_error=False
-            ),
+            call(['systemctl', 'restart', 'network']),
+            call(['nm-online', '-q']),
+            call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
         ]
-        fstab.read.assert_called_once_with(
-            '/etc/system-root.fstab'
-        )
+        fstab.read.assert_called_once_with('/etc/system-root.fstab')
         assert fstab.add_entry.call_args_list == [
+            call('/system-root/etc/NetworkManager', '/etc/NetworkManager'),
+            call('/system-root/usr/lib/NetworkManager', '/usr/lib/NetworkManager'),
             call(
-                '/system-root/etc/NetworkManager',
-                '/etc/NetworkManager'
+                '/system-root/etc/sysconfig/network/providers', '/etc/sysconfig/network/providers'
             ),
-            call(
-                '/system-root/usr/lib/NetworkManager',
-                '/usr/lib/NetworkManager'
-            ),
-            call(
-                '/system-root/etc/sysconfig/network/providers',
-                '/etc/sysconfig/network/providers'
-            )
         ]
-        fstab.export.assert_called_once_with(
-            '/etc/system-root.fstab'
-        )
+        fstab.export.assert_called_once_with('/etc/system-root.fstab')
 
     @patch('os.path.exists')
     @patch('suse_migration_services.command.Command.run')
@@ -243,17 +178,11 @@ class TestSetupHostNetwork:
         mock_Command_run.return_value = cmd_ret_val
         mock_os_path_exists.return_value = True
 
-        self.host_network.wicked2nm_migrate(
-            activate_connections=False
-        )
+        self.host_network.wicked2nm_migrate(activate_connections=False)
         assert mock_Command_run.call_args_list == [
+            call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
             call(
-                ['rpm', '--query', '--quiet', 'wicked2nm'],
-                raise_on_error=False
-            ),
-            call(
-                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'],
-                raise_on_error=False
+                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'], raise_on_error=False
             ),
             call(
                 [
@@ -261,12 +190,10 @@ class TestSetupHostNetwork:
                     'migrate',
                     '--netconfig-base-dir',
                     '/system-root/etc/sysconfig/network',
-                    '/system-root/var/cache/wicked_config/config.xml'
+                    '/system-root/var/cache/wicked_config/config.xml',
                 ]
             ),
-            call(
-                ['nm-online', '-q']
-            )
+            call(['nm-online', '-q']),
         ]
 
     @patch('os.path.exists')
@@ -284,13 +211,9 @@ class TestSetupHostNetwork:
 
         self.host_network.wicked2nm_migrate()
         assert mock_Command_run.call_args_list == [
+            call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
             call(
-                ['rpm', '--query', '--quiet', 'wicked2nm'],
-                raise_on_error=False
-            ),
-            call(
-                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'],
-                raise_on_error=False
+                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'], raise_on_error=False
             ),
             call(
                 [
@@ -299,19 +222,17 @@ class TestSetupHostNetwork:
                     '--netconfig-base-dir',
                     '/system-root/etc/sysconfig/network',
                     '--activate-connections',
-                    '/system-root/var/cache/wicked_config/config.xml'
+                    '/system-root/var/cache/wicked_config/config.xml',
                 ]
             ),
-            call(
-                ['nm-online', '-q']
-            )
+            call(['nm-online', '-q']),
         ]
 
     @patch('os.path.exists')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
     def test_wicked2nm_migrate_no_config(
-            self, mock_MigrationConfig, mock_Command_run, mock_os_path_exists
+        self, mock_MigrationConfig, mock_Command_run, mock_os_path_exists
     ):
         migration_config = Mock()
         migration_config.get_network_info.return_value = False
@@ -328,7 +249,7 @@ class TestSetupHostNetwork:
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
     def test_wicked2nm_nm_config_server_not_installed(
-            self, mock_MigrationConfig, mock_Command_run, mock_os_path_exists
+        self, mock_MigrationConfig, mock_Command_run, mock_os_path_exists
     ):
         migration_config = Mock()
         migration_config.get_network_info.return_value = False
@@ -340,25 +261,19 @@ class TestSetupHostNetwork:
 
         self.host_network.wicked2nm_migrate()
         assert mock_Command_run.call_args_list == [
+            call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
             call(
-                ['rpm', '--query', '--quiet', 'wicked2nm'],
-                raise_on_error=False
+                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'], raise_on_error=False
             ),
-            call(
-                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'],
-                raise_on_error=False
-            )
         ]
 
     @patch('os.path.exists')
     @patch('suse_migration_services.command.Command.run')
     @patch.object(Defaults, 'get_migration_config_file')
     def test_wicked2nm_migrate_continue(
-        self, mock_get_migration_config_file,
-        mock_Command_run, mock_os_path_exists
+        self, mock_get_migration_config_file, mock_Command_run, mock_os_path_exists
     ):
-        mock_get_migration_config_file.return_value = \
-            '../data/migration-config-wicked2nm.yml'
+        mock_get_migration_config_file.return_value = '../data/migration-config-wicked2nm.yml'
         cmd_ret_val = Mock(self, returncode=0)
         mock_Command_run.return_value = cmd_ret_val
         cmd_ret_val = Mock(self, returncode=0)
@@ -367,13 +282,9 @@ class TestSetupHostNetwork:
 
         self.host_network.wicked2nm_migrate()
         assert mock_Command_run.call_args_list == [
+            call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
             call(
-                ['rpm', '--query', '--quiet', 'wicked2nm'],
-                raise_on_error=False
-            ),
-            call(
-                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'],
-                raise_on_error=False
+                ['rpm', '--query', '--quiet', 'NetworkManager-config-server'], raise_on_error=False
             ),
             call(
                 [
@@ -383,12 +294,10 @@ class TestSetupHostNetwork:
                     '/system-root/etc/sysconfig/network',
                     '--activate-connections',
                     '/system-root/var/cache/wicked_config/config.xml',
-                    '--continue-migration'
+                    '--continue-migration',
                 ]
             ),
-            call(
-                ['nm-online', '-q']
-            )
+            call(['nm-online', '-q']),
         ]
 
     @patch('suse_migration_services.logger.Logger.setup')
@@ -396,33 +305,36 @@ class TestSetupHostNetwork:
     @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
     @patch('os.path.exists')
     def test_wicked2nm_migrate_failure(
-        self, mock_os_path_exists, mock_MigrationConfig,
-        mock_Command_run, mock_logger_setup
+        self, mock_os_path_exists, mock_MigrationConfig, mock_Command_run, mock_logger_setup
     ):
         mock_os_path_exists.return_value = True
         migration_config = Mock()
         migration_config.get_network_info.return_value = False
         mock_MigrationConfig.return_value = migration_config
 
-        def mock_Command_side_effect(
-            command, custom_env=None, raise_on_error=True
-        ):
+        def mock_Command_side_effect(command, custom_env=None, raise_on_error=True):
             if 'wicked2nm' in command and 'migrate' in command:
                 raise Exception
             return Mock(self, returncode=0, output="")
+
         mock_Command_run.side_effect = mock_Command_side_effect
 
         with raises(DistMigrationHostNetworkException):
             self.host_network.wicked2nm_migrate()
 
-        assert call(
-            [
-                'wicked2nm', 'show',
-                '--netconfig-base-dir', '/system-root/etc/sysconfig/network',
-                '/system-root/var/cache/wicked_config/config.xml'
-            ],
-            raise_on_error=False
-        ) in mock_Command_run.call_args_list
+        assert (
+            call(
+                [
+                    'wicked2nm',
+                    'show',
+                    '--netconfig-base-dir',
+                    '/system-root/etc/sysconfig/network',
+                    '/system-root/var/cache/wicked_config/config.xml',
+                ],
+                raise_on_error=False,
+            )
+            in mock_Command_run.call_args_list
+        )
 
     @patch('suse_migration_services.units.setup_host_network.SetupHostNetwork')
     def test_main(self, mock_SetupHostNetwork):

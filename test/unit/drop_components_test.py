@@ -1,7 +1,5 @@
 import io
-from unittest.mock import (
-    patch, Mock, MagicMock
-)
+from unittest.mock import patch, Mock, MagicMock
 
 from suse_migration_services.drop_components import DropComponents
 
@@ -42,9 +40,7 @@ class TestDropComponents:
 
     @patch('suse_migration_services.drop_components.Zypper.run')
     @patch('suse_migration_services.drop_components.Command.run')
-    def test_drop_perform_package(
-        self, mock_Command_run, mock_Zypper_run
-    ):
+    def test_drop_perform_package(self, mock_Command_run, mock_Zypper_run):
         package_call = Mock()
         package_call.returncode = 0
         mock_Command_run.return_value = package_call
@@ -56,12 +52,14 @@ class TestDropComponents:
                 '--no-cd',
                 '--non-interactive',
                 '--gpg-auto-import-keys',
-                '--root', '/system-root',
+                '--root',
+                '/system-root',
                 'remove',
                 '--clean-deps',
                 'some',
-                'some_other'
-            ], raise_on_error=False
+                'some_other',
+            ],
+            raise_on_error=False,
         )
 
     @patch('os.path.isdir')
@@ -79,31 +77,26 @@ class TestDropComponents:
         with patch('builtins.open', create=True):
             self.drop.drop_path('some/directory/')
         self.drop.drop_perform()
-        mock_Path_create.assert_called_once_with(
-            '/system-root/var/migration/2025-12-07'
-        )
+        mock_Path_create.assert_called_once_with('/system-root/var/migration/2025-12-07')
         mock_Command_run.assert_called_once_with(
             [
-                'rsync', '-avr', '--ignore-missing-args',
-                '--files-from', 'tmpfile',
+                'rsync',
+                '-avr',
+                '--ignore-missing-args',
+                '--files-from',
+                'tmpfile',
                 '/system-root',
-                '/system-root/var/migration/2025-12-07/'
+                '/system-root/var/migration/2025-12-07/',
             ]
         )
-        mock_shutil_rmtree.assert_called_once_with(
-            '/system-root/some/directory'
-        )
+        mock_shutil_rmtree.assert_called_once_with('/system-root/some/directory')
 
     @patch('os.path.isdir')
     @patch('pathlib.Path')
     @patch('suse_migration_services.drop_components.Command.run')
     @patch('suse_migration_services.drop_components.Path.create')
     def test_drop_perform_file(
-        self,
-        mock_Path_create,
-        mock_Command_run,
-        mock_pathlib_Path,
-        mock_os_path_isdir
+        self, mock_Path_create, mock_Command_run, mock_pathlib_Path, mock_os_path_isdir
     ):
         path = Mock()
         mock_pathlib_Path.return_value = path
@@ -111,18 +104,17 @@ class TestDropComponents:
         with patch('builtins.open', create=True):
             self.drop.drop_path('some/file')
         self.drop.drop_perform()
-        mock_Path_create.assert_called_once_with(
-            '/system-root/var/migration/2025-12-07'
-        )
+        mock_Path_create.assert_called_once_with('/system-root/var/migration/2025-12-07')
         mock_Command_run.assert_called_once_with(
             [
-                'rsync', '-avr', '--ignore-missing-args',
-                '--files-from', 'tmpfile',
+                'rsync',
+                '-avr',
+                '--ignore-missing-args',
+                '--files-from',
+                'tmpfile',
                 '/system-root',
-                '/system-root/var/migration/2025-12-07/'
+                '/system-root/var/migration/2025-12-07/',
             ]
         )
-        mock_pathlib_Path.assert_called_once_with(
-            '/system-root/some/file'
-        )
+        mock_pathlib_Path.assert_called_once_with('/system-root/some/file')
         path.unlink.assert_called_once_with(missing_ok=True)

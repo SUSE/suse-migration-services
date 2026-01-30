@@ -1,13 +1,9 @@
 import io
 from pytest import raises
-from unittest.mock import (
-    patch, MagicMock
-)
+from unittest.mock import patch, MagicMock
 
 from suse_migration_services.units.btrfs_snapshot_post_migration import main
-from suse_migration_services.exceptions import (
-    DistMigrationBtrfsSnapshotPostMigrationException
-)
+from suse_migration_services.exceptions import DistMigrationBtrfsSnapshotPostMigrationException
 
 
 @patch('suse_migration_services.logger.Logger.setup')
@@ -21,17 +17,21 @@ class TestMigrationBtrfsSnapshotPost(object):
             main()
         mock_Command_run.assert_called_once_with(
             [
-                'chroot', '/system-root',
+                'chroot',
+                '/system-root',
                 'snapper',
                 '--no-dbus',
                 'create',
-                '--type', 'single',
+                '--type',
+                'single',
                 '--read-only',
-                '--cleanup-algorithm', 'number',
+                '--cleanup-algorithm',
+                'number',
                 '--print-number',
                 '--userdata',
                 'important=yes',
-                '--description', 'after offline migration'
+                '--description',
+                'after offline migration',
             ]
         )
 
@@ -43,9 +43,7 @@ class TestMigrationBtrfsSnapshotPost(object):
                 main()
 
     @patch('suse_migration_services.command.Command.run')
-    def test_main_raises_on_invalid_snapshot_number(
-        self, mock_Command_run, mock_logger_setup
-    ):
+    def test_main_raises_on_invalid_snapshot_number(self, mock_Command_run, mock_logger_setup):
         with raises(DistMigrationBtrfsSnapshotPostMigrationException):
             with patch('builtins.open', create=True) as mock_open:
                 mock_open.return_value = MagicMock(spec=io.IOBase)

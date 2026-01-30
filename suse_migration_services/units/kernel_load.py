@@ -27,9 +27,7 @@ from suse_migration_services.logger import Logger
 from suse_migration_services.path import Path
 from suse_migration_services.migration_config import MigrationConfig
 
-from suse_migration_services.exceptions import (
-    DistMigrationKernelRebootException
-)
+from suse_migration_services.exceptions import DistMigrationKernelRebootException
 
 
 class KernelKexec:
@@ -54,31 +52,25 @@ class KernelKexec:
         target_initrd = os.sep.join([root_path, Defaults.get_target_initrd()])
         kexec_boot_data = '/var/tmp/kexec'
         Path.create(kexec_boot_data)
-        shutil.copy(
-            target_initrd, kexec_boot_data
-        )
+        shutil.copy(target_initrd, kexec_boot_data)
         try:
             self.log.info('Loading the target kernel')
             Command.run(
                 [
                     'kexec',
-                    '--load', target_kernel,
-                    '--initrd', os.sep.join(
-                        [kexec_boot_data, os.path.basename(target_initrd)]
-                    ),
+                    '--load',
+                    target_kernel,
+                    '--initrd',
+                    os.sep.join([kexec_boot_data, os.path.basename(target_initrd)]),
                     '--kexec-file-syscall',
                     '--command-line',
-                    self._get_cmdline(os.path.basename(target_kernel))
+                    self._get_cmdline(os.path.basename(target_kernel)),
                 ]
             )
         except Exception as issue:
-            self.log.error(
-                'Kernel load service raised exception: {0}'.format(issue)
-            )
+            self.log.error('Kernel load service raised exception: {0}'.format(issue))
             raise DistMigrationKernelRebootException(
-                'Failed to load kernel/initrd into memory: {0}'.format(
-                    issue
-                )
+                'Failed to load kernel/initrd into memory: {0}'.format(issue)
             )
 
     def _get_cmdline(self, kernel_name):
@@ -88,19 +80,14 @@ class KernelKexec:
         )
         if not os.path.exists(grub_config_file_path):
             self.log.error(
-                'kernel load service was not able to find'
-                '{0}'.format(grub_config_file_path)
+                'kernel load service was not able to find' '{0}'.format(grub_config_file_path)
             )
             raise DistMigrationKernelRebootException(
-                'Could not find {0} to load the kernel options'.format(
-                    grub_config_file_path
-                )
+                'Could not find {0} to load the kernel options'.format(grub_config_file_path)
             )
         with open(grub_config_file_path) as grub_config_file:
             grub_content = grub_config_file.read()
-        pattern = r'(?:linux|linuxefi)[ \t]+{0}([{1}|boot/{1}].*)'.format(
-            os.sep, kernel_name
-        )
+        pattern = r'(?:linux|linuxefi)[ \t]+{0}([{1}|boot/{1}].*)'.format(os.sep, kernel_name)
         cmd_line = re.findall(pattern, grub_content)[0]
         cmd_line = cmd_line.split()
         cmd_line_options = []

@@ -22,9 +22,7 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.suse_product import SUSEBaseProduct
 
-from suse_migration_services.exceptions import (
-    DistMigrationProductSetupException
-)
+from suse_migration_services.exceptions import DistMigrationProductSetupException
 
 
 class ProductSetup:

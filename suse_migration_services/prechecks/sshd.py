@@ -41,10 +41,10 @@ def root_login(migration_system=False):
         # This check is only necessary for migration to SLE16
         return
 
-    sshd_is_enabled = Command.run(
-        ['systemctl', '--quiet', 'is-enabled', 'sshd'],
-        raise_on_error=False
-    ).returncode == 0  # systemctl return code: 0 - enabled, 1 - disabled
+    sshd_is_enabled = (
+        Command.run(['systemctl', '--quiet', 'is-enabled', 'sshd'], raise_on_error=False).returncode
+        == 0
+    )  # systemctl return code: 0 - enabled, 1 - disabled
     if not sshd_is_enabled:
         return
 
@@ -55,7 +55,8 @@ def root_login(migration_system=False):
         # root login already disabled
         return
 
-    message = dedent("""\n
+    message = dedent(
+        """\n
     Root login by ssh will be disabled by default in SLE16.
     You might want to enable it back before starting the migration.
     To do so, create /etc/ssh/sshd_config.d/50-permit-root-login.conf
@@ -66,5 +67,6 @@ def root_login(migration_system=False):
     Once the migration is complete, you can install
     openssh-server-config-rootlogin package and remove the previously
     added file.
-    """)
+    """
+    )
     log.warning(message)

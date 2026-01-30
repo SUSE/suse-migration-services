@@ -38,15 +38,11 @@ class PamConfig:
 
     def perform(self):
         self.log.info("Scanning /etc/pam.d")
-        pam_unix_regexp = re.compile(
-            r"pam_unix_(auth|acct|session|passwd)\.so"
-        )
+        pam_unix_regexp = re.compile(r"pam_unix_(auth|acct|session|passwd)\.so")
         system_root = Defaults.get_system_root_path()
         config_dir_path = os.path.join(system_root, 'etc/pam.d/*')
         for config_file in glob.glob(config_dir_path):
-            self.log.info(
-                'Migration PAM configuration file {0}'.format(config_file)
-            )
+            self.log.info('Migration PAM configuration file {0}'.format(config_file))
             with open(config_file, 'r') as f:
                 content = f.read()
             content = pam_unix_regexp.sub('pam_unix.so', content)

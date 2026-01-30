@@ -3,9 +3,7 @@ import argparse
 import logging
 import os
 import subprocess
-from unittest.mock import (
-    patch, call, Mock, MagicMock, mock_open
-)
+from unittest.mock import patch, call, Mock, MagicMock, mock_open
 from pytest import fixture
 
 from suse_migration_services.command import Command
@@ -27,7 +25,7 @@ from suse_migration_services.migration_target import MigrationTarget
 
 @patch('suse_migration_services.logger.Logger.setup')
 @patch('os.geteuid')
-class TestPreChecks():
+class TestPreChecks:
     @fixture(autouse=True)
     def inject_fixtures(self, caplog):
         """Setup capture for mock"""
@@ -38,16 +36,18 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch('suse_migration_services.prechecks.sshd.root_login')
-    @patch.dict(
-        os.environ, {"SUSE_MIGRATION_PRE_CHECKS_MODE": "foo"}, clear=True
-    )
-    @patch(
-        'argparse.ArgumentParser.parse_args',
-        return_value=argparse.Namespace(fix=False)
-    )
+    @patch.dict(os.environ, {"SUSE_MIGRATION_PRE_CHECKS_MODE": "foo"}, clear=True)
+    @patch('argparse.ArgumentParser.parse_args', return_value=argparse.Namespace(fix=False))
     def test_main(
-        self, mock_arg_parse, mock_sshd_root_login, mock_cpu_arch, mock_kernels,
-        mock_fs, mock_repos, mock_os_geteuid, mock_log
+        self,
+        mock_arg_parse,
+        mock_sshd_root_login,
+        mock_cpu_arch,
+        mock_kernels,
+        mock_fs,
+        mock_repos,
+        mock_os_geteuid,
+        mock_log,
     ):
         mock_os_geteuid.return_value = 0
         with self._caplog.at_level(logging.INFO):
@@ -60,18 +60,19 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch('suse_migration_services.prechecks.sshd.root_login')
     @patch.dict(
-        os.environ,
-        {
-            "SUSE_MIGRATION_PRE_CHECKS_MODE": "migration_system_iso_image"
-        }, clear=True
+        os.environ, {"SUSE_MIGRATION_PRE_CHECKS_MODE": "migration_system_iso_image"}, clear=True
     )
-    @patch(
-        'argparse.ArgumentParser.parse_args',
-        return_value=argparse.Namespace(fix=True)
-    )
+    @patch('argparse.ArgumentParser.parse_args', return_value=argparse.Namespace(fix=True))
     def test_main_with_fix_and_migration_system_mode(
-        self, mock_arg_parse, mock_sshd_root_login, mock_cpu_arch, mock_kernels, mock_fs,
-        mock_repos, mock_os_geteuid, mock_log
+        self,
+        mock_arg_parse,
+        mock_sshd_root_login,
+        mock_cpu_arch,
+        mock_kernels,
+        mock_fs,
+        mock_repos,
+        mock_os_geteuid,
+        mock_log,
     ):
         """
         Test calling main() when using fix and migration_system
@@ -88,12 +89,19 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.prechecks.fs.Fstab')
     def test_fs_and_repos(
-        self, mock_fstab, mock_command_run, mock_configparser_items,
-        mock_os_exists, mock_os_listdir, mock_os_geteuid, mock_log
+        self,
+        mock_fstab,
+        mock_command_run,
+        mock_configparser_items,
+        mock_os_exists,
+        mock_os_listdir,
+        mock_os_geteuid,
+        mock_log,
     ):
         """
         Test fs and repo modules
         """
+
         def luks(device):
             command = Mock()
             command.returncode = 0
@@ -109,20 +117,16 @@ class TestPreChecks():
         mock_fstab.return_value = fstab_mock
         mock_command_run.side_effect = luks
         mock_os_exists.return_value = True
-        mock_os_listdir.return_value = [
-            'no_remote.repo', 'super_repo.repo', 'another.repo'
-        ]
-        repo_no_foo = \
-            'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2'
-        repo_no_bar = \
-            'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea4'
+        mock_os_listdir.return_value = ['no_remote.repo', 'super_repo.repo', 'another.repo']
+        repo_no_foo = 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2'
+        repo_no_bar = 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea4'
         mock_configparser_items.side_effect = [
             [
                 ('name', 'Foo'),
                 ('enabled', '1'),
                 ('autorefresh', '0'),
                 ('baseurl', 'https://download.foo.com/foo/repo/'),
-                ('type', 'rpm-md')
+                ('type', 'rpm-md'),
             ],
             [
                 ('name', 'No_Foo'),
@@ -130,7 +134,7 @@ class TestPreChecks():
                 ('autorefresh', '0'),
                 ('baseurl', f"{repo_no_foo}"),
                 ('path', '/'),
-                ('keeppackages', '0')
+                ('keeppackages', '0'),
             ],
             [
                 ('name', 'No_Bar'),
@@ -138,15 +142,16 @@ class TestPreChecks():
                 ('autorefresh', '0'),
                 ('baseurl', f"{repo_no_bar}"),
                 ('path', '/'),
-                ('keeppackages', '0')
-            ]
+                ('keeppackages', '0'),
+            ],
         ]
-        warning_message_remote_repos = \
-            'The following repositories may cause the migration ' \
+        warning_message_remote_repos = (
+            'The following repositories may cause the migration '
             'to fail, as they may not be available during the migration'
-        warning_message_show_repos = \
-            'To see all the repositories and their urls, you can ' \
-            'run "zypper repos --url"'
+        )
+        warning_message_show_repos = (
+            'To see all the repositories and their urls, you can ' 'run "zypper repos --url"'
+        )
 
         with self._caplog.at_level(logging.WARNING):
             check_repos.remote_repos()
@@ -160,12 +165,19 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.prechecks.fs.Fstab')
     def test_fs_and_repos_with_migration_system(
-        self, mock_fstab, mock_command_run, mock_configparser_items,
-        mock_os_exists, mock_os_listdir, mock_os_geteuid, mock_log
+        self,
+        mock_fstab,
+        mock_command_run,
+        mock_configparser_items,
+        mock_os_exists,
+        mock_os_listdir,
+        mock_os_geteuid,
+        mock_log,
     ):
         """
         Test fs and repo modules
         """
+
         def luks(device):
             command = Mock()
             command.returncode = 0
@@ -181,20 +193,16 @@ class TestPreChecks():
         mock_fstab.return_value = fstab_mock
         mock_command_run.side_effect = luks
         mock_os_exists.return_value = True
-        mock_os_listdir.return_value = [
-            'no_remote.repo', 'super_repo.repo', 'another.repo'
-        ]
-        repo_no_foo = \
-            'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2'
-        repo_no_bar = \
-            'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea4'
+        mock_os_listdir.return_value = ['no_remote.repo', 'super_repo.repo', 'another.repo']
+        repo_no_foo = 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea2'
+        repo_no_bar = 'hd:/?device=/dev/disk/by-uuid/bd604632-663b-4d4c-b5b0-8d8686267ea4'
         mock_configparser_items.side_effect = [
             [
                 ('name', 'Foo'),
                 ('enabled', '1'),
                 ('autorefresh', '0'),
                 ('baseurl', 'https://download.foo.com/foo/repo/'),
-                ('type', 'rpm-md')
+                ('type', 'rpm-md'),
             ],
             [
                 ('name', 'No_Foo'),
@@ -202,7 +210,7 @@ class TestPreChecks():
                 ('autorefresh', '0'),
                 ('baseurl', f"{repo_no_foo}"),
                 ('path', '/'),
-                ('keeppackages', '0')
+                ('keeppackages', '0'),
             ],
             [
                 ('name', 'No_Bar'),
@@ -210,15 +218,16 @@ class TestPreChecks():
                 ('autorefresh', '0'),
                 ('baseurl', f"{repo_no_bar}"),
                 ('path', '/'),
-                ('keeppackages', '0')
-            ]
+                ('keeppackages', '0'),
+            ],
         ]
-        warning_message_remote_repos = \
-            'The following repositories may cause the migration to ' \
+        warning_message_remote_repos = (
+            'The following repositories may cause the migration to '
             'fail, as they may not be available during the migration'
-        warning_message_show_repos = \
-            'To see all the repositories and their urls, you can ' \
-            'run "zypper repos --url"'
+        )
+        warning_message_show_repos = (
+            'To see all the repositories and their urls, you can ' 'run "zypper repos --url"'
+        )
 
         with self._caplog.at_level(logging.WARNING):
             check_repos.remote_repos(True)
@@ -228,9 +237,7 @@ class TestPreChecks():
 
     @patch('os.listdir')
     @patch('os.path.exists')
-    def test_empty_repos(
-        self, mock_os_exists, mock_os_listdir, mock_os_geteuid, mock_log
-    ):
+    def test_empty_repos(self, mock_os_exists, mock_os_listdir, mock_os_geteuid, mock_log):
         """
         Test for empty repos
         """
@@ -242,8 +249,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_multiple_kernels_default(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_items, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_items, mock_os_geteuid, mock_log
     ):
         """
         Test for multiple kernel-default packages installed
@@ -252,17 +258,14 @@ class TestPreChecks():
 
         rpm_command = Mock()
         rpm_command.returncode = 0
-        rpm_command.output = \
-            'kernel-default-4.12.14-122.106.1.x86_64\n' \
-            'kernel-default-4.12.14-122.113.1.x86_64'
+        rpm_command.output = (
+            'kernel-default-4.12.14-122.106.1.x86_64\n' 'kernel-default-4.12.14-122.113.1.x86_64'
+        )
 
         mock_command_run.side_effect = [rpm_command]
 
-        mock_configparser_items.side_effect = (
-            'multiversion.kernels', 'latest,running'
-        )
-        warning_message_multipe_kernels = \
-            'Multiple kernels have been detected on the system:'
+        mock_configparser_items.side_effect = ('multiversion.kernels', 'latest,running')
+        warning_message_multipe_kernels = 'Multiple kernels have been detected on the system:'
 
         with self._caplog.at_level(logging.INFO):
             check_kernels.multiversion_and_multiple_kernels()
@@ -272,8 +275,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_multiple_kernels_azure(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_items, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_items, mock_os_geteuid, mock_log
     ):
         """
         Test for multiple kernel-azure packages installed
@@ -282,17 +284,16 @@ class TestPreChecks():
 
         rpm_command = Mock()
         rpm_command.returncode = 0
-        rpm_command.output = \
-            'kernel-azure-4.12.14-16.85.1.x86_64\n' \
-            'kernel-azure-4.12.14-16.91.1.x86_64'
+        rpm_command.output = (
+            'kernel-azure-4.12.14-16.85.1.x86_64\n' 'kernel-azure-4.12.14-16.91.1.x86_64'
+        )
 
         mock_command_run.side_effect = [rpm_command]
 
-        mock_configparser_items.side_effect = (
-            'multiversion.kernels', 'latest,running'
-        )
-        warning_message_multipe_kernels = \
+        mock_configparser_items.side_effect = ('multiversion.kernels', 'latest,running')
+        warning_message_multipe_kernels = (
             'Please remove all kernels other than the currrent running kernel:'
+        )
 
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels()
@@ -302,8 +303,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_multiple_kernels_azure_with_fix(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_items, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_items, mock_os_geteuid, mock_log
     ):
         """
         Test for multiple kernel-azure packages installed
@@ -312,9 +312,9 @@ class TestPreChecks():
 
         rpm_command = Mock()
         rpm_command.returncode = 0
-        rpm_command.output = \
-            'kernel-azure-4.12.14-16.85.1.x86_64\n' \
-            'kernel-azure-4.12.14-16.91.1.x86_64'
+        rpm_command.output = (
+            'kernel-azure-4.12.14-16.85.1.x86_64\n' 'kernel-azure-4.12.14-16.91.1.x86_64'
+        )
 
         command = Mock()
         command.returncode = 0
@@ -323,8 +323,7 @@ class TestPreChecks():
 
         mock_configparser_items.return_value = 'latest,running'
 
-        warning_message_multipe_kernels = \
-            "The '--fix' option was provided, removing old kernels"
+        warning_message_multipe_kernels = "The '--fix' option was provided, removing old kernels"
 
         with self._caplog.at_level(logging.INFO):
             check_kernels.multiversion_and_multiple_kernels(True)
@@ -334,8 +333,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_incorrect_multiversion_kernels_in_zypp_config(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_get, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_os_geteuid, mock_log
     ):
         """
         Test for incorrect setting in /etc/zypp/zypp.conf
@@ -348,11 +346,14 @@ class TestPreChecks():
 
         mock_command_run.side_effect = [rpm_command]
 
-        mock_configparser_get.side_effect = \
-            ['provides:multiversion(kernel)', 'latest,running,latest-1']
+        mock_configparser_get.side_effect = [
+            'provides:multiversion(kernel)',
+            'latest,running,latest-1',
+        ]
 
-        warning_message_multipe_kernels = \
+        warning_message_multipe_kernels = (
             'The config option multiversion.kernels is not set correctly'
+        )
 
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels()
@@ -362,8 +363,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_missing_multiversion_kernels_in_zypp_config(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_get, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_os_geteuid, mock_log
     ):
         """
         Test for missing setting in /etc/zypp/zypp.conf
@@ -376,11 +376,9 @@ class TestPreChecks():
 
         mock_command_run.side_effect = [rpm_command]
 
-        mock_configparser_get.side_effect = \
-            ['provides:multiversion(kernel)', None]
+        mock_configparser_get.side_effect = ['provides:multiversion(kernel)', None]
 
-        warning_message_multipe_kernels = \
-            'Missing multiversion.kernels setting in zypp.conf'
+        warning_message_multipe_kernels = 'Missing multiversion.kernels setting in zypp.conf'
 
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels()
@@ -390,8 +388,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_missing_multiversion_in_zypp_config(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_get, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_os_geteuid, mock_log
     ):
         """
         Test for missing setting in /etc/zypp/zypp.conf
@@ -404,13 +401,13 @@ class TestPreChecks():
 
         mock_command_run.side_effect = [rpm_command]
 
-        mock_configparser_get.side_effect = \
-            [None]
+        mock_configparser_get.side_effect = [None]
 
-        warning_message_multipe_kernels = \
-            "Could not find the config option 'multiversion' in " \
-            "/etc/zypp/zypp.conf. Skipping check for " \
+        warning_message_multipe_kernels = (
+            "Could not find the config option 'multiversion' in "
+            "/etc/zypp/zypp.conf. Skipping check for "
             "'multiversion.kernels'"
+        )
 
         with self._caplog.at_level(logging.INFO):
             check_kernels.multiversion_and_multiple_kernels()
@@ -420,8 +417,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_update_zypp_conf_exception_raised(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_get, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_os_geteuid, mock_log
     ):
         """
         Test for error updating /etc/zypp/zypp.conf
@@ -430,26 +426,23 @@ class TestPreChecks():
 
         rpm_command = Mock()
         rpm_command.returncode = 0
-        rpm_command.output = \
-            'kernel-default-4.12.14-122.113.1.x86_64'
+        rpm_command.output = 'kernel-default-4.12.14-122.113.1.x86_64'
 
-        mock_command_run.side_effect = [
-            DistMigrationCommandException('Run failure'), rpm_command
+        mock_command_run.side_effect = [DistMigrationCommandException('Run failure'), rpm_command]
+        mock_configparser_get.side_effect = [
+            'provides:multiversion(kernel)',
+            'latest,running,latest-1',
         ]
-        mock_configparser_get.side_effect = \
-            ['provides:multiversion(kernel)', 'latest,running,latest-1']
 
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels(True)
-            assert 'ERROR: Unable to update /etc/zypp/zypp.conf' in \
-                self._caplog.text
+            assert 'ERROR: Unable to update /etc/zypp/zypp.conf' in self._caplog.text
 
     @patch('configparser.ConfigParser.get')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_rpm_remove_exception_raised(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_get, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_os_geteuid, mock_log
     ):
         """
         Test for missing setting in /etc/zypp/zypp.conf
@@ -458,13 +451,11 @@ class TestPreChecks():
 
         rpm_command = Mock()
         rpm_command.returncode = 0
-        rpm_command.output = \
-            'kernel-default-4.12.14-122.106.1.x86_64\n' \
-            'kernel-default-4.12.14-122.113.1.x86_64'
+        rpm_command.output = (
+            'kernel-default-4.12.14-122.106.1.x86_64\n' 'kernel-default-4.12.14-122.113.1.x86_64'
+        )
 
-        mock_command_run.side_effect = [
-            rpm_command, DistMigrationCommandException('Run failure')
-        ]
+        mock_command_run.side_effect = [rpm_command, DistMigrationCommandException('Run failure')]
         mock_configparser_get.return_value = 'foo'
         with self._caplog.at_level(logging.WARNING):
             check_kernels.multiversion_and_multiple_kernels(True)
@@ -474,8 +465,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_correct_rpm_commands_when_using_target(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_get, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_os_geteuid, mock_log
     ):
         """
         Test for missing setting in /etc/zypp/zypp.conf
@@ -484,40 +474,25 @@ class TestPreChecks():
 
         rpm_command = Mock()
         rpm_command.returncode = 0
-        rpm_command.output = \
-            'kernel-default-4.12.14-122.106.1.x86_64\n' \
-            'kernel-default-4.12.14-122.113.1.x86_64'
+        rpm_command.output = (
+            'kernel-default-4.12.14-122.106.1.x86_64\n' 'kernel-default-4.12.14-122.113.1.x86_64'
+        )
 
         mock_command_run.side_effect = [rpm_command, rpm_command]
         mock_configparser_get.return_value = 'foo'
         check_kernels.multiversion_and_multiple_kernels(True, True)
         assert mock_command_run.call_args_list == [
+            call(['chroot', '/system-root', 'rpm', '-qa', 'kernel-default']),
             call(
-                [
-                    'chroot',
-                    '/system-root',
-                    'rpm',
-                    '-qa',
-                    'kernel-default'
-                ]
+                ['chroot', '/system-root', 'rpm', '-e', 'kernel-default-4.12.14-122.106.1.x86_64']
             ),
-            call(
-                [
-                    'chroot',
-                    '/system-root',
-                    'rpm',
-                    '-e',
-                    'kernel-default-4.12.14-122.106.1.x86_64'
-                ]
-            )
         ]
 
     @patch('configparser.ConfigParser.get')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.readlink')
     def test_correct_rpm_command_when_using_target_with_azure(
-        self, mock_os_readlink, mock_command_run,
-        mock_configparser_get, mock_os_geteuid, mock_log
+        self, mock_os_readlink, mock_command_run, mock_configparser_get, mock_os_geteuid, mock_log
     ):
         """
         Test for missing setting in /etc/zypp/zypp.conf
@@ -526,8 +501,7 @@ class TestPreChecks():
 
         rpm_command = Mock()
         rpm_command.returncode = 0
-        rpm_command.output = \
-            'kernel-azure-4.12.14-16.91.1.x86_64'
+        rpm_command.output = 'kernel-azure-4.12.14-16.91.1.x86_64'
 
         mock_command_run.side_effect = [rpm_command]
 
@@ -535,15 +509,7 @@ class TestPreChecks():
 
         check_kernels.multiversion_and_multiple_kernels(True, True)
         assert mock_command_run.call_args_list == [
-            call(
-                [
-                    'chroot',
-                    '/system-root',
-                    'rpm',
-                    '-qa',
-                    'kernel-azure'
-                ]
-            ),
+            call(['chroot', '/system-root', 'rpm', '-qa', 'kernel-azure']),
         ]
 
     @patch.object(Defaults, 'get_migration_config_file')
@@ -554,25 +520,27 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch('suse_migration_services.prechecks.sshd.root_login')
     @patch.dict(
-        os.environ, {
-            "SUSE_MIGRATION_PRE_CHECKS_MODE": "migration_system_iso_image"
-        }, clear=True
+        os.environ, {"SUSE_MIGRATION_PRE_CHECKS_MODE": "migration_system_iso_image"}, clear=True
     )
-    @patch(
-        'argparse.ArgumentParser.parse_args',
-        return_value=argparse.Namespace(fix=True)
-    )
+    @patch('argparse.ArgumentParser.parse_args', return_value=argparse.Namespace(fix=True))
     def test_pre_checks_false(
-        self, mock_argparse, mock_sshd_root_login, mock_cpu_arch, mock_kernels, mock_fs,
-        mock_repos, mock_scc_migration, mock_get_migration_config_file,
-        mock_os_geteuid, mock_log
+        self,
+        mock_argparse,
+        mock_sshd_root_login,
+        mock_cpu_arch,
+        mock_kernels,
+        mock_fs,
+        mock_repos,
+        mock_scc_migration,
+        mock_get_migration_config_file,
+        mock_os_geteuid,
+        mock_log,
     ):
         """
         Test for missing setting in /etc/zypp/zypp.conf
         """
         mock_os_geteuid.return_value = 0
-        mock_get_migration_config_file.return_value = \
-            '../data/migration-config-pre-checks.yml'
+        mock_get_migration_config_file.return_value = '../data/migration-config-pre-checks.yml'
 
         info_message = "Overriding the --fix option"
         with self._caplog.at_level(logging.INFO):
@@ -585,9 +553,14 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.lsm._apparmor_primitive_check')
     @patch('shutil.which')
     def test_check_lsm_migration(
-        self, mock_shutil_which, mock_apparmor_primitive_check,
-        mock_open, mock_Command_run, mock_os_path_exists,
-        mock_os_geteuid, mock_log
+        self,
+        mock_shutil_which,
+        mock_apparmor_primitive_check,
+        mock_open,
+        mock_Command_run,
+        mock_os_path_exists,
+        mock_os_geteuid,
+        mock_log,
     ):
         mock_shutil_which.return_value = True
         mock_os_path_exists.return_value = True
@@ -608,22 +581,20 @@ class TestPreChecks():
         mock_apparmor_primitive_check.return_value = False
         with self._caplog.at_level(logging.ERROR):
             check_lsm.check_lsm(migration_system=False)
-            assert 'Modified AppArmor profiles found' \
+            assert 'Modified AppArmor profiles found' in self._caplog.text
+            assert (
+                'please verify changes to the files from: "rpm -V apparmor-profiles"'
                 in self._caplog.text
-            assert 'please verify changes to the files from: "rpm -V apparmor-profiles"' \
-                in self._caplog.text
-            assert 'Non-default AppArmor setup detected' \
-                in self._caplog.text
-            assert 'please review the details above' \
-                in self._caplog.text
+            )
+            assert 'Non-default AppArmor setup detected' in self._caplog.text
+            assert 'please review the details above' in self._caplog.text
         mock_Command_run.assert_called()
 
     @patch.object(Command, 'run')
     @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
     @patch('shutil.which')
     def test_check_lsm_migration_failed(
-        self, mock_shutil_which, mock_apparmor_enabled, mock_Command_run,
-        mock_os_geteuid, mock_log
+        self, mock_shutil_which, mock_apparmor_enabled, mock_Command_run, mock_os_geteuid, mock_log
     ):
         mock_shutil_which.return_value = True
         mock_apparmor_enabled.return_value = True
@@ -637,8 +608,7 @@ class TestPreChecks():
     @patch.object(Command, 'run')
     @patch('shutil.which')
     def test_check_lsm_migration_simple(
-        self, mock_shutil_which, mock_Command_run, mock_os_path_exists,
-        mock_os_geteuid, mock_log
+        self, mock_shutil_which, mock_Command_run, mock_os_path_exists, mock_os_geteuid, mock_log
     ):
         mock_shutil_which.return_value = False
         find_retval = Mock()
@@ -651,8 +621,7 @@ class TestPreChecks():
         with patch('builtins.open', new_callable=mock_open, read_data='Y'):
             with self._caplog.at_level(logging.INFO):
                 check_lsm.check_lsm(migration_system=False)
-                assert 'please install "apparmor-parser" as aa-status' in \
-                    self._caplog.text
+                assert 'please install "apparmor-parser" as aa-status' in self._caplog.text
 
     @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
     def test_check_lsm_migration_apparmor_disabled(
@@ -671,21 +640,24 @@ class TestPreChecks():
     @patch.object(Defaults, 'get_migration_config_file')
     @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_scc_migration(
-        self, mock_get_migration_target, mock_get_migration_config_file,
-        mock_Command_run, mock_requests_post,
-        mock_os_path_isfile, mock_glob, mock_yaml_safe_load,
-        mock_os_geteuid, mock_log
+        self,
+        mock_get_migration_target,
+        mock_get_migration_config_file,
+        mock_Command_run,
+        mock_requests_post,
+        mock_os_path_isfile,
+        mock_glob,
+        mock_yaml_safe_load,
+        mock_os_geteuid,
+        mock_log,
     ):
         mock_get_migration_target.return_value = {
             'identifier': 'SLES',
             'version': '15.3',
-            'arch': 'x86_64'
+            'arch': 'x86_64',
         }
         response = Mock()
-        response.json.return_value = {
-            'type': 'error',
-            'error': 'Some error'
-        }
+        response.json.return_value = {'type': 'error', 'error': 'Some error'}
         mock_glob.return_value = ['../data/SLES.prod']
         mock_os_path_isfile.return_value = True
         mock_requests_post.return_value = response
@@ -722,42 +694,32 @@ class TestPreChecks():
 
             mock_open.side_effect = open_file
 
-            file_handle_credentials = \
-                mock_open_credentials.return_value.__enter__.return_value
-            file_handle_suseconnect = \
-                mock_open_suseconnect.return_value.__enter__.return_value
-            file_handle_migration_config = \
+            file_handle_credentials = mock_open_credentials.return_value.__enter__.return_value
+            file_handle_suseconnect = mock_open_suseconnect.return_value.__enter__.return_value
+            file_handle_migration_config = (
                 mock_open_migration_config.return_value.__enter__.return_value
+            )
 
             mock_yaml_safe_load.side_effect = safe_load
 
-            file_handle_credentials.read.return_value = \
-                'username=SCC_xxx\npassword=xxx\n'
+            file_handle_credentials.read.return_value = 'username=SCC_xxx\npassword=xxx\n'
 
             with self._caplog.at_level(logging.ERROR):
                 check_scc.migration()
                 mock_requests_post.assert_called_once_with(
-                    'https://smt-ec2.susecloud.net/'
-                    'connect/systems/products/offline_migrations',
+                    'https://smt-ec2.susecloud.net/' 'connect/systems/products/offline_migrations',
                     json={
                         'installed_products': [
-                            {
-                                'identifier': 'SLES',
-                                'version': '12.5',
-                                'arch': 'x86_64'
-                            }
+                            {'identifier': 'SLES', 'version': '12.5', 'arch': 'x86_64'}
                         ],
                         'target_base_product': {
                             'identifier': 'SLES',
                             'version': '15.3',
-                            'arch': 'x86_64'
-                        }
+                            'arch': 'x86_64',
+                        },
                     },
                     auth=('SCC_xxx', 'xxx'),
-                    headers={
-                        'accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
+                    headers={'accept': 'application/json', 'Content-Type': 'application/json'},
                 )
                 assert 'Some error' in self._caplog.text
 
@@ -769,8 +731,7 @@ class TestPreChecks():
             mock_requests_post.reset_mock()
 
             # Test exception on get_registration_server_url
-            mock_yaml_safe_load.side_effect = \
-                safe_load_suseconnect_exception
+            mock_yaml_safe_load.side_effect = safe_load_suseconnect_exception
             check_scc.migration()
             assert not mock_requests_post.called
 
@@ -795,8 +756,10 @@ class TestPreChecks():
     @patch('os.access')
     def test_check_ha_in_migration_system(
         self,
-        mock_os_access, mock_subprocess_run,
-        mock_os_getuid, mock_log,
+        mock_os_access,
+        mock_subprocess_run,
+        mock_os_getuid,
+        mock_log,
     ):
         mock_os_access.return_value = False
         with self._caplog.at_level(logging.INFO):
@@ -809,8 +772,10 @@ class TestPreChecks():
     @patch('os.access')
     def test_check_ha_not_intialzied(
         self,
-        mock_os_access, mock_subprocess_run,
-        mock_os_getuid, mock_log,
+        mock_os_access,
+        mock_subprocess_run,
+        mock_os_getuid,
+        mock_log,
     ):
         mock_os_access.return_value = False
         with self._caplog.at_level(logging.INFO):
@@ -822,8 +787,10 @@ class TestPreChecks():
     @patch('os.access')
     def test_check_ha_not_installed(
         self,
-        mock_os_access, mock_subprocess_run,
-        mock_os_getuid, mock_log,
+        mock_os_access,
+        mock_subprocess_run,
+        mock_os_getuid,
+        mock_log,
     ):
         mock_os_access.return_value = True
         mock_subprocess_run.side_effect = FileNotFoundError()
@@ -836,8 +803,10 @@ class TestPreChecks():
     @patch('os.access')
     def test_check_ha_unexpected_exception_when_calling_crmsh(
         self,
-        mock_os_access, mock_subprocess_run,
-        mock_os_getuid, mock_log,
+        mock_os_access,
+        mock_subprocess_run,
+        mock_os_getuid,
+        mock_log,
     ):
         mock_os_access.return_value = True
         mock_subprocess_run.side_effect = PermissionError()
@@ -850,21 +819,28 @@ class TestPreChecks():
     @patch('os.access')
     def test_check_ha(
         self,
-        mock_os_access, mock_subprocess_run,
-        mock_os_getuid, mock_log,
+        mock_os_access,
+        mock_subprocess_run,
+        mock_os_getuid,
+        mock_log,
     ):
         mock_os_access.return_value = True
-        mock_subprocess_run.return_value = Mock(returncode=0, stdout=b'crm cluster health hawk2|sles16')
+        mock_subprocess_run.return_value = Mock(
+            returncode=0, stdout=b'crm cluster health hawk2|sles16'
+        )
         with self._caplog.at_level(logging.INFO):
             check_ha.check_ha(migration_system=False)
             assert 'Skipped checks for high availablity extension.' not in self._caplog.text
-        mock_subprocess_run.assert_has_calls([
-            call(
-                ['crm', 'help', 'cluster', 'health'],
-                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-            ),
-            call(['crm', 'cluster', 'health', 'sles16', '--local']),
-        ])
+        mock_subprocess_run.assert_has_calls(
+            [
+                call(
+                    ['crm', 'help', 'cluster', 'health'],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                ),
+                call(['crm', 'cluster', 'health', 'sles16', '--local']),
+            ]
+        )
 
     @patch.object(Command, 'run')
     def test_check_wicked2nm_not_running_during_migration(
@@ -876,8 +852,7 @@ class TestPreChecks():
     @patch('shutil.which')
     @patch.object(Command, 'run')
     def test_check_wicked2nm_no_wicked(
-        self, mock_Command_run, mock_shutil_which,
-        mock_os_geteuid, mock_log
+        self, mock_Command_run, mock_shutil_which, mock_os_geteuid, mock_log
     ):
         mock_shutil_which.return_value = False
         check_wicked2nm.check_wicked2nm(migration_system=True)
@@ -890,9 +865,13 @@ class TestPreChecks():
     @patch('suse_migration_services.prechecks.wicked2nm.NamedTemporaryFile')
     @patch('suse_migration_services.prechecks.wicked2nm.Command.run')
     def test_check_wicked2nm_no_cached_config(
-        self, mock_Command_run, mock_NamedTemporaryFile,
-        mock_os_path_isfile, mock_shutil_which,
-        mock_os_geteuid, mock_log
+        self,
+        mock_Command_run,
+        mock_NamedTemporaryFile,
+        mock_os_path_isfile,
+        mock_shutil_which,
+        mock_os_geteuid,
+        mock_log,
     ):
         tempfile = Mock()
         tempfile.name = 'tmpfile'
@@ -909,27 +888,19 @@ class TestPreChecks():
                 check_wicked2nm.check_wicked2nm(migration_system=False)
                 mock_NamedTemporaryFile.assert_called_once_with()
                 assert mock_Command_run.call_args_list == [
+                    call(['wicked', 'show-config']),
                     call(
-                        ['wicked', 'show-config']
+                        ['wicked2nm', 'migrate', '--disable-hints', '--dry-run', 'tmpfile'],
+                        raise_on_error=False,
                     ),
-                    call(
-                        [
-                            'wicked2nm', 'migrate',
-                            '--disable-hints', '--dry-run',
-                            'tmpfile'
-                        ],
-                        raise_on_error=False
-                    )
                 ]
-                assert 'wicked2nm detected potential migration issues' in \
-                    self._caplog.text
+                assert 'wicked2nm detected potential migration issues' in self._caplog.text
 
     @patch('shutil.which')
     @patch('os.path.isfile')
     @patch('suse_migration_services.prechecks.wicked2nm.Command.run')
     def test_check_wicked2nm_has_config(
-        self, mock_Command_run, mock_os_path_isfile, mock_shutil_which,
-        mock_os_geteuid, mock_log
+        self, mock_Command_run, mock_os_path_isfile, mock_shutil_which, mock_os_geteuid, mock_log
     ):
         wicked2nm_result = Mock()
         wicked2nm_result.error = '[WARN] Unhandled field\n[ERROR] some'
@@ -941,29 +912,28 @@ class TestPreChecks():
             check_wicked2nm.check_wicked2nm(migration_system=False)
             mock_Command_run.assert_called_once_with(
                 [
-                    'wicked2nm', 'migrate',
-                    '--disable-hints', '--dry-run',
-                    '--netconfig-base-dir', '/etc/sysconfig/network',
-                    '/var/cache/wicked_config/config.xml'
-                ], raise_on_error=False
+                    'wicked2nm',
+                    'migrate',
+                    '--disable-hints',
+                    '--dry-run',
+                    '--netconfig-base-dir',
+                    '/etc/sysconfig/network',
+                    '/var/cache/wicked_config/config.xml',
+                ],
+                raise_on_error=False,
             )
-            assert 'wicked2nm cannot migrate the network setup:' in \
-                self._caplog.text
+            assert 'wicked2nm cannot migrate the network setup:' in self._caplog.text
         wicked2nm_result.returncode = 0
         with self._caplog.at_level(logging.INFO):
             check_wicked2nm.check_wicked2nm(migration_system=False)
-            assert 'wicked2nm can migrate the network setup' in \
-                self._caplog.text
+            assert 'wicked2nm can migrate the network setup' in self._caplog.text
 
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
     def test_check_x86_64_v2(
-            self, mock_get_migration_target, mock_Command_run,
-            mock_os_getuid, mock_log
+        self, mock_get_migration_target, mock_Command_run, mock_os_getuid, mock_log
     ):
-        mock_get_migration_target.return_value = {
-            'version': '16.0'
-        }
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_Command_run.return_value.output = 'x86_64_v2'
 
         check_cpu_arch.cpu_arch()
@@ -973,12 +943,9 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
     def test_check_x86_64_v1(
-            self, mock_get_migration_target, mock_Command_run,
-            mock_os_getuid, mock_log
+        self, mock_get_migration_target, mock_Command_run, mock_os_getuid, mock_log
     ):
-        mock_get_migration_target.return_value = {
-            'version': '16.0'
-        }
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_Command_run.return_value.output = 'x86_64'
 
         with self._caplog.at_level(logging.ERROR):
@@ -989,12 +956,9 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
     def test_check_x86_64_v1_sle15(
-            self, mock_get_migration_target, mock_Command_run,
-            mock_os_getuid, mock_log
+        self, mock_get_migration_target, mock_Command_run, mock_os_getuid, mock_log
     ):
-        mock_get_migration_target.return_value = {
-            'version': '15.0'
-        }
+        mock_get_migration_target.return_value = {'version': '15.0'}
         mock_Command_run.return_value.output = 'x86_64'
 
         with self._caplog.at_level(logging.ERROR):
@@ -1005,11 +969,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_sshd_root_login_disabled(
-        self,
-        mock_get_migration_target,
-        mock_Command_run,
-        mock_os_getuid,
-        mock_log
+        self, mock_get_migration_target, mock_Command_run, mock_os_getuid, mock_log
     ):
         mock_get_migration_target.return_value = {'version': '16.0'}
         mock_Command_run.return_value.returncode = 1
@@ -1017,18 +977,13 @@ class TestPreChecks():
             check_sshd.root_login(migration_system=False)
             assert 'Root login by ssh will be disabled' not in self._caplog.text
         mock_Command_run.assert_called_once_with(
-            ['systemctl', '--quiet', 'is-enabled', 'sshd'],
-            raise_on_error=False
+            ['systemctl', '--quiet', 'is-enabled', 'sshd'], raise_on_error=False
         )
 
     @patch('suse_migration_services.command.Command.run')
     @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_sshd_root_login_yes(
-        self,
-        mock_get_migration_target,
-        mock_Command_run,
-        mock_os_getuid,
-        mock_log
+        self, mock_get_migration_target, mock_Command_run, mock_os_getuid, mock_log
     ):
         mock_get_migration_target.return_value = {'version': '16.0'}
         mock_systemctl_run = Mock()
@@ -1041,22 +996,15 @@ class TestPreChecks():
             assert 'Root login by ssh will be disabled ' in self._caplog.text
         mock_Command_run.assert_has_calls(
             [
-                call(
-                    ['systemctl', '--quiet', 'is-enabled', 'sshd'],
-                    raise_on_error=False
-                ),
-                call(['sshd', '-T'])
+                call(['systemctl', '--quiet', 'is-enabled', 'sshd'], raise_on_error=False),
+                call(['sshd', '-T']),
             ]
         )
 
     @patch('suse_migration_services.command.Command.run')
     @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_sshd_root_login_no(
-        self,
-        mock_get_migration_target,
-        mock_Command_run,
-        mock_os_getuid,
-        mock_log
+        self, mock_get_migration_target, mock_Command_run, mock_os_getuid, mock_log
     ):
         mock_get_migration_target.return_value = {'version': '16.0'}
         mock_systemctl_run = Mock()
@@ -1070,20 +1018,14 @@ class TestPreChecks():
             assert 'Root login by ssh will be disabled' not in self._caplog.text
         mock_Command_run.assert_has_calls(
             [
-                call(
-                    ['systemctl', '--quiet', 'is-enabled', 'sshd'],
-                    raise_on_error=False
-                ),
-                call(['sshd', '-T'])
+                call(['systemctl', '--quiet', 'is-enabled', 'sshd'], raise_on_error=False),
+                call(['sshd', '-T']),
             ]
         )
 
     @patch('suse_migration_services.command.Command.run')
     def test_check_sshd_root_login_in_migration_system(
-        self,
-        mock_Command_run,
-        mock_os_getuid,
-        mock_log
+        self, mock_Command_run, mock_os_getuid, mock_log
     ):
         check_sshd.root_login(migration_system=True)
         mock_Command_run.assert_not_called()
@@ -1091,11 +1033,7 @@ class TestPreChecks():
     @patch('suse_migration_services.command.Command.run')
     @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_sshd_root_login_old_sles(
-        self,
-        mock_get_migration_target,
-        mock_Command_run,
-        mock_os_getuid,
-        mock_log
+        self, mock_get_migration_target, mock_Command_run, mock_os_getuid, mock_log
     ):
         mock_get_migration_target.return_value = {'version': '15.7'}
         check_sshd.root_login(migration_system=False)

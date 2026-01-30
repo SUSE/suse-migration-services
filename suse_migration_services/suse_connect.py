@@ -31,8 +31,7 @@ class SUSEConnect:
         """
         root_path = Defaults.get_system_root_path()
         extensions_cmd_result = Command.run(
-            ['chroot', root_path, 'SUSEConnect', '--list-extensions'],
-            raise_on_error=False
+            ['chroot', root_path, 'SUSEConnect', '--list-extensions'], raise_on_error=False
         )
         result = True
         if extensions_cmd_result.returncode != 0:

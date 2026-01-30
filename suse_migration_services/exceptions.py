@@ -25,6 +25,7 @@ class DistMigrationException(Exception):
 
     :param string message: Exception message text
     """
+
     def __init__(self, message):
         self.message = message
 
