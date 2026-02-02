@@ -47,7 +47,8 @@ def _is_crmsh_capable_to_check():
     try:
         result = subprocess.run(
             ['crm', 'help', 'cluster', 'health'],
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
         )
     except FileNotFoundError:
         return False

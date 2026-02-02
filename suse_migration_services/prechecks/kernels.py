@@ -56,25 +56,34 @@ def multiversion_settings(fix, migration_system, log):
     kernel_multi_version_enabled = config.get('main', 'multiversion', fallback=None)
 
     if not kernel_multi_version_enabled:
-        log.info("Could not find the config option 'multiversion' in "
-                 "/etc/zypp/zypp.conf. Skipping check for "
-                 "'multiversion.kernels'")
+        log.info(
+            "Could not find the config option 'multiversion' in "
+            "/etc/zypp/zypp.conf. Skipping check for "
+            "'multiversion.kernels'"
+        )
     elif 'kernel' in kernel_multi_version_enabled:
         kernel_multi_version_settings = config.get('main', 'multiversion.kernels', fallback=None)
 
-        log.info("The config option 'multiversion' in /etc/zypp/zypp.conf "
-                 "includes the keyword 'kernel.' The current value is set "
-                 "as \n'multiversion = %s'.\nChecking the config option "
-                 "'multiversion.kernels' to see if multiple kernels are "
-                 "also enabled", kernel_multi_version_enabled)
+        log.info(
+            "The config option 'multiversion' in /etc/zypp/zypp.conf "
+            "includes the keyword 'kernel.' The current value is set "
+            "as \n'multiversion = %s'.\nChecking the config option "
+            "'multiversion.kernels' to see if multiple kernels are "
+            "also enabled",
+            kernel_multi_version_enabled,
+        )
         if not kernel_multi_version_settings:
-            log.warning('Missing multiversion.kernels setting in zypp.conf. '
-                        'Please ensure it is set as:\n'
-                        "'multiversion.kernels = latest,running'")
+            log.warning(
+                'Missing multiversion.kernels setting in zypp.conf. '
+                'Please ensure it is set as:\n'
+                "'multiversion.kernels = latest,running'"
+            )
         elif set(kernel_multi_version_settings.split(',')) != {'running', 'latest'}:
             if fix:
-                log.info("The '--fix' option was provided, "
-                         "setting 'multiversion.kernels = latest,running' ")
+                log.info(
+                    "The '--fix' option was provided, "
+                    "setting 'multiversion.kernels = latest,running' "
+                )
                 existing = 'multiversion.kernels = ' + kernel_multi_version_settings
                 correction = 'multiversion.kernels = latest,running'
                 sed_arg = 's/' + existing + '/' + correction + '/'
@@ -83,12 +92,14 @@ def multiversion_settings(fix, migration_system, log):
                 except DistMigrationCommandException:
                     log.error("ERROR: Unable to update /etc/zypp/zypp.conf")
             else:
-                log.warning("The config option multiversion.kernels is not set "
-                            "correctly in /etc/zypp/zypp.conf. It is currrently "
-                            "set as:\n\n'multiversion.kernels = %s'.\n\n"
-                            "Please ensure it is set as:\n\n"
-                            "'multiversion.kernels = latest,running'\n",
-                            kernel_multi_version_settings)
+                log.warning(
+                    "The config option multiversion.kernels is not set "
+                    "correctly in /etc/zypp/zypp.conf. It is currrently "
+                    "set as:\n\n'multiversion.kernels = %s'.\n\n"
+                    "Please ensure it is set as:\n\n"
+                    "'multiversion.kernels = latest,running'\n",
+                    kernel_multi_version_settings,
+                )
 
 
 def multiple_kernels_installed(fix, migration_system, log):
@@ -105,33 +116,23 @@ def multiple_kernels_installed(fix, migration_system, log):
 
     rpm_query_command = ["rpm", "-qa", kernel_type]
     if migration_system:
-        rpm_query_command = \
-            [
-                "chroot",
-                Defaults.get_system_root_path(),
-                "rpm",
-                "-qa",
-                kernel_type
-            ]
+        rpm_query_command = ["chroot", Defaults.get_system_root_path(), "rpm", "-qa", kernel_type]
 
     installed_kernels = Command.run(rpm_query_command).output.splitlines()
 
     if len(installed_kernels) > 1:
-        log.info('Multiple kernels have been detected on the system:\n\n'
-                 '%s\n', '\n'.join(installed_kernels))
+        log.info(
+            'Multiple kernels have been detected on the system:\n\n' '%s\n',
+            '\n'.join(installed_kernels),
+        )
         if fix:
             log.info("The '--fix' option was provided, removing old kernels")
-            running_kernel_version = kernel_type + \
-                re.search(r'([0-9.-]*(?=[-][a-zA-Z]))', running_kernel).group()
+            running_kernel_version = (
+                kernel_type + re.search(r'([0-9.-]*(?=[-][a-zA-Z]))', running_kernel).group()
+            )
             rpm_erase_command = ["rpm", "-e"]
             if migration_system:
-                rpm_erase_command = \
-                    [
-                        "chroot",
-                        Defaults.get_system_root_path(),
-                        "rpm",
-                        "-e"
-                    ]
+                rpm_erase_command = ["chroot", Defaults.get_system_root_path(), "rpm", "-e"]
             for _ in installed_kernels:
                 if running_kernel_version not in _:
                     log.info('Removing: %s', _)
@@ -141,5 +142,7 @@ def multiple_kernels_installed(fix, migration_system, log):
                     except DistMigrationCommandException:
                         log.error("ERROR: Unable to remove old kernel(s)")
         else:
-            log.warning('Please remove all kernels other than the currrent '
-                        'running kernel: %s\n', running_kernel)
+            log.warning(
+                'Please remove all kernels other than the currrent ' 'running kernel: %s\n',
+                running_kernel,
+            )

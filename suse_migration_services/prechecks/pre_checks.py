@@ -49,18 +49,18 @@ def main():
     """
     cli_parser = argparse.ArgumentParser(
         prog='suse-migration-pre-checks',
-        description='Check for existing conditions '
-        'that will cause a migration to fail'
+        description='Check for existing conditions ' 'that will cause a migration to fail',
     )
 
     cli_parser.add_argument(
-        '-f', '--fix',
+        '-f',
+        '--fix',
         action='store_true',
         help='Perform fixes to remediate potential issues that may cause '
         'the migration to fail. For example, remove extra superseeded '
         'kernels and set "multiversion.kernels = running,latest". '
         'Additional details can be found in the Distribution Migration '
-        'System documentation.'
+        'System documentation.',
     )
 
     args = cli_parser.parse_args()
@@ -72,11 +72,7 @@ def main():
     Logger.setup()
     log = logging.getLogger(Defaults.get_migration_log_name())
 
-    log.info(
-        'Running suse-migration-pre-checks with options: fix: {}'.format(
-            args.fix
-        )
-    )
+    log.info('Running suse-migration-pre-checks with options: fix: {}'.format(args.fix))
     migration_system_mode = False
     dms_env_var = os.environ.get('SUSE_MIGRATION_PRE_CHECKS_MODE', None)
 
@@ -99,15 +95,11 @@ def main():
     check_cpu_arch.cpu_arch()
 
     log.info('--> Checking for local private repos...')
-    check_repos.remote_repos(
-        migration_system=migration_system_mode
-    )
+    check_repos.remote_repos(migration_system=migration_system_mode)
     log.info('Done')
 
     log.info('--> Checking for encrypted rootfs...')
-    check_fs.encryption(
-        migration_system=migration_system_mode
-    )
+    check_fs.encryption(migration_system=migration_system_mode)
     log.info('Done')
 
     log.info('--> Checking for latest kernel in multiversion kernel system...')
@@ -117,15 +109,11 @@ def main():
     log.info('Done')
 
     log.info('--> Checking LSM migration...')
-    check_lsm.check_lsm(
-        migration_system=migration_system_mode
-    )
+    check_lsm.check_lsm(migration_system=migration_system_mode)
     log.info('Done')
 
     log.info('--> Checking upgrade path against registration server...')
-    check_scc.migration(
-        migration_system=migration_system_mode
-    )
+    check_scc.migration(migration_system=migration_system_mode)
     log.info('Done')
 
     log.info('--> Checking high availability extension...')

@@ -40,8 +40,7 @@ class SSHKeys:
     def perform(self):
         ssh_keys_glob_paths = Defaults.get_ssh_keys_paths()
         migration_ssh_file = Defaults.get_migration_ssh_file()
-        system_ssh_host_keys_glob_path = \
-            Defaults.get_system_ssh_host_keys_glob_path()
+        system_ssh_host_keys_glob_path = Defaults.get_system_ssh_host_keys_glob_path()
         sshd_config_path = Defaults.get_system_sshd_config_path()
         try:
             self.log.info('Running ssh keys service')
@@ -71,25 +70,19 @@ class SSHKeys:
                         live_private_ssh_host_key_path = os.sep.join(
                             [
                                 os.path.dirname(sshd_config_path),
-                                os.path.basename(system_ssh_host_key)
+                                os.path.basename(system_ssh_host_key),
                             ]
                         )
-                        entry = 'HostKey {0}'.format(
-                            live_private_ssh_host_key_path
-                        )
+                        entry = 'HostKey {0}'.format(live_private_ssh_host_key_path)
                         sshd_config_host_keys_entries.append(entry)
 
             with open(sshd_config_path, 'a') as live_sshd_config_file:
                 # write one newline to be sure any subsequent
                 # HostKey entry starts correctly
                 live_sshd_config_file.write(os.linesep)
-                live_sshd_config_file.write(
-                    os.linesep.join(sshd_config_host_keys_entries)
-                )
+                live_sshd_config_file.write(os.linesep.join(sshd_config_host_keys_entries))
             self.log.info('Restarting sshd')
-            Command.run(
-                ['systemctl', 'restart', 'sshd']
-            )
+            Command.run(['systemctl', 'restart', 'sshd'])
         except Exception as issue:
             self.log.error(
                 'SSH key/identity setup failed with: {0}. {1}'.format(

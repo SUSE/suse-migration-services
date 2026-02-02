@@ -54,20 +54,13 @@ class PrepareMigration:
         Logger.setup()
         self.log = logging.getLogger(Defaults.get_migration_log_name())
         self.root_path = Defaults.get_system_root_path()
-        self.suse_connect_setup = os.sep.join(
-            [self.root_path, 'etc', 'SUSEConnect']
-        )
+        self.suse_connect_setup = os.sep.join([self.root_path, 'etc', 'SUSEConnect'])
         self.suse_cloud_regionsrv_setup = os.sep.join(
             [self.root_path, 'etc', 'regionserverclnt.cfg']
         )
-        self.hosts_setup = os.sep.join(
-            [self.root_path, 'etc', 'hosts']
-        )
+        self.hosts_setup = os.sep.join([self.root_path, 'etc', 'hosts'])
         self.migration_suse_cloud_regionsrv_setup = '/etc/regionserverclnt.cfg'
-        self.trust_anchors = [
-            '/usr/share/pki/trust/anchors/',
-            '/etc/pki/trust/anchors/'
-        ]
+        self.trust_anchors = ['/usr/share/pki/trust/anchors/', '/etc/pki/trust/anchors/']
         self.cache_cloudregister_path = '/var/cache/cloudregister'
         self.cloud_register_certs_path_fallback = '/usr/lib/regionService/certs'
         self.cloud_register_certs_bind_mount_path = ''
@@ -77,39 +70,23 @@ class PrepareMigration:
     def perform(self):
         self.log.info('Running prepare for migration')
         if os.path.exists(self.suse_connect_setup):
-            shutil.copy(
-                self.suse_connect_setup, '/etc/SUSEConnect'
-            )
+            shutil.copy(self.suse_connect_setup, '/etc/SUSEConnect')
         if os.path.exists(self.suse_cloud_regionsrv_setup):
-            shutil.copy(
-                self.suse_cloud_regionsrv_setup,
-                self.migration_suse_cloud_regionsrv_setup
-            )
+            shutil.copy(self.suse_cloud_regionsrv_setup, self.migration_suse_cloud_regionsrv_setup)
             self.update_regionsrv_setup()
             self.cloud_register_certs_path = self.get_regionsrv_certs_path(
                 self.cloud_register_certs_path_fallback
             )
-            self.cloud_register_certs_bind_mount_path = \
-                os.path.normpath(
-                    os.sep.join(
-                        [self.root_path, self.cloud_register_certs_path]
-                    )
-                )
+            self.cloud_register_certs_bind_mount_path = os.path.normpath(
+                os.sep.join([self.root_path, self.cloud_register_certs_path])
+            )
             self.report_if_regionsrv_certs_not_found(
-                os.path.normpath(
-                    os.sep.join(
-                        [self.root_path, self.cloud_register_certs_path]
-                    )
-                )
+                os.path.normpath(os.sep.join([self.root_path, self.cloud_register_certs_path]))
             )
         if os.path.exists(self.hosts_setup):
-            shutil.copy(
-                self.hosts_setup, '/etc/hosts'
-            )
+            shutil.copy(self.hosts_setup, '/etc/hosts')
         for trust_anchor in self.trust_anchors:
-            root_trust_anchor = os.path.normpath(
-                os.sep.join([self.root_path, trust_anchor])
-            )
+            root_trust_anchor = os.path.normpath(os.sep.join([self.root_path, trust_anchor]))
             if os.path.isdir(root_trust_anchor):
                 certificates = os.listdir(root_trust_anchor)
                 if certificates:
@@ -117,146 +94,99 @@ class PrepareMigration:
                     for cert in certificates:
                         cert_file = os.sep.join([root_trust_anchor, cert])
                         if os.path.islink(cert_file):
-                            cert_file = os.sep.join(
-                                [self.root_path, os.readlink(cert_file)]
-                            )
+                            cert_file = os.sep.join([self.root_path, os.readlink(cert_file)])
                         self.log.info('Importing certificate: %s', cert_file)
                         try:
                             shutil.copy(cert_file, trust_anchor)
                         except FileNotFoundError as issue:
-                            self.log.warning(
-                                'Import of {} failed with {}'.format(
-                                    cert_file, issue
-                                )
-                            )
+                            self.log.warning('Import of {} failed with {}'.format(cert_file, issue))
                     self.log.info('Update certificate pool')
-                    Command.run(
-                        ['update-ca-certificates']
-                    )
+                    Command.run(['update-ca-certificates'])
 
-        zypp_metadata = os.sep.join(
-            [self.root_path, 'etc', 'zypp']
-        )
+        zypp_metadata = os.sep.join([self.root_path, 'etc', 'zypp'])
         zypp_plugins_services = os.sep.join(
             [self.root_path, 'usr', 'lib', 'zypp', 'plugins', 'services']
         )
 
         with open(self.hosts_setup, 'r', encoding="utf-8") as fp:
             contents = fp.read()
-            self.log.info(
-                'Dumping Hosts file:{}{}'.format(os.linesep, contents)
-            )
+            self.log.info('Dumping Hosts file:{}{}'.format(os.linesep, contents))
             if 'susecloud.net' in contents:
-                self.log.info(
-                    'Found an entry for "susecloud.net" in {}'.format(
-                        self.hosts_setup
-                    )
-                )
+                self.log.info('Found an entry for "susecloud.net" in {}'.format(self.hosts_setup))
                 try:
-                    self.cloud_register_metadata_path = \
-                        self.get_regionsrv_client_file_location()
+                    self.cloud_register_metadata_path = self.get_regionsrv_client_file_location()
                 except DistMigrationZypperMetaDataException as issue:
                     message = 'Failed locating regionsrv-client cache files: {}'
                     self.log.error(message.format(issue))
                     raise
 
-        zypper_log_file = os.sep.join(
-            [self.root_path, 'var', 'log', 'zypper.log']
-        )
+        zypper_log_file = os.sep.join([self.root_path, 'var', 'log', 'zypper.log'])
         if os.path.exists(zypper_log_file):
             try:
-                zypper_host_log_file = zypper_log_file.replace(
-                    self.root_path, ''
-                )
+                zypper_host_log_file = zypper_log_file.replace(self.root_path, '')
                 if not os.path.exists(zypper_host_log_file):
                     with open(zypper_host_log_file, 'w'):
                         # we bind mount the system zypper log file
                         # but the mount target does not exist.
                         # Create it as empty file prior bind mounting
                         pass
-                    Command.run(
-                        [
-                            'mount', '--bind',
-                            zypper_log_file, zypper_host_log_file
-                        ]
-                    )
+                    Command.run(['mount', '--bind', zypper_log_file, zypper_host_log_file])
             except Exception as issue:
-                self.log.warning(
-                    'Bind mounting zypper log file failed with: {0}'.format(
-                        issue
-                    )
-                )
+                self.log.warning('Bind mounting zypper log file failed with: {0}'.format(issue))
         try:
             # log network info as network-online.target is done at this point
             SetupHostNetwork().log_network_details()
             system_mount = Fstab()
-            system_mount.read(
-                Defaults.get_system_mount_info_file()
-            )
+            system_mount.read(Defaults.get_system_mount_info_file())
             self.log.info('Bind mounting /etc/zypp')
-            Command.run(
-                ['mount', '--bind', zypp_metadata, '/etc/zypp']
-            )
-            system_mount.add_entry(
-                zypp_metadata, '/etc/zypp'
-            )
+            Command.run(['mount', '--bind', zypp_metadata, '/etc/zypp'])
+            system_mount.add_entry(zypp_metadata, '/etc/zypp')
             self.log.info('Bind mounting /usr/lib/zypp/plugins')
             Command.run(
-                [
-                    'mount', '--bind', zypp_plugins_services,
-                    '/usr/lib/zypp/plugins/services'
-                ]
+                ['mount', '--bind', zypp_plugins_services, '/usr/lib/zypp/plugins/services']
             )
-            system_mount.add_entry(
-                zypp_plugins_services, '/usr/lib/zypp/plugins/services'
-            )
+            system_mount.add_entry(zypp_plugins_services, '/usr/lib/zypp/plugins/services')
             if os.path.exists(self.cloud_register_metadata_path):
                 self.log.info(
                     'Bind mounting {0} from {1}'.format(
-                        self.cache_cloudregister_path,
-                        self.cloud_register_metadata_path
+                        self.cache_cloudregister_path, self.cloud_register_metadata_path
                     )
                 )
                 Path.create(self.cache_cloudregister_path)
                 Command.run(
                     [
-                        'mount', '--bind',
+                        'mount',
+                        '--bind',
                         self.cloud_register_metadata_path,
-                        self.cache_cloudregister_path
+                        self.cache_cloudregister_path,
                     ]
                 )
             if os.path.exists(self.cloud_register_certs_bind_mount_path):
                 self.log.info(
                     'Bind mounting {0} from {1}'.format(
-                        self.cloud_register_certs_path,
-                        self.cloud_register_certs_bind_mount_path
+                        self.cloud_register_certs_path, self.cloud_register_certs_bind_mount_path
                     )
                 )
                 Path.create(self.cloud_register_certs_path)
                 Command.run(
                     [
-                        'mount', '--bind',
+                        'mount',
+                        '--bind',
                         self.cloud_register_certs_bind_mount_path,
-                        self.cloud_register_certs_path
+                        self.cloud_register_certs_path,
                     ]
                 )
-                self.report_if_regionsrv_certs_not_found(
-                    self.cloud_register_certs_path
-                )
+                self.report_if_regionsrv_certs_not_found(self.cloud_register_certs_path)
                 update_smt_cache = '/usr/sbin/updatesmtcache'
                 if os.path.isfile(update_smt_cache):
                     self.log.info('Updating SMT cache')
-                    Command.run(
-                        [update_smt_cache]
-                    )
-            system_mount.export(
-                Defaults.get_system_mount_info_file()
-            )
+                    Command.run([update_smt_cache])
+            system_mount.export(Defaults.get_system_mount_info_file())
             # Check if system is registered
             migration_config = MigrationConfig()
             migration_config.update_migration_config_file()
             self.log.info(
-                'Config file content:\n{content}\n'. format(
+                'Config file content:\n{content}\n'.format(
                     content=migration_config.get_migration_config_file_content()
                 )
             )
@@ -264,21 +194,13 @@ class PrepareMigration:
                 if not SUSEConnect.is_registered(self.log):
                     message = 'System not registered. Aborting migration.'
                     self.log.error(message)
-                    raise DistMigrationSystemNotRegisteredException(
-                        message
-                    )
+                    raise DistMigrationSystemNotRegisteredException(message)
         except Exception as issue:
-            self.log.error(
-                'Preparation of zypper metadata failed with {0}'.format(
-                    issue
-                )
-            )
+            self.log.error('Preparation of zypper metadata failed with {0}'.format(issue))
             # Not unmounting any of the bind mounts above; the reboot
             # service should take care of that anyway
             raise DistMigrationZypperMetaDataException(
-                'Preparation of zypper metadata failed with {0}'.format(
-                    issue
-                )
+                'Preparation of zypper metadata failed with {0}'.format(issue)
             )
 
     def get_regionsrv_certs_path(self, fallback):
@@ -291,9 +213,7 @@ class PrepareMigration:
         """
         regionsrv_setup = ConfigParser()
         regionsrv_setup.read(self.suse_cloud_regionsrv_setup)
-        return regionsrv_setup.get(
-            'server', 'certlocation', fallback=fallback
-        )
+        return regionsrv_setup.get('server', 'certlocation', fallback=fallback)
 
     def report_if_regionsrv_certs_not_found(self, certs_path):
         """
@@ -301,11 +221,7 @@ class PrepareMigration:
         in the system being migrated.
         """
         if not glob.glob(os.path.join(certs_path, '*.pem')):
-            self.log.info(
-                'No certs found under specified certs path: {}'.format(
-                    certs_path
-                )
-            )
+            self.log.info('No certs found under specified certs path: {}'.format(certs_path))
 
     def update_regionsrv_setup(self):
         """
@@ -335,8 +251,13 @@ class PrepareMigration:
         """
         root_device = Command.run(
             [
-                'findmnt', '--first', '--noheadings',
-                '--output', 'SOURCE', '--mountpoint', self.root_path
+                'findmnt',
+                '--first',
+                '--noheadings',
+                '--output',
+                'SOURCE',
+                '--mountpoint',
+                self.root_path,
             ]
         ).output
         if root_device:
@@ -344,10 +265,7 @@ class PrepareMigration:
             # which we don't need for the subsequent lsblk call.
             root_device = root_device.split('[')[0]
             lsblk_call = Command.run(
-                [
-                    'lsblk', '-p', '-n', '-r', '-s', '-o',
-                    'NAME,TYPE', root_device.strip()
-                ]
+                ['lsblk', '-p', '-n', '-r', '-s', '-o', 'NAME,TYPE', root_device.strip()]
             )
             considered_block_types = ['disk', 'raid']
             for entry in lsblk_call.output.split(os.linesep):
@@ -366,17 +284,14 @@ class PrepareMigration:
         """
         for cloud_register_path in [
             os.sep.join([self.root_path, 'var', 'cache', 'cloudregister']),
-            os.sep.join([self.root_path, 'var', 'lib', 'cloudregister'])
+            os.sep.join([self.root_path, 'var', 'lib', 'cloudregister']),
         ]:
-            self.log.info(
-                'Looking for cache files in: {}'.format(cloud_register_path)
-            )
-            if os.path.isdir(cloud_register_path) and \
-                    any('SMT' in x for x in os.listdir(cloud_register_path)):
+            self.log.info('Looking for cache files in: {}'.format(cloud_register_path))
+            if os.path.isdir(cloud_register_path) and any(
+                'SMT' in x for x in os.listdir(cloud_register_path)
+            ):
                 self.log.info(
-                    'Cache dir exists and contains: {}'.format(
-                        os.listdir(cloud_register_path)
-                    )
+                    'Cache dir exists and contains: {}'.format(os.listdir(cloud_register_path))
                 )
                 return cloud_register_path
         raise DistMigrationZypperMetaDataException(

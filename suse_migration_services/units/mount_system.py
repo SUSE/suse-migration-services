@@ -29,7 +29,7 @@ from suse_migration_services.migration_config import MigrationConfig
 
 from suse_migration_services.exceptions import (
     DistMigrationSystemNotFoundException,
-    DistMigrationSystemMountException
+    DistMigrationSystemMountException,
 )
 
 
@@ -61,9 +61,7 @@ class MountSystem:
             # what is there.
             return
 
-        self.log.info('Mount system service: {0} is mounted'.format(
-            self.root_path)
-        )
+        self.log.info('Mount system service: {0} is mounted'.format(self.root_path))
         # Check if booted via loopback grub
         isoscan_loop_mount = '/run/initramfs/isoscan'
         if self.is_mounted(isoscan_loop_mount):
@@ -71,19 +69,12 @@ class MountSystem:
             # loopback menuentry. This means the disk is blocked by
             # that readonly loopback mount and needs to be
             # remounted for read write access first
-            self.log.info(
-                'Mount system service: {0} is mounted'
-                .format(isoscan_loop_mount)
-            )
-            Command.run(
-                ['mount', '-o', 'remount,rw', isoscan_loop_mount]
-            )
+            self.log.info('Mount system service: {0} is mounted'.format(isoscan_loop_mount))
+            Command.run(['mount', '-o', 'remount,rw', isoscan_loop_mount])
 
         self.activate_lvm()
 
-        self.mount_system(
-            self.read_system_fstab()
-        )
+        self.mount_system(self.read_system_fstab())
 
         migration_config = MigrationConfig()
         migration_config.update_migration_config_file()
@@ -98,23 +89,18 @@ class MountSystem:
         Retrieve UUID from block device
         """
         blkid_result = Command.run(
-            ['blkid', device, '-s', 'UUID', '-o', 'value'],
-            raise_on_error=False
+            ['blkid', device, '-s', 'UUID', '-o', 'value'], raise_on_error=False
         )
         return blkid_result.output.strip(os.linesep) if blkid_result else ''
 
     def activate_lvm(self):
-        lsblk_call = Command.run(
-            ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
-        )
+        lsblk_call = Command.run(['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE'])
         for entry in lsblk_call.output.split(os.linesep):
             block_record = entry.split()
             if len(block_record) >= 2:
                 block_type = block_record[1]
                 if block_type == 'lvm':
-                    self.log.info(
-                        'LVM managed block device(s) found, activating LVM'
-                    )
+                    self.log.info('LVM managed block device(s) found, activating LVM')
                     Command.run(['vgchange', '-a', 'y'])
                     return
 
@@ -131,9 +117,7 @@ class MountSystem:
             match = re.search(r'migration_target=([\w-]+)', cmdline)
             if match:
                 migration_rootfs_uuid = match.group(1)
-                lsblk_call = Command.run(
-                    ['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE']
-                )
+                lsblk_call = Command.run(['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE'])
                 considered_block_types = ['part', 'raid', 'lvm']
                 for entry in lsblk_call.output.split(os.linesep):
                     block_record = entry.split()
@@ -145,45 +129,29 @@ class MountSystem:
                             if uuid == migration_rootfs_uuid:
                                 return device
             # nothing was found
-            raise DistMigrationSystemMountException(
-                'no match for migration_target= in cmdline'
-            )
+            raise DistMigrationSystemMountException('no match for migration_target= in cmdline')
         except Exception as issue:
             message = 'Failed to find target disk: {0}'.format(issue)
             self.log.error(message)
-            raise DistMigrationSystemMountException(
-                message
-            )
+            raise DistMigrationSystemMountException(message)
 
     def read_system_fstab(self):
         self.log.info('Reading fstab from DMS selected target disk')
         migration_target_root = self.get_target_root()
         try:
-            self.log.info(
-                'Lookup for fstab on {0}'.format(migration_target_root)
-            )
-            Command.run(
-                ['mount', migration_target_root, self.root_path]
-            )
-            fstab_file = os.sep.join(
-                [self.root_path, 'etc', 'fstab']
-            )
+            self.log.info('Lookup for fstab on {0}'.format(migration_target_root))
+            Command.run(['mount', migration_target_root, self.root_path])
+            fstab_file = os.sep.join([self.root_path, 'etc', 'fstab'])
             if os.path.isfile(fstab_file):
-                self.log.info(
-                    'Found {0} on {1}'.format(fstab_file, migration_target_root)
-                )
+                self.log.info('Found {0} on {1}'.format(fstab_file, migration_target_root))
                 fstab = Fstab()
                 fstab.read(fstab_file)
                 return fstab
             raise DistMigrationSystemNotFoundException(
-                'Could not find system with fstab on {0}'.format(
-                    migration_target_root
-                )
+                'Could not find system with fstab on {0}'.format(migration_target_root)
             )
         except Exception as issue:
-            Command.run(
-                ['umount', self.root_path], raise_on_error=False
-            )
+            Command.run(['umount', self.root_path], raise_on_error=False)
             raise DistMigrationSystemNotFoundException(
                 'Reading fstab failed with: {}'.format(issue)
             )
@@ -194,77 +162,50 @@ class MountSystem:
         explicit_mount_points = {
             'devtmpfs': os.sep.join([self.root_path, 'dev']),
             'proc': os.sep.join([self.root_path, 'proc']),
-            'sysfs': os.sep.join([self.root_path, 'sys'])
+            'sysfs': os.sep.join([self.root_path, 'sys']),
         }
         try:
             for fstab_entry in fstab.get_devices():
-                mountpoint = ''.join(
-                    [self.root_path, fstab_entry.mountpoint]
-                )
+                mountpoint = ''.join([self.root_path, fstab_entry.mountpoint])
                 if mountpoint not in explicit_mount_points.values():
                     if fstab_entry.eligible_for_mount:
                         self.log.info('Mounting {0}'.format(mountpoint))
                         Command.run(
-                            [
-                                'mount', '-o', fstab_entry.options,
-                                fstab_entry.device, mountpoint
-                            ]
+                            ['mount', '-o', fstab_entry.options, fstab_entry.device, mountpoint]
                         )
                     system_mount.add_entry(
-                        fstab_entry.device, mountpoint, fstab_entry.fstype,
-                        fstab_entry.eligible_for_mount
+                        fstab_entry.device,
+                        mountpoint,
+                        fstab_entry.fstype,
+                        fstab_entry.eligible_for_mount,
                     )
 
-            self.log.info(
-                'Mounting kernel file systems inside {0}'.format(self.root_path)
-            )
+            self.log.info('Mounting kernel file systems inside {0}'.format(self.root_path))
             for mount_type, mount_point in explicit_mount_points.items():
-                Command.run(
-                    ['mount', '-t', mount_type, mount_type, mount_point]
-                )
-                system_mount.add_entry(
-                    mount_type, mount_point
-                )
+                Command.run(['mount', '-t', mount_type, mount_type, mount_point])
+                system_mount.add_entry(mount_type, mount_point)
             self.log.info(
-                'Bind mount subdirectories from /run inside chroot {0}'.format(
-                    self.root_path
-                )
+                'Bind mount subdirectories from /run inside chroot {0}'.format(self.root_path)
             )
             run_network_manager = '/run/NetworkManager'
             run_netconfig = '/run/netconfig'
             root_run_network_manager = os.path.normpath(
                 os.sep.join([self.root_path, run_network_manager])
             )
-            root_run_netconfig = os.path.normpath(
-                os.sep.join([self.root_path, run_netconfig])
-            )
+            root_run_netconfig = os.path.normpath(os.sep.join([self.root_path, run_netconfig]))
             if os.path.exists(run_network_manager):
                 os.makedirs(root_run_network_manager, exist_ok=True)
-                Command.run(
-                    [
-                        'mount', '-o', 'bind',
-                        run_network_manager, root_run_network_manager
-                    ]
-                )
+                Command.run(['mount', '-o', 'bind', run_network_manager, root_run_network_manager])
 
             if os.path.exists(run_netconfig):
                 os.makedirs(root_run_netconfig, exist_ok=True)
-                Command.run(
-                    [
-                        'mount', '-o', 'bind',
-                        run_netconfig, root_run_netconfig
-                    ]
-                )
+                Command.run(['mount', '-o', 'bind', run_netconfig, root_run_netconfig])
         except Exception as issue:
-            self.log.error(
-                'Mounting system for upgrade failed with {0}'.format(issue)
-            )
+            self.log.error('Mounting system for upgrade failed with {0}'.format(issue))
             raise DistMigrationSystemMountException(
                 'Mounting system for upgrade failed with {0}'.format(issue)
             )
-        system_mount.export(
-            Defaults.get_system_mount_info_file()
-        )
+        system_mount.export(Defaults.get_system_mount_info_file())
 
     def is_mounted(self, mount_point):
         self.log.info('Checking {0} is mounted'.format(mount_point))

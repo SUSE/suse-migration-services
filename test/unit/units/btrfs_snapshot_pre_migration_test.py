@@ -1,22 +1,16 @@
 import io
 from pytest import raises
-from unittest.mock import (
-    patch, call, MagicMock
-)
+from unittest.mock import patch, call, MagicMock
 
 from suse_migration_services.units.btrfs_snapshot_pre_migration import main
-from suse_migration_services.exceptions import (
-    DistMigrationBtrfsSnapshotPreMigrationException
-)
+from suse_migration_services.exceptions import DistMigrationBtrfsSnapshotPreMigrationException
 
 
 @patch('suse_migration_services.logger.Logger.setup')
 class TestMigrationBtrfsSnapshotPre(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.isfile')
-    def test_main(
-        self, mock_os_path_isfile, mock_Command_run, mock_logger_setup
-    ):
+    def test_main(self, mock_os_path_isfile, mock_Command_run, mock_logger_setup):
         mock_os_path_isfile.return_value = True
         snapper_call = MagicMock()
         snapper_call.returncode = 0
@@ -29,28 +23,30 @@ class TestMigrationBtrfsSnapshotPre(object):
             main()
             assert mock_Command_run.call_args_list == [
                 call(
-                    [
-                        'chroot', '/system-root',
-                        'snapper',
-                        '--no-dbus',
-                        'get-config'
-                    ], raise_on_error=False
+                    ['chroot', '/system-root', 'snapper', '--no-dbus', 'get-config'],
+                    raise_on_error=False,
                 ),
                 call(
                     [
-                        'chroot', '/system-root',
+                        'chroot',
+                        '/system-root',
                         'snapper',
                         '--no-dbus',
                         'create',
-                        '--from', '42',
+                        '--from',
+                        '42',
                         '--read-only',
-                        '--type', 'single',
-                        '--cleanup-algorithm', 'number',
+                        '--type',
+                        'single',
+                        '--cleanup-algorithm',
+                        'number',
                         '--print-number',
-                        '--userdata', 'important=yes',
-                        '--description', 'before offline migration'
+                        '--userdata',
+                        'important=yes',
+                        '--description',
+                        'before offline migration',
                     ]
-                )
+                ),
             ]
             file_handle.write.assert_called_once_with('42')
 
@@ -66,12 +62,8 @@ class TestMigrationBtrfsSnapshotPre(object):
         with patch('builtins.open', create=True):
             main()
             mock_Command_run.assert_called_once_with(
-                [
-                    'chroot', '/system-root',
-                    'snapper',
-                    '--no-dbus',
-                    'get-config'
-                ], raise_on_error=False
+                ['chroot', '/system-root', 'snapper', '--no-dbus', 'get-config'],
+                raise_on_error=False,
             )
 
     @patch('os.path.isfile')

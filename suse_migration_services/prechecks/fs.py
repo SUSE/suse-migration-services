@@ -35,9 +35,7 @@ def encryption(migration_system=False):
     fstab_entries = fstab.get_devices()
 
     for fstab_entry in fstab_entries:
-        result = Command.run(
-            ["blkid", "-s", "TYPE", "-o", "value", fstab_entry.device]
-        )
+        result = Command.run(["blkid", "-s", "TYPE", "-o", "value", fstab_entry.device])
         if result.returncode == 0:
             if 'LUKS' in result.output:
                 log.warning(

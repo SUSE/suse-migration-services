@@ -1,19 +1,11 @@
 import io
 import os
 import logging
-from unittest.mock import (
-    patch, call, MagicMock
-)
-from pytest import (
-    raises, fixture
-)
+from unittest.mock import patch, call, MagicMock
+from pytest import raises, fixture
 from suse_migration_services.defaults import Defaults
-from suse_migration_services.units.kernel_load import (
-    main, KernelKexec
-)
-from suse_migration_services.exceptions import (
-    DistMigrationKernelRebootException
-)
+from suse_migration_services.units.kernel_load import main, KernelKexec
+from suse_migration_services.exceptions import DistMigrationKernelRebootException
 
 
 @patch('suse_migration_services.logger.Logger.setup')
@@ -23,9 +15,7 @@ class TestKernelLoad(object):
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
-    def test_get_cmd_line_grub_cfg_not_present(
-        self, mock_os_path_exists, mock_logger_setup
-    ):
+    def test_get_cmd_line_grub_cfg_not_present(self, mock_os_path_exists, mock_logger_setup):
         mock_os_path_exists.return_value = False
         new_kernel = KernelKexec()
         with self._caplog.at_level(logging.ERROR):
@@ -41,15 +31,12 @@ class TestKernelLoad(object):
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = fake_grub_data
-            grub_cmd_content = \
-                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
-                'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = new_kernel._get_cmdline(
-                os.path.basename(Defaults.get_target_kernel())
+            grub_cmd_content = (
+                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 '
+                + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
             )
-            mock_open.assert_called_once_with(
-                '/system-root/boot/grub2/grub.cfg'
-            )
+            result = new_kernel._get_cmdline(os.path.basename(Defaults.get_target_kernel()))
+            mock_open.assert_called_once_with('/system-root/boot/grub2/grub.cfg')
             assert result == grub_cmd_content
 
     def test_get_cmd_line_linuxefi(self, mock_path_exists, mock_logger_setup):
@@ -61,20 +48,15 @@ class TestKernelLoad(object):
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = fake_grub_data
-            grub_cmd_content = \
-                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
-                'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = new_kernel._get_cmdline(
-                os.path.basename(Defaults.get_target_kernel())
+            grub_cmd_content = (
+                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 '
+                + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
             )
-            mock_open.assert_called_once_with(
-                '/system-root/boot/grub2/grub.cfg'
-            )
+            result = new_kernel._get_cmdline(os.path.basename(Defaults.get_target_kernel()))
+            mock_open.assert_called_once_with('/system-root/boot/grub2/grub.cfg')
             assert result == grub_cmd_content
 
-    def test_get_cmd_line_linux_variable(
-        self, mock_path_exists, mock_logger_setup
-    ):
+    def test_get_cmd_line_linux_variable(self, mock_path_exists, mock_logger_setup):
         mock_path_exists.return_value = True
         new_kernel = KernelKexec()
         with open('../data/fake_grub_linux_var.cfg') as fake_grub:
@@ -83,20 +65,15 @@ class TestKernelLoad(object):
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = fake_grub_data
-            grub_cmd_content = \
-                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
-                'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = new_kernel._get_cmdline(
-                os.path.basename(Defaults.get_target_kernel())
+            grub_cmd_content = (
+                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 '
+                + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
             )
-            mock_open.assert_called_once_with(
-                '/system-root/boot/grub2/grub.cfg'
-            )
+            result = new_kernel._get_cmdline(os.path.basename(Defaults.get_target_kernel()))
+            mock_open.assert_called_once_with('/system-root/boot/grub2/grub.cfg')
             assert result == grub_cmd_content
 
-    def test_get_cmd_line_extra_boot_partition(
-        self, mock_path_exists, mock_logger_setup
-    ):
+    def test_get_cmd_line_extra_boot_partition(self, mock_path_exists, mock_logger_setup):
         mock_path_exists.return_value = True
         new_kernel = KernelKexec()
         with open('../data/fake_grub_with_bootpart.cfg') as fake_grub:
@@ -105,15 +82,12 @@ class TestKernelLoad(object):
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = fake_grub_data
-            grub_cmd_content = \
-                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 ' + \
-                'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
-            result = new_kernel._get_cmdline(
-                os.path.basename(Defaults.get_target_kernel())
+            grub_cmd_content = (
+                'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 '
+                + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
             )
-            mock_open.assert_called_once_with(
-                '/system-root/boot/grub2/grub.cfg'
-            )
+            result = new_kernel._get_cmdline(os.path.basename(Defaults.get_target_kernel()))
+            mock_open.assert_called_once_with('/system-root/boot/grub2/grub.cfg')
             assert result == grub_cmd_content
 
     @patch.object(Defaults, 'get_migration_config_file')
@@ -121,35 +95,38 @@ class TestKernelLoad(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load.KernelKexec._get_cmdline')
     def test_main_raises_on_kernel_load(
-        self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
-        mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
+        self,
+        mock_get_cmdline,
+        mock_Command_run,
+        mock_shutil_copy,
+        mock_get_migration_config_file,
+        mock_os_path_exists,
+        mock_logger_setup,
     ):
-        cmd_line = \
-            'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
-            'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
+        cmd_line = (
+            'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8'
+            + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
+        )
         mock_get_cmdline.return_value = cmd_line
-        mock_get_migration_config_file.return_value = \
-            '../data/migration-config.yml'
-        mock_Command_run.side_effect = [
-            None,
-            Exception('error')
-        ]
+        mock_get_migration_config_file.return_value = '../data/migration-config.yml'
+        mock_Command_run.side_effect = [None, Exception('error')]
         with self._caplog.at_level(logging.ERROR):
             with raises(DistMigrationKernelRebootException):
                 main()
         assert mock_Command_run.call_args_list == [
-            call(
-                ['mkdir', '-p', '/var/tmp/kexec']
-            ),
+            call(['mkdir', '-p', '/var/tmp/kexec']),
             call(
                 [
                     'kexec',
-                    '--load', '/system-root/boot/vmlinuz',
-                    '--initrd', '/var/tmp/kexec/initrd',
+                    '--load',
+                    '/system-root/boot/vmlinuz',
+                    '--initrd',
+                    '/var/tmp/kexec/initrd',
                     '--kexec-file-syscall',
-                    '--command-line', cmd_line
+                    '--command-line',
+                    cmd_line,
                 ]
-            )
+            ),
         ]
 
     @patch.object(Defaults, 'get_migration_config_file')
@@ -157,29 +134,35 @@ class TestKernelLoad(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load.KernelKexec._get_cmdline')
     def test_main(
-        self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
-        mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
+        self,
+        mock_get_cmdline,
+        mock_Command_run,
+        mock_shutil_copy,
+        mock_get_migration_config_file,
+        mock_os_path_exists,
+        mock_logger_setup,
     ):
-        cmd_line = \
-            'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
-            'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
+        cmd_line = (
+            'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8'
+            + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
+        )
         mock_get_cmdline.return_value = cmd_line
-        mock_get_migration_config_file.return_value = \
-            '../data/migration-config.yml'
+        mock_get_migration_config_file.return_value = '../data/migration-config.yml'
         main()
         assert mock_Command_run.call_args_list == [
-            call(
-                ['mkdir', '-p', '/var/tmp/kexec']
-            ),
+            call(['mkdir', '-p', '/var/tmp/kexec']),
             call(
                 [
                     'kexec',
-                    '--load', '/system-root/boot/vmlinuz',
-                    '--initrd', '/var/tmp/kexec/initrd',
+                    '--load',
+                    '/system-root/boot/vmlinuz',
+                    '--initrd',
+                    '/var/tmp/kexec/initrd',
                     '--kexec-file-syscall',
-                    '--command-line', cmd_line
+                    '--command-line',
+                    cmd_line,
                 ]
-            )
+            ),
         ]
 
     @patch.object(Defaults, 'get_migration_config_file')
@@ -187,14 +170,19 @@ class TestKernelLoad(object):
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.kernel_load.KernelKexec._get_cmdline')
     def test_main_hard_reboot(
-        self, mock_get_cmdline, mock_Command_run, mock_shutil_copy,
-        mock_get_migration_config_file, mock_os_path_exists, mock_logger_setup
+        self,
+        mock_get_cmdline,
+        mock_Command_run,
+        mock_shutil_copy,
+        mock_get_migration_config_file,
+        mock_os_path_exists,
+        mock_logger_setup,
     ):
-        cmd_line = \
-            'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8' + \
-            'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
+        cmd_line = (
+            'root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8'
+            + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
+        )
         mock_get_cmdline.return_value = cmd_line
-        mock_get_migration_config_file.return_value = \
-            '../data/migration-config-reboot.yml'
+        mock_get_migration_config_file.return_value = '../data/migration-config-reboot.yml'
         main()
         assert mock_Command_run.call_args_list == []

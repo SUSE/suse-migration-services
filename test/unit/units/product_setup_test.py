@@ -1,16 +1,10 @@
 import logging
 from xml.etree.ElementTree import ElementTree
-from unittest.mock import (
-    patch, MagicMock
-)
-from pytest import (
-    raises, fixture
-)
+from unittest.mock import patch, MagicMock
+from pytest import raises, fixture
 
 from suse_migration_services.units.product_setup import main
-from suse_migration_services.exceptions import (
-    DistMigrationProductSetupException
-)
+from suse_migration_services.exceptions import DistMigrationProductSetupException
 
 
 @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
@@ -34,15 +28,18 @@ class TestProductSetup(object):
         with self._caplog.at_level(logging.ERROR):
             with raises(DistMigrationProductSetupException):
                 main()
-        assert 'Base Product update failed with: There is no baseproduct' in \
-            self._caplog.text
+        assert 'Base Product update failed with: There is no baseproduct' in self._caplog.text
 
     @patch('suse_migration_services.suse_product.ElementTree')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.exists')
     def test_main(
-        self, mock_os_path_exists, mock_Command_run,
-        mock_ElementTree, mock_logger_setup, mock_get_system_root_path
+        self,
+        mock_os_path_exists,
+        mock_Command_run,
+        mock_ElementTree,
+        mock_logger_setup,
+        mock_get_system_root_path,
     ):
         xml = ElementTree()
         xml.write = MagicMock()
@@ -51,13 +48,9 @@ class TestProductSetup(object):
         mock_os_path_exists.return_value = True
         main()
         mock_Command_run.assert_called_once_with(
-            [
-                'rsync', '-zav', '--delete', '../data/etc/products.d/',
-                '/tmp/products.d.backup/'
-            ]
+            ['rsync', '-zav', '--delete', '../data/etc/products.d/', '/tmp/products.d.backup/']
         )
         assert xml.findall('register/target') == []
         xml.write.assert_called_once_with(
-            '../data/etc/products.d/SLES.prod',
-            encoding='UTF-8', xml_declaration=True
+            '../data/etc/products.d/SLES.prod', encoding='UTF-8', xml_declaration=True
         )

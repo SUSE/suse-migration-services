@@ -25,9 +25,7 @@ from suse_migration_services.logger import Logger
 from suse_migration_services.zypper import Zypper
 from suse_migration_services.drop_components import DropComponents
 
-from suse_migration_services.exceptions import (
-    DistMigrationAppArmorMigrationException
-)
+from suse_migration_services.exceptions import DistMigrationAppArmorMigrationException
 
 
 class ApparmorToSelinux(DropComponents):
@@ -50,9 +48,7 @@ class ApparmorToSelinux(DropComponents):
                 'security=selinux in /etc/default/grub'
             )
             pattern = r"security=apparmor\b"
-            with fileinput.input(
-                Defaults.get_grub_default_file(), inplace=True
-            ) as finput:
+            with fileinput.input(Defaults.get_grub_default_file(), inplace=True) as finput:
                 for line in finput:
                     print(re.sub(pattern, "security=selinux", line), end='')
 
@@ -62,13 +58,12 @@ class ApparmorToSelinux(DropComponents):
             zypper_call = Zypper.install(
                 'patterns-base-selinux',
                 extra_args=['--no-recommends'],
-                raise_on_error=False, chroot=self.root_path
+                raise_on_error=False,
+                chroot=self.root_path,
             )
             zypper_call.log_if_failed(self.log)
         except Exception as issue:
-            message = 'Apparmor to SELinux migration failed with {0}'.format(
-                issue
-            )
+            message = 'Apparmor to SELinux migration failed with {0}'.format(issue)
             self.log.error(message)
             raise DistMigrationAppArmorMigrationException(message)
 

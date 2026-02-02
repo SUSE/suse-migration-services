@@ -24,9 +24,7 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.migration_config import MigrationConfig
 
-from suse_migration_services.exceptions import (
-    DistMigrationCommandException
-)
+from suse_migration_services.exceptions import DistMigrationCommandException
 
 
 class RegenerateBootImage:
@@ -48,9 +46,7 @@ class RegenerateBootImage:
             self._dracut_bind_mounts()
             self._run_dracut()
         else:
-            self.log.info(
-                'No action needed, dracut was called during installation'
-            )
+            self.log.info('No action needed, dracut was called during installation')
 
     def _dracut_bind_mounts(self):
         """
@@ -59,16 +55,14 @@ class RegenerateBootImage:
         for bind_dir in ['/dev', '/proc', '/sys']:
             try:
                 self.log.info(
-                    'Running mount --bind {0} {1}'.format(
-                        bind_dir, self.root_path + bind_dir
-                    )
+                    'Running mount --bind {0} {1}'.format(bind_dir, self.root_path + bind_dir)
                 )
                 Command.run(
                     [
-                        'mount', '--bind', bind_dir,
-                        os.path.normpath(
-                            os.sep.join([self.root_path, bind_dir])
-                        )
+                        'mount',
+                        '--bind',
+                        bind_dir,
+                        os.path.normpath(os.sep.join([self.root_path, bind_dir])),
                     ]
                 )
             except Exception as issue:
@@ -82,9 +76,7 @@ class RegenerateBootImage:
         """
         try:
             self.log.info('Running dracut service')
-            log_file = Defaults.get_migration_log_file(
-                system_root=False
-            )
+            log_file = Defaults.get_migration_log_file(system_root=False)
             command_string = ' '.join(
                 [
                     'chroot',
@@ -95,12 +87,11 @@ class RegenerateBootImage:
                     '--no-host-only',
                     '--no-hostonly-cmdline',
                     '--regenerate-all',
-                    '&>>', log_file
+                    '&>>',
+                    log_file,
                 ]
             )
-            Command.run(
-                ['bash', '-c', command_string]
-            )
+            Command.run(['bash', '-c', command_string])
         except Exception as issue:
             message = 'Failed to create new initrd: {}'.format(issue)
             self.log.error(message)

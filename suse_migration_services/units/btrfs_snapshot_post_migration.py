@@ -22,9 +22,7 @@ import logging
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.command import Command
-from suse_migration_services.exceptions import (
-    DistMigrationBtrfsSnapshotPostMigrationException
-)
+from suse_migration_services.exceptions import DistMigrationBtrfsSnapshotPostMigrationException
 
 
 class BtrfsSnapshotPostMigration:
@@ -52,26 +50,28 @@ class BtrfsSnapshotPostMigration:
 
             Command.run(
                 [
-                    'chroot', self.root_path, 'snapper',
+                    'chroot',
+                    self.root_path,
+                    'snapper',
                     '--no-dbus',
                     'create',
-                    '--type', 'single',
+                    '--type',
+                    'single',
                     '--read-only',
-                    '--cleanup-algorithm', 'number',
+                    '--cleanup-algorithm',
+                    'number',
                     '--print-number',
-                    '--userdata', 'important=yes',
-                    '--description', 'after offline migration'
+                    '--userdata',
+                    'important=yes',
+                    '--description',
+                    'after offline migration',
                 ]
             )
-            self.log.info(
-                'BTRFS post-migration snapshot creation completed successfully.'
-            )
+            self.log.info('BTRFS post-migration snapshot creation completed successfully.')
         except Exception as issue:
             message = 'BTRFS post-migration snapshot creation failed with: {}'
             self.log.error(message.format(issue))
-            raise DistMigrationBtrfsSnapshotPostMigrationException(
-                message.format(issue)
-            )
+            raise DistMigrationBtrfsSnapshotPostMigrationException(message.format(issue))
 
 
 def main():

@@ -33,9 +33,7 @@ def check_wicked2nm(migration_system=False):
     a wicked based network setup to NetworkManager is possible
     """
     wicked_config_path = '/var/cache/wicked_config'
-    wicked_config = os.sep.join(
-        [wicked_config_path, 'config.xml']
-    )
+    wicked_config = os.sep.join([wicked_config_path, 'config.xml'])
     if migration_system:
         # This pre-check should not run during migration
         # The actual wicked2nm call to perform the migration
@@ -47,31 +45,24 @@ def check_wicked2nm(migration_system=False):
         return
 
     temp_wicked_config = NamedTemporaryFile()
-    wicked2nm = [
-        'wicked2nm', 'migrate', '--disable-hints', '--dry-run'
-    ]
+    wicked2nm = ['wicked2nm', 'migrate', '--disable-hints', '--dry-run']
     if not os.path.isfile(wicked_config):
         # There is no cached wicked config.xml on the system
         # Let's produce the config from the running wicked instance
         # and store it temporary
-        wicked_config_output = Command.run(
-            ['wicked', 'show-config']
-        ).output
+        wicked_config_output = Command.run(['wicked', 'show-config']).output
         with open(temp_wicked_config.name, 'w') as config:
             config.write(wicked_config_output)
         wicked_config = temp_wicked_config.name
     else:
         # There is a wicked config active, use the standard
         # system netconfig information with this network setup
-        wicked2nm += [
-            '--netconfig-base-dir', '/etc/sysconfig/network'
-        ]
+        wicked2nm += ['--netconfig-base-dir', '/etc/sysconfig/network']
     wicked2nm.append(wicked_config)
-    wicked2nm_result = Command.run(
-        wicked2nm, raise_on_error=False
-    )
+    wicked2nm_result = Command.run(wicked2nm, raise_on_error=False)
     if wicked2nm_result.returncode == 3:
-        message = dedent('''\n
+        message = dedent(
+            '''\n
             wicked2nm detected potential migration issues:
 
             {0}
@@ -81,34 +72,32 @@ def check_wicked2nm(migration_system=False):
 
             network:
               wicked2nm-continue-migration: true
-        ''')
+        '''
+        )
         log.warning(
-            message.format(
-                wicked2nm_result.error,
-                Defaults.get_migration_host_config_file()
-            )
+            message.format(wicked2nm_result.error, Defaults.get_migration_host_config_file())
         )
     elif wicked2nm_result.returncode > 0:
-        message = dedent('''\n
+        message = dedent(
+            '''\n
             wicked2nm cannot migrate the network setup:
 
             {0}
 
             Please request support through your appropriate support channel.
-        ''')
-        log.error(
-            message.format(wicked2nm_result.error)
+        '''
         )
+        log.error(message.format(wicked2nm_result.error))
     elif wicked2nm_result.error:
         # also on success wicked2nm prints information to stderr
-        message = dedent('''\n
+        message = dedent(
+            '''\n
             wicked2nm can migrate the network setup. The
             following information provides details about
             the changes that will be applied during migration.
             Please read carefully:
 
             {0}
-        ''')
-        log.info(
-            message.format(wicked2nm_result.error)
+        '''
         )
+        log.info(message.format(wicked2nm_result.error))

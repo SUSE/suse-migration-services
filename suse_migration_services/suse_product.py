@@ -22,21 +22,15 @@ from xml.etree.ElementTree import ElementTree
 # project
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.command import Command
-from suse_migration_services.exceptions import (
-    DistMigrationSUSEBaseProductException
-)
+from suse_migration_services.exceptions import DistMigrationSUSEBaseProductException
 
 
 class SUSEBaseProduct:
     def __init__(self, log):
         self.log = log
         root_path = Defaults.get_system_root_path()
-        self.products_metadata = os.sep.join(
-            [root_path, 'etc', 'products.d']
-        )
-        self.prod_filenames = glob.glob(
-            os.path.join(self.products_metadata, '*.prod')
-        )
+        self.products_metadata = os.sep.join([root_path, 'etc', 'products.d'])
+        self.prod_filenames = glob.glob(os.path.join(self.products_metadata, '*.prod'))
         base_product_files = []
         xml = ElementTree()
         for prod_filename in self.prod_filenames:
@@ -49,10 +43,7 @@ class SUSEBaseProduct:
                         base_product_files.append(prod_filename)
 
             except Exception as issue:
-                message = \
-                    'Parsing XML file {0} failed with: {1}'.format(
-                        prod_filename, issue
-                    )
+                message = 'Parsing XML file {0} failed with: {1}'.format(prod_filename, issue)
                 log.warning(message)
 
         if len(base_product_files) != 1:
@@ -61,8 +52,7 @@ class SUSEBaseProduct:
             else:
                 message = (
                     'Found multiple product definitions '
-                    'without element <flavor>: \n{0}'
-                    .format('\n'.join(base_product_files))
+                    'without element <flavor>: \n{0}'.format('\n'.join(base_product_files))
                 )
             log.error(message)
             raise DistMigrationSUSEBaseProductException(message)
@@ -79,13 +69,9 @@ class SUSEBaseProduct:
                 target_sections = register.findall('target')
                 for target in target_sections:
                     register.remove(target)
-            xml.write(
-                self.base_product, encoding="UTF-8", xml_declaration=True
-            )
+            xml.write(self.base_product, encoding="UTF-8", xml_declaration=True)
         except Exception as issue:
-            self.log.error(
-                'Could not delete target registration with {0}'.format(issue)
-            )
+            self.log.error('Could not delete target registration with {0}'.format(issue))
 
     def backup_products_metadata(self):
         """
@@ -97,8 +83,11 @@ class SUSEBaseProduct:
         self.log.info('Creating backup of Product data')
         Command.run(
             [
-                'rsync', '-zav', '--delete', self.products_metadata + os.sep,
-                '/tmp/products.d.backup/'
+                'rsync',
+                '-zav',
+                '--delete',
+                self.products_metadata + os.sep,
+                '/tmp/products.d.backup/',
             ]
         )
 
@@ -113,8 +102,7 @@ class SUSEBaseProduct:
             # if we are here, it means no potentially no migration
             # product is defined
             self.log.warning(
-                'Parsing XML file {0} failed with: {1}'
-                .format(self.base_product, issue)
+                'Parsing XML file {0} failed with: {1}'.format(self.base_product, issue)
             )
 
     def get_product_name(self):
@@ -124,13 +112,9 @@ class SUSEBaseProduct:
             name = self.get_tag('name')[0]
             arch = self.get_tag('arch')[0]
             if name and arch:
-                migration_product_name = '/'.join(
-                    [name, self.get_default_target_version(), arch]
-                )
+                migration_product_name = '/'.join([name, self.get_default_target_version(), arch])
         except Exception as issue:
-            self.log.error(
-                'Base product could not be detected: {0}.'.format(issue)
-            )
+            self.log.error('Base product could not be detected: {0}.'.format(issue))
 
         return migration_product_name
 

@@ -1,7 +1,5 @@
 import io
-from unittest.mock import (
-    patch, MagicMock
-)
+from unittest.mock import patch, MagicMock
 
 from suse_migration_services.logger import Logger
 
@@ -13,9 +11,7 @@ class TestLogger:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             logger = Logger()
             logger.setup()
-            mock_Path_create.assert_called_once_with(
-                '/system-root/var/log'
-            )
+            mock_Path_create.assert_called_once_with('/system-root/var/log')
             mock_open.assert_called_once_with(
                 '/system-root/var/log/distro_migration.log', 'a', encoding='locale', errors=None
             )
@@ -25,9 +21,7 @@ class TestLogger:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             logger = Logger()
             logger.setup(system_root=False)
-            mock_Path_create.assert_called_once_with(
-                '/var/log'
-            )
+            mock_Path_create.assert_called_once_with('/var/log')
             mock_open.assert_called_once_with(
                 '/var/log/distro_migration.log', 'a', encoding='locale', errors=None
             )
