@@ -31,7 +31,7 @@ endif::[]
 The Distribution Migration System provides an upgrade path for an
 installed SUSE Linux Enterprise system from one major version to another,
 for example, from SUSE Linux Enterprise Server 12 SP5 to SUSE Linux
-Enterprise Server 15 SP3. For a service pack upgrade from one Service Pack
+Enterprise Server 15. For a service pack upgrade from one Service Pack
 (SP) to another within a given major version release series the existing
 Zypper migration workflow provides the supported upgrade path.
 The distribution migration system provides the ability to upgrade across
@@ -101,11 +101,6 @@ to configurations where the separated partitions do not contain OS critical
 data or processes. For example, DMS will function if /home is its own
 partition, but not if /var is on a separate partition from root.
 
-SLES Version Support::
-Upgrade is supported from SLES12 SP5 to SLES 15 SP3. It is possible to
-configure other versions of SLES as the migration target, but doing so
-is not a tested or supported use case.
-
 SLES12 SP5 is the only supported migration starting point.
 
 == Upgrade Pre-Checks
@@ -141,6 +136,19 @@ For data center customers it is recommended to continue to use the
 documented offline distribution upgrade using the next distribution
 version installation media.
 
+The Distribution Migration System supports several operation modes.
+In offline migration mode a live migration system has to be started.
+This system is provided as a package. The following image packages
+exists:
+
+SLES15-Migration::
++
+This package contains the live migration image to upgrade to SLES15 SP7.
+SLES15-SAP_Migration::
++
+This package contains the live migration image to upgrade to SLES15 SP4
+with SAP extensions.
+
 The distribution migration process can be invoked using different methods.
 One method of activating the migration is the `run_migration` included with
 the SLES15-Migration package. The second method to invoking the migration
@@ -161,7 +169,7 @@ started. However, `kexec` is not supported and does not function in certain
 conditions. The `run_migration` utility does not work in Xen based
 environments.
 +
-If kexec causes a kernel panic this can cause the system to hang and the 
+If kexec causes a kernel panic this can cause the system to hang and the
 distribution migration to fail. In that case refer to this TID:
 https://www.suse.com/support/kb/doc/?id=000019733
 And set the "soft_reboot" customization option:
@@ -218,19 +226,19 @@ manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
 Specify Migration Product::
-By default the system will be migrated to SLES15 SP3. This default
-target can be changed via the `migration_product` setting.
-The product must be specified with the triplet `name/version/arch`
-found in '/etc/products.d/baseproduct' of the target product,
-for example:
+By default the system will be migrated to SLES15 SP7 or to the
+product specific service pack. This default target can be changed via
+the `migration_product` setting. The product must be specified with
+the triplet `name/version/arch` found in '/etc/products.d/baseproduct'
+of the target product, for example:
 +
 [listing]
 ----
-migration_product: SLES/15.3/x86_64
+migration_product: SLES/15.4/x86_64
 ----
 +
 [WARNING]
-Changing the default product leads to unsupported territory and
+Changing the default product may leads to unsupported territory and
 is not tested nor covered by the SUSE support offering !
 The specified product name must be supported by the repository
 server used for the migration. If the given product does not
@@ -307,7 +315,7 @@ verbose_migration: true|false
 Enable the fix option for pre_checks::
 If enabled (default), the run_pre_checks systemd process will use the `--fix`
 option to automatically remediate applicable issues before the migration
-is started. 
+is started.
 +
 [listing]
 ----
@@ -377,8 +385,11 @@ There is no need to provide any other information or key. The known SSH
 keys on the system to be upgraded have been imported into the upgrade system.
 Password-based login is not possible.
 
-The system automatically reboots after the update. To disable this (e.g., for debugging), edit the boot command line in the GRUB menu (select the migration entry and press 
-`e`). Add `migration.noreboot` to the end of the `linux` line, then press `Ctrl-X` or `F10` to start the update. Important: You must reboot manually afterward.
+The system automatically reboots after the update. To disable this
+(e.g., for debugging), edit the boot command line in the GRUB menu
+(select the migration entry and press `e`). Add `migration.noreboot`
+to the end of the `linux` line, then press :kbd:`Ctrl-X` or :kbd:`F10` to start
+the update. Important: You must reboot manually afterward.
 
 == After the Migration
 Whether the upgrade succeeded or not, a log file is available in
@@ -404,7 +415,6 @@ the commands from the Installation Section of this document.
 * Upgrade is only possible for systems that use unencrypted root file systems,
   at the OS level. Encrypting the root device using a cloud framework
   encryption mechanism happens at a different level.
-* Upgrade has been tested for SLES 12 SP5 to SLES 15 SP3
 * The system is primarily intended for Public Cloud instance upgrade use. The
   system also works for simple setups in a data center setting on physical
   installations. However, for any more complex configurations the off line
@@ -427,7 +437,3 @@ the commands from the Installation Section of this document.
 * The instance metadata will not change. As far as the
   cloud framework is concerned, you will still be running an instance
   of the SLES version you started with. This cannot be changed.
-* The default migration path in the Public Cloud is from the final service
-  pack of SLES 12 (SP5) to SLES 15 SP3. The target may be changed by the
-  customer to service packs greater than SP3, but the source may not be
-  earlier than 12 SP5.
