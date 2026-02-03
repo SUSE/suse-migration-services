@@ -388,7 +388,7 @@ Password-based login is not possible.
 The system automatically reboots after the update. To disable this
 (e.g., for debugging), edit the boot command line in the GRUB menu
 (select the migration entry and press `e`). Add `migration.noreboot`
-to the end of the `linux` line, then press `Ctrl-X` or `F10` to start
+to the end of the `linux` line, then press :kbd:`Ctrl-X` or :kbd:`F10` to start
 the update. Important: You must reboot manually afterward.
 
 == After the Migration
