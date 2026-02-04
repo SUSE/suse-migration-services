@@ -1,27 +1,49 @@
+<revhistory xml:id="rh-suse-migration-services">
+  <revision>
+    <date>2026-02-04</date>
+    <revdescription>
+      <para>
+        Clarify default migration targets.
+      </para>
+    </revdescription>
+  </revision>
+</revhistory>
 
-<meta name="series">Products &amp; Solutions</meta>
-<meta name="title">Using the SUSE Distribution Migration System</meta>
-<meta name="description">How to use the SUSE Distribution Migration System to seamlessly transition between SLE releases</meta>	
-<meta name="social-descr">Transition between SLE releases</meta>
+<dm:docmanager xmlns:dm="urn:x-suse:ns:docmanager">
+  <dm:bugtracker>
+    <dm:url>https://github.com/SUSE/suse-migration-services/issues/new</dm:url>
+    <dm:editurl>https://github.com/SUSE/suse-migration-services/edit/master/doc/adoc/user_guide.adoc</dm:editurl>
+  </dm:bugtracker>
+</dm:docmanager>
+
+<meta name="maintainer" content="marcus.schaefer@suse.com" its:translate="no" xmlns:its="http://www.w3.org/2005/11/its"/>
+
+<meta name="architecture">
+  <phrase>{x86-64}</phrase>
+  <phrase>{power}</phrase>
+  <phrase>{s390x}</phrase>
+  <phrase>{aarch64}</phrase>
+</meta>
+
+<meta name="productname" its:translate="no" xmlns:its="http://www.w3.org/2005/11/its">
+  <productname version="2.1.29">Distribution Migration System</productname>
+</meta>
+
+<meta name="title" its:translate="yes" xmlns:its="http://www.w3.org/2005/11/its">Using the SUSE Distribution Migration System</meta>
+<meta name="description" its:translate="yes" xmlns:its="http://www.w3.org/2005/11/its">How to use the SUSE Distribution Migration System to seamlessly transition between SLE releases</meta>
+<meta name="social-descr" its:translate="yes" xmlns:its="http://www.w3.org/2005/11/its">Transition between SLE releases</meta>
 <meta name="task">
   <phrase>Upgrade &amp; Update</phrase>
 </meta>
+<meta name="category"><phrase>Systems Management</phrase></meta>
+<meta name="series">Products &amp; Solutions</meta>
 
 <dm:docmanager xmlns:dm="urn:x-suse:ns:docmanager">
     <dm:bugtracker>
-        <dm:url>https://github.com/SUSE/suse-migration-services/issues/new</dm:url>
-	<dm:editurl>https://github.com/SUSE/suse-migration-services/edit/master/doc/adoc/user_guide.adoc</dm:editurl>
+        <dm:url>https://bugzilla.suse.com/enter_bug.cgi</dm:url>
+        <dm:component>documentation</dm:component>
+        <dm:product>Distribution Migration System</dm:product>
+        <dm:assignee>marcus.schaefer@suse.com</dm:assignee>
     </dm:bugtracker>
+    <dm:translation>yes</dm:translation>
 </dm:docmanager>
-
-	
-<revhistory xml:id="rh-suse-migration-services">
-    <revision>
-      <date>2023-07-24</date>
-      <revdescription>
-        <para>
-          Clarify supported versions of SLES.
-        </para>
-      </revdescription>
-    </revision>
-  </revhistory>

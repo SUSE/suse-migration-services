@@ -1,0 +1,17 @@
+// File generic-attributes.adoc
+// special characters        
+:mdash: —                    
+:nbh: ‑                      
+:nbsp:                       
+:nbzwsp: <feff>
+:zwsp: <200b>
+:thrdmrk: *
+
+// HARDWARE ARCHITECTURES AND PLATFORMS
+:x86:                        x86
+:intel64:                    Intel{nbsp}64
+:amd64:                      AMD64
+:s390x:                      s390x
+:x86-64:                     {amd64}/{intel64}
+:aarch64:                    AArch64
+:power:                      POWER
