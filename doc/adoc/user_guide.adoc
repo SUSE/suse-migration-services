@@ -1,17 +1,15 @@
-:docinfo:
+include::generic-attributes.adoc[]
 // defining article ID
 [#art-suse-migration-services]
-
 = Using the SUSE Distribution Migration System
-Marcus Schäfer; Jesús Velázquez; Keith Berger; Robert Schweikert
+Marcus Schäfer; Jesús Velázquez; Robert Schweikert
+:docinfo:
 
 :toc:
 :icons: font
 :numbered:
 
-:Authors: Marcus Schäfer, Jesús Bermúdez Velázquez, Keith Berger, Robert Schweikert
 :Latest_Version: 1.2.0
-:Contributors:
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
 ifdef::env-github[]
@@ -23,7 +21,6 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-* Contributors: {Contributors}
 * Latest Version: {Latest_Version}
 * Code available: {Repo}
 
