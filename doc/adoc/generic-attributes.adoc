@@ -7,6 +7,9 @@
 :zwsp: <200b>
 :thrdmrk: *
 
+// VERSION
+:version: 2.1.30
+
 // HARDWARE ARCHITECTURES AND PLATFORMS
 :x86:                        x86
 :intel64:                    Intel{nbsp}64

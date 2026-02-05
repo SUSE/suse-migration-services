@@ -26,7 +26,7 @@
 </meta>
 
 <meta name="productname" its:translate="no" xmlns:its="http://www.w3.org/2005/11/its">
-  <productname version="2.1.29">Distribution Migration System</productname>
+  <productname version="{version}">Distribution Migration System</productname>
 </meta>
 
 <meta name="title" its:translate="yes" xmlns:its="http://www.w3.org/2005/11/its">Using the SUSE Distribution Migration System</meta>
