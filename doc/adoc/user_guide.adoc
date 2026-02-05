@@ -9,7 +9,7 @@ Marcus Schäfer; Jesús Velázquez; Robert Schweikert
 :icons: font
 :numbered:
 
-:Latest_Version: 1.2.0
+:Latest_Version: 2.1.29
 :Repo: https://github.com/SUSE/suse-migration-services[suse-migration-services]
 
 ifdef::env-github[]
