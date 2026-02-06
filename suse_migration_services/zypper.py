@@ -16,7 +16,6 @@
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
 import os
-from typing import List
 
 # project
 from suse_migration_services.command import Command
@@ -30,7 +29,7 @@ class Zypper:
     """
 
     @staticmethod
-    def run(args: List[str], raise_on_error=True, chroot=''):
+    def run(args, raise_on_error=True, chroot=''):
         """
         Invoke zypper and block the caller. The return value is a
         ZypperCall instance containing the result of invocation.
@@ -66,13 +65,7 @@ class Zypper:
         return ZypperCall(args, command_string, result)
 
     @staticmethod
-    def install(
-        *pkgs: str,
-        raise_on_error=True,
-        system_root: str | None = None,
-        chroot='',
-        extra_args: List[str] = []
-    ):
+    def install(*pkgs: str, raise_on_error=True, system_root=None, chroot='', extra_args=[]):
         zypper_args = [
             '--no-cd',
             '--non-interactive',
@@ -99,7 +92,7 @@ class Zypper:
 
 
 class ZypperCall:
-    def __init__(self, args: List[str], command, result):
+    def __init__(self, args, command, result):
         self.args = args
         self.command = command
         self.output = result.output
