@@ -36,9 +36,7 @@ class TestMigrationWicked:
         mock_iglob.return_value = ['/etc/NetworkManager/system-connections/some.nmconnection']
         main()
         mock_Zypper_install.assert_called_once_with(
-            'NetworkManager',
-            'NetworkManager-config-server',
-            system_root='/system-root'
+            'NetworkManager', 'NetworkManager-config-server', system_root='/system-root'
         )
         assert mock_Command_run.call_args_list == [
             call(

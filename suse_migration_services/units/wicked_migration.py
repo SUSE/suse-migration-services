@@ -59,9 +59,7 @@ class WickedToNetworkManager(DropComponents):
         try:
             self.log.info('Ensuring NetworkManager is installed in migrated system')
             Zypper.install(
-                'NetworkManager',
-                'NetworkManager-config-server',
-                system_root=self.root_path
+                'NetworkManager', 'NetworkManager-config-server', system_root=self.root_path
             )
 
             self.log.info('Enabling NetworkManager in migrated system')
