@@ -12,6 +12,12 @@ test -f /.profile && . /.profile
 echo "Configure image: [$kiwi_iname]..."
 
 #======================================
+# Patch DMS to work with old zypper
+#--------------------------------------
+patch -p0 < /zypper.patch
+rm -f /zypper.patch
+
+#======================================
 # Setup baseproduct link
 #--------------------------------------
 suseSetupProduct
