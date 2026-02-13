@@ -1,0 +1,38 @@
+--- /usr/lib/python3.6/site-packages/suse_migration_services/units/migrate.py	2026-02-08 14:08:55.416996870 +0100
++++ /usr/lib/python3.6/site-packages/suse_migration_services/units/migrate.py	2026-02-08 14:09:27.269033991 +0100
+@@ -75,7 +75,6 @@
+                         verbose_migration,
+                         solver_case,
+                         '--non-interactive',
+-                        '--gpg-auto-import-keys',
+                         '--no-selfupdate',
+                         '--auto-agree-with-licenses',
+                         '--allow-vendor-change',
+@@ -92,7 +91,6 @@
+                     [
+                         '--no-cd',
+                         '--non-interactive',
+-                        '--gpg-auto-import-keys',
+                         '--root',
+                         self.root_path,
+                         'dup',
+--- /usr/lib/python3.6/site-packages/suse_migration_services/zypper.py	2026-02-08 14:08:47.368987489 +0100
++++ /usr/lib/python3.6/site-packages/suse_migration_services/zypper.py	2026-02-08 14:09:37.077045423 +0100
+@@ -69,7 +69,6 @@
+         zypper_args = [
+             '--no-cd',
+             '--non-interactive',
+-            '--gpg-auto-import-keys',
+         ]
+         if system_root:
+             zypper_args += ['--root', system_root]
+--- /usr/lib/python3.6/site-packages/suse_migration_services/drop_components.py	2026-02-08 14:09:02.981005685 +0100
++++ /usr/lib/python3.6/site-packages/suse_migration_services/drop_components.py	2026-02-08 14:09:14.453019062 +0100
+@@ -90,7 +90,6 @@
+                 [
+                     '--no-cd',
+                     '--non-interactive',
+-                    '--gpg-auto-import-keys',
+                     '--root',
+                     self.root_path,
+                     'remove',

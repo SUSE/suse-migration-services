@@ -29,22 +29,22 @@
         <source path='obsrepositories:/'/>
     </repository>
     <repository type="rpm-md">
-     <source path="obs://SUSE:SLE-15-SP4:Update/standard"/>
+        <source path="obs://SUSE:SLE-15-SP4:Update/standard"/>
     </repository>
     <repository type="rpm-md">
-     <source path="obs://SUSE:SLE-15-SP4:GA/standard"/>
+        <source path="obs://SUSE:SLE-15-SP4:GA/standard"/>
     </repository>
     <repository type="rpm-md">
-	 <source path="obs://SUSE:SLE-15-SP3:Update/standard"/>
+        <source path="obs://SUSE:SLE-15-SP3:Update/standard"/>
     </repository>
     <repository type="rpm-md">
-	 <source path="obs://SUSE:SLE-15-SP3:GA/standard"/>
+        <source path="obs://SUSE:SLE-15-SP3:GA/standard"/>
     </repository>
     <repository type="rpm-md">
-	 <source path="obs://SUSE:SLE-15-SP2:Update/standard"/>
+        <source path="obs://SUSE:SLE-15-SP2:Update/standard"/>
     </repository>
     <repository type="rpm-md">
-	 <source path="obs://SUSE:SLE-15-SP2:GA/standard"/>
+        <source path="obs://SUSE:SLE-15-SP2:GA/standard"/>
     </repository>
     <repository type="rpm-md">
         <source path="obs://SUSE:SLE-15-SP1:Update/standard"/>
@@ -93,6 +93,7 @@
         <package name="dialog"/>
         <package name="sudo"/>
         <package name="mdadm"/>
+        <package name="patch"/>
         <!-- support for migration of suse public cloud on demand images -->
         <package name="cloud-regionsrv-client"/>
         <package name="cloud-regionsrv-client-generic-config"/>
