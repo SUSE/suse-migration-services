@@ -246,7 +246,7 @@ class PrepareMigration:
 
     def get_root_disk_device(self):
         """
-        Find unix disk device which is associated with the
+        Find by-id disk device which is associated with the
         root mount point given in root_path
         """
         root_device = Command.run(
@@ -273,7 +273,13 @@ class PrepareMigration:
                 if len(block_record) >= 2:
                     block_type = block_record[1]
                     if block_type in considered_block_types:
-                        return block_record[0]
+                        return self.get_by_id_device(block_record[0])
+
+    def get_by_id_device(self, unix_node):
+        by_id_path = '/dev/disk/by-id'
+        for device in sorted(glob.iglob('{}/*'.format(by_id_path))):
+            if os.path.islink(device) and os.path.realpath(device) == unix_node:
+                return device
 
     def get_regionsrv_client_file_location(self):
         """
