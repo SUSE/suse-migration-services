@@ -358,8 +358,14 @@ class TestSetupPrepare:
         'suse_migration_services.units.prepare.PrepareMigration.get_regionsrv_client_file_location'
     )
     @patch('os.path.exists')
+    @patch('glob.iglob')
+    @patch('os.path.islink')
+    @patch('os.path.realpath')
     def test_update_regionsrv_setup(
         self,
+        mock_os_path_realpath,
+        mock_os_path_islink,
+        mock_glob_iglob,
         mock_os_path_exists,
         mock_get_regionsrv_client_file_location,
         mock_Command_run,
@@ -367,9 +373,12 @@ class TestSetupPrepare:
         mock_logger_setup,
     ):
         # test with volume based block device returned from findmnt
+        mock_glob_iglob.return_value = ['/dev/disk/by-id/1234-5678']
+        mock_os_path_islink.return_value = True
+        mock_os_path_realpath.return_value = '/dev/sda'
         mock_command_return_values = [
             Mock(output='/dev/sda3 part\n/dev/sda disk'),
-            Mock(output='dev/sda3[/@/.snapshots/1/snapshot]\n'),
+            Mock(output='/dev/sda3[/@/.snapshots/1/snapshot]\n'),
         ]
 
         def command_returns(arg):
@@ -396,17 +405,18 @@ class TestSetupPrepare:
                     '/system-root',
                 ]
             ),
-            call(['lsblk', '-p', '-n', '-r', '-s', '-o', 'NAME,TYPE', 'dev/sda3']),
+            call(['lsblk', '-p', '-n', '-r', '-s', '-o', 'NAME,TYPE', '/dev/sda3']),
         ]
         regionsrv_setup = ConfigParser()
         regionsrv_setup.read(tmp_regionserverclnt.name)
         assert (
             regionsrv_setup.get('instance', 'dataProvider')
             == '/usr/bin/azuremetadata --api latest --subscriptionId '
-            '--billingTag --attestedData --signature --xml --device /dev/sda'
+            '--billingTag --attestedData --signature --xml --device /dev/disk/by-id/1234-5678'
         )
 
         # test with standard block device returned from findmnt
+        mock_os_path_realpath.return_value = '/dev/sdb'
         mock_command_return_values = [
             Mock(output='/dev/sdb7 part\n/dev/sdb disk'),
             Mock(output='dev/sdb7\n'),
@@ -419,7 +429,7 @@ class TestSetupPrepare:
         assert (
             regionsrv_setup.get('instance', 'dataProvider')
             == '/usr/bin/azuremetadata --api latest --subscriptionId '
-            '--billingTag --attestedData --signature --xml --device /dev/sdb'
+            '--billingTag --attestedData --signature --xml --device /dev/disk/by-id/1234-5678'
         )
 
     @patch('suse_migration_services.units.prepare.PrepareMigration.update_regionsrv_setup')
