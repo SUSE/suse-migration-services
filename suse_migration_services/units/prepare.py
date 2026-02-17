@@ -72,6 +72,14 @@ class PrepareMigration:
         if os.path.exists(self.suse_connect_setup):
             shutil.copy(self.suse_connect_setup, '/etc/SUSEConnect')
         if os.path.exists(self.suse_cloud_regionsrv_setup):
+            # renew registration to make sure access to the repository
+            # server is working during migration
+            Command.run(
+                ['chroot', self.root_path, 'registercloudguest', '--force-new']
+            )
+            Command.run(
+                ['chroot', self.root_path, 'zypper', 'refresh']
+            )
             shutil.copy(self.suse_cloud_regionsrv_setup, self.migration_suse_cloud_regionsrv_setup)
             self.update_regionsrv_setup()
             self.cloud_register_certs_path = self.get_regionsrv_certs_path(

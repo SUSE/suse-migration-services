@@ -224,6 +224,8 @@ class TestSetupPrepare:
         mock_Command_run.side_effect = [
             MagicMock(),
             MagicMock(),
+            MagicMock(),
+            MagicMock(),
             Exception('no zypper log'),
             MagicMock(),
             MagicMock(),
@@ -265,6 +267,8 @@ class TestSetupPrepare:
             call(['/etc/pki/trust/anchors']),
         ]
         assert mock_Command_run.call_args_list == [
+            call(['chroot', '/system-root', 'registercloudguest', '--force-new']),
+            call(['chroot', '/system-root', 'zypper', 'refresh']),
             call(['update-ca-certificates']),
             call(['update-ca-certificates']),
             call(['mount', '--bind', '/system-root/var/log/zypper.log', '/var/log/zypper.log']),
