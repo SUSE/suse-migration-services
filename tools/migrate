@@ -21,7 +21,7 @@ set -e
 source /usr/share/suse_migration_services/network_pre.functions
 
 # default migration system
-MIGRATION_SYSTEM=registry.opensuse.org/home/marcus.schaefer/dms/containers_sle15/migration:latest
+MIGRATION_SYSTEM=registry.opensuse.org/devel/dms/containers_sle15/migration:latest
 
 ARGUMENT_LIST=(
     "debug"
