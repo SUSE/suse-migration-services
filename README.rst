@@ -26,6 +26,15 @@ find them:
 General Information
 ===================
 
+Before starting the migration process it is required to update the current
+system to the latest available packages. Call the following command to perform
+this update:
+
+.. code:: bash
+
+    zypper refresh
+    zypper up
+
 The Distribution Migration System is a collection of several software packages
 and images. Together they form a non interactive migration procedure which
 runs in an isolated environment, either as a live system or as
