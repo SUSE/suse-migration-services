@@ -105,7 +105,7 @@ Upgrade Modes:
   .. code:: bash
 
       use_zypper_migration: false
-
+  
 Migration Startup:
   There are three ways to perform the migration
 
@@ -169,7 +169,6 @@ To prepare for this migration call the following commands:
 
     .. code:: bash
 
-        zypper refresh-services --force
         run_migration
 
 * Upgrade in offline mode with grub(loopback) reboot
@@ -181,7 +180,6 @@ To prepare for this migration call the following commands:
             Migration
         zypper install suse-migration-sle15-activation
         zypper rr Migration
-        zypper refresh-services --force
         reboot
 
 * Upgrade in online mode, container based
@@ -217,7 +215,6 @@ To prepare for this migration call the following commands:
 
         sudo zypper in SLES15-Migration
         sudo zypper rr Migration
-        sudo zypper refresh-services --force
         sudo run_migration
 
 * Upgrade in offline mode with grub(loopback) reboot
@@ -226,7 +223,6 @@ To prepare for this migration call the following commands:
 
         sudo zypper install SLES15-Migration suse-migration-sle15-activation
         sudo zypper rr Migration
-        sudo zypper refresh-services --force
         sudo reboot
 
 * Upgrade in online mode, container based
@@ -235,7 +231,6 @@ To prepare for this migration call the following commands:
 
         sudo zypper install suse-migration
         sudo zypper rr Migration
-        sudo zypper refresh-services --force
         sudo migrate \
             --product SLES/15.5/x86_64 \
             --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle15/migration:latest \
@@ -291,7 +286,6 @@ To prepare for this migration call the following commands:
             Migration
         zypper install suse-migration-sle16-activation
         zypper rr Migration
-        zypper refresh-services --force
         reboot
 
 * Upgrade in online mode, container based
@@ -314,9 +308,9 @@ to run an instance of `SUSE Linux Enterprise Server 15 <https://aws.amazon.com/m
 To prepare for this migration call the following commands:
 
 .. code:: bash
-
+  
     # Login to the instance
-
+  
     sudo zypper ar \
         https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_15_SP7 \
         Migration
@@ -327,7 +321,6 @@ To prepare for this migration call the following commands:
 
         sudo zypper in SLES16-Migration
         sudo zypper rr Migration
-        sudo zypper refresh-services --force
         sudo run_migration
 
 * Upgrade in offline mode with grub(loopback) reboot
@@ -336,7 +329,6 @@ To prepare for this migration call the following commands:
 
         sudo zypper install SLES16-Migration suse-migration-sle16-activation
         sudo zypper rr Migration
-        sudo zypper refresh-services --force
         sudo reboot
 
 * Upgrade in online mode, container based
@@ -345,7 +337,6 @@ To prepare for this migration call the following commands:
 
         sudo zypper install suse-migration
         sudo zypper rr Migration
-        sudo zypper refresh-services --force
         sudo migrate \
             --product SLES/16.0/x86_64 \
             --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle16/migration:latest \
