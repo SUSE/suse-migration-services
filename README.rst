@@ -35,7 +35,7 @@ services.
 
 All Distribution Migration System components are publicly build in a
 rolling release development project at
-`Public Distribution Migration System <https://build.opensuse.org/project/show/home:marcus.schaefer:dms>`__.
+`Public Distribution Migration System <https://build.opensuse.org/project/show/devel:DMS>`__.
 Stable variants of the Distribution Migration System are provided as part of
 the standard SUSE Linux Enterprise distribution maintenance cycles.
 
@@ -152,7 +152,7 @@ To prepare for this migration call the following commands:
 
 .. code:: bash
 
-    wget https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/images_sle12/kiwi-test-image-disk-simple.x86_64.qcow2
+    wget https://download.opensuse.org/repositories/devel:/DMS/images_sle12/kiwi-test-image-disk-simple.x86_64.qcow2
     qemu-kvm \
         -m 4096 \
         -netdev user,id=user0,hostfwd=tcp::10022-:22 \
@@ -176,7 +176,7 @@ To prepare for this migration call the following commands:
     .. code:: bash
 
         zypper ar \
-            https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_12_SP5 \
+            https://download.opensuse.org/repositories/devel:/DMS/SLE_12_SP5 \
             Migration
         zypper install suse-migration-sle15-activation
         zypper rr Migration
@@ -188,7 +188,7 @@ To prepare for this migration call the following commands:
 
         migrate \
             --use-zypper-dup \
-            --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle15/migration:latest \
+            --migration-system registry.opensuse.org/devel/dms/containers_sle15/migration:latest \
             --reboot
 
 Testing in the cloud (zypper migration plugin)
@@ -206,7 +206,7 @@ To prepare for this migration call the following commands:
     # Login to the instance
 
     sudo zypper ar \
-        https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_12_SP5 \
+        https://download.opensuse.org/repositories/devel:/DMS/SLE_12_SP5 \
         Migration
 
 * Upgrade in offline mode with kexec based reboot (run_migration)
@@ -233,7 +233,7 @@ To prepare for this migration call the following commands:
         sudo zypper rr Migration
         sudo migrate \
             --product SLES/15.5/x86_64 \
-            --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle15/migration:latest \
+            --migration-system registry.opensuse.org/devel/dms/containers_sle15/migration:latest \
             --reboot
 
 SLE15 >> SLE16
@@ -257,7 +257,7 @@ To prepare for this migration call the following commands:
 
 .. code:: bash
 
-    wget https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/images_sle15/kiwi-test-image-disk-simple.x86_64.qcow2
+    wget https://download.opensuse.org/repositories/devel:/DMS/images_sle15/kiwi-test-image-disk-simple.x86_64.qcow2
     qemu-kvm \
         -cpu Broadwell-v2 \
         -m 4096 \
@@ -282,7 +282,7 @@ To prepare for this migration call the following commands:
     .. code:: bash
 
         zypper ar \
-            https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_15_SP7 \
+            https://download.opensuse.org/repositories/devel:/DMS/SLE_15_SP7 \
             Migration
         zypper install suse-migration-sle16-activation
         zypper rr Migration
@@ -294,7 +294,7 @@ To prepare for this migration call the following commands:
 
         migrate \
             --use-zypper-dup \
-            --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle16/migration:latest \
+            --migration-system registry.opensuse.org/devel/dms/containers_sle16/migration:latest \
             --reboot
 
 Testing in the cloud (zypper migration plugin)
@@ -312,7 +312,7 @@ To prepare for this migration call the following commands:
     # Login to the instance
   
     sudo zypper ar \
-        https://download.opensuse.org/repositories/home:/marcus.schaefer:/dms/SLE_15_SP7 \
+        https://download.opensuse.org/repositories/devel:/DMS/SLE_15_SP7 \
         Migration
 
 * Upgrade in offline mode with kexec based reboot (run_migration)
@@ -339,7 +339,7 @@ To prepare for this migration call the following commands:
         sudo zypper rr Migration
         sudo migrate \
             --product SLES/16.0/x86_64 \
-            --migration-system registry.opensuse.org/home/marcus.schaefer/dms/containers_sle16/migration:latest \
+            --migration-system registry.opensuse.org/devel/dms/containers_sle16/migration:latest \
             --reboot
 
 Contributing
