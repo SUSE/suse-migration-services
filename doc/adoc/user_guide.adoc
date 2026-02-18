@@ -344,6 +344,23 @@ given package was installed.
 debug_solver: true|false
 ----
 
+Ignore `wicked2nm` warnings::
+When migrating from `wicked` to `NetworkManager`, the `wicked2nm` tool may
+issue warnings. By default, these warnings abort the migration process.
+To ignore these warnings, set the `wicked2nm-continue-migration` option.
++
+[WARNING]
+.Unexpected Network Behavior
+Ignoring `wicked2nm` warnings can result in unexpected network behavior. Use
+this option only if you have verified that the warnings do not impact your
+network configuration.
++
+[listing]
+----
+network:
+  wicked2nm-continue-migration: true
+----
+
 == Run the Migration
 Migration can be triggered either via run_migration or via reboot.
 
