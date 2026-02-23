@@ -74,6 +74,17 @@ In case an error occurs prior to the start of the upgrade the system will
 be reverted to its original state.
 
 == Upgrade Prerequisites
+General requirements for using the distribution migration system::
+Before starting the migration process it is required to update the current
+system to the latest available packages. Call the following command to perform
+this update:
++
+[listing]
+----
+zypper refresh
+zypper up
+----
+
 Requirement for using the Zypper migration workflow::
 Systems that are to be upgraded need to be registered.
 "Pay as you go"-instances in the Public Cloud are automatically registered
