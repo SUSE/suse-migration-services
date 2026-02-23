@@ -174,8 +174,8 @@ The `run_migration` uses `kexec` to boot into the kernel delivered with the
 upgrade image delivered by the SLES15-Migration package. Once this system
 is live after the `kexec` the distribution migration process is automatically
 started. However, `kexec` is not supported and does not function in certain
-conditions. The `run_migration` utility does not work in Xen based
-environments.
+conditions. For example, the `run_migration` utility does not work in Xen
+based environments or when kernel keys change.
 +
 If kexec causes a kernel panic this can cause the system to hang and the
 distribution migration to fail. In that case refer to this TID:
