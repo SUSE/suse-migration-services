@@ -58,7 +58,7 @@ class TestKernelReboot(object):
         fstab_mock.get_devices.return_value = fstab.get_devices()
         mock_Fstab.return_value = fstab_mock
         mock_get_migration_config_file.return_value = '../data/migration-config.yml'
-        mock_get_system_migration_custom_config_file.return_value = '../data/migration-config.yml'
+        mock_get_system_migration_custom_config_file.return_value = '../data/migration-config-soft-reboot.yml'
         main()
         assert mock_Command_run.call_args_list == [
             call(['systemctl', 'stop', 'suse-migration-console-log'], raise_on_error=False),

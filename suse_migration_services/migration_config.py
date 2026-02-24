@@ -180,7 +180,7 @@ class MigrationConfig:
         return self.config_data.get('use_zypper_migration', True)
 
     def is_soft_reboot_requested(self):
-        return self.config_data.get('soft_reboot', True)
+        return self.config_data.get('soft_reboot', False)
 
     def is_host_independent_initd_requested(self):
         return self.config_data.get('build_host_independent_initrd', False)

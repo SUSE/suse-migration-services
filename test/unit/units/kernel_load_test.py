@@ -108,7 +108,7 @@ class TestKernelLoad(object):
             + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
         )
         mock_get_cmdline.return_value = cmd_line
-        mock_get_migration_config_file.return_value = '../data/migration-config.yml'
+        mock_get_migration_config_file.return_value = '../data/migration-config-soft-reboot.yml'
         mock_Command_run.side_effect = [None, Exception('error')]
         with self._caplog.at_level(logging.ERROR):
             with raises(DistMigrationKernelRebootException):
@@ -147,7 +147,7 @@ class TestKernelLoad(object):
             + 'splash root=UUID=ec7aaf92-30ea-4c07-991a-4700177ce1b8 rw'
         )
         mock_get_cmdline.return_value = cmd_line
-        mock_get_migration_config_file.return_value = '../data/migration-config.yml'
+        mock_get_migration_config_file.return_value = '../data/migration-config-soft-reboot.yml'
         main()
         assert mock_Command_run.call_args_list == [
             call(['mkdir', '-p', '/var/tmp/kexec']),

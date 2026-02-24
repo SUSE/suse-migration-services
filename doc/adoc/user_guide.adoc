@@ -171,20 +171,24 @@ tux > sudo zypper in SLES15-Migration
 ----
 +
 The `run_migration` uses `kexec` to boot into the kernel delivered with the
-upgrade image delivered by the SLES15-Migration package. Once this system
-is live after the `kexec` the distribution migration process is automatically
-started. However, `kexec` is not supported and does not function in certain
-conditions. For example, the `run_migration` utility does not work in Xen
-based environments or when kernel keys change.
+upgrade image delivered by the SLES{$VERSION}-Migration package.
 +
-If kexec causes a kernel panic this can cause the system to hang and the
-distribution migration to fail. In that case refer to this TID:
-https://www.suse.com/support/kb/doc/?id=000019733
-And set the "soft_reboot" customization option:
+On the s390x architecture this is the only package available and the
+the `run_migration` method is the only option to start the migration process.
+The migration process starts automatically once the `run_migration` command
+is issued.
++
+On all other architectures the `kexec`, i.e. use of `run_migration` is not
+supported. This path does not work in certain conditions, for example
+on Xen based environments or when kernel keys change.
++
+By default this method is disabled. Enabling soft reboot behavior via kexec
+requires an explicit configuration change on all architectures except s390x
+by setting the "soft_reboot" customization option:
 +
 [listing]
 ----
-echo "soft_reboot: false" >> /etc/sle-migration-service.yml
+echo "soft_reboot: true" >> /etc/sle-migration-service.yml
 ----
 
 Option 2 - Trigger via reboot::
@@ -303,9 +307,10 @@ debug: true|false
 ----
 
 Configure Reboot Method::
-By default, the migration system uses `kexec` to boot back into the host
-system once migration is complete.  If this is in any way problematic,
-a regular `reboot` can be requested by setting `soft_reboot: false`.
+By default, the migration system uses a full reboot to boot back into the
+host system once migration is complete. It is possible to configure the
+migration system to use `kexec`, i.e. use a soft reboot by setting
+`soft_reboot: true` in the configuration. A soft reboot may trigger issues.
 +
 [listing]
 ----
