@@ -5,3 +5,4 @@ preserve:
   - /etc/sysconfig/proxy
   sysctl:
   - /etc/sysctl.conf
+soft_reboot: true

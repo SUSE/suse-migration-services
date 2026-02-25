@@ -332,10 +332,7 @@ class TestMigrationConfig(object):
 
         # Check no other key's exists
         assert list(self.config.config_data.keys()) == [
-            'preserve',
-            'network',
-            'debug',
-            'migration_product',
+            'preserve', 'soft_reboot', 'network', 'debug', 'migration_product'
         ]
 
     def test_merge_config_dicts(self):
