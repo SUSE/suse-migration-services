@@ -103,6 +103,8 @@ def get_scc_credentials():
 
 def get_registration_server_url():
     suseconnect_config = '/etc/SUSEConnect'
+    if not os.path.isfile(suseconnect_config):
+        return 'https://scc.suse.com'
     if os.path.isfile(suseconnect_config):
         try:
             with open(suseconnect_config, 'r') as config:
