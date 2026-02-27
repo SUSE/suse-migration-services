@@ -26,14 +26,14 @@ endif::[]
 
 == Concept
 The Distribution Migration System provides an upgrade path for an
-installed SUSE Linux Enterprise system from one major version to another,
-for example, from SUSE Linux Enterprise Server 12 SP5 to SUSE Linux
-Enterprise Server 15. For a service pack upgrade from one Service Pack
-(SP) to another within a given major version release series the existing
-Zypper migration workflow provides the supported upgrade path.
-The distribution migration system provides the ability to upgrade across
-major distributions without the need to use the next major version
-installation media to perform the system upgrade.
+installed SUSE Linux Enterprise system from one major version to another.
+For example from SUSE Linux Enterprise Server 12 SP5 to SUSE Linux
+Enterprise Server 15. For a service pack upgrade, i.e. from one Service Pack
+(SP) to another in SLE 15, or minor release version upgrade, for example from
+.0 to .1 in SLE 16, the existing zypper migration workflow provides the
+supported upgrade path. The distribution migration system provides the
+ability to upgrade across major distributions without the need to use the
+next major version installation media to perform the system upgrade.
 
 The upgrade is done via the network using the Zypper migration workflow which
 sends a request to the repository server, asking for an upgrade path.
@@ -43,7 +43,8 @@ repositories required to upgrade the system. This requires the system to be
 upgraded to be registered. Additionally the server providing the updates must
 have the necessary channels available and those channels must be up to date.
 This requirement is automatically met when a system is registered to the
-SUSE Customer Center (SCC). However administrative work may be required when
+SUSE Customer Center (SCC) or in th ePublic CLoud to the SUSE operated
+update infrastructure. Administrative work may be required when
 the system to be upgraded is connected to an RMT server. The migration
 implementation also supports an upgrade mode that works with systems not
 registered to a repository service. For details,
@@ -76,8 +77,8 @@ be reverted to its original state.
 == Upgrade Prerequisites
 General requirements for using the distribution migration system::
 Before starting the migration process it is required to update the current
-system to the latest available packages. Call the following command to perform
-this update:
+system to the latest available packages. Call the following commands to
+perform this update:
 +
 [listing]
 ----
@@ -109,7 +110,11 @@ to configurations where the separated partitions do not contain OS critical
 data or processes. For example, DMS will function if /home is its own
 partition, but not if /var is on a separate partition from root.
 
-SLES12 SP5 is the only supported migration starting point.
+SLES 12 SP5 is the only supported migration starting point for the migration
+to SLES 15.
+
+SLES 15 SP7 is the only supported migration starting point for the migration
+to SLES 16.
 
 == Upgrade Pre-Checks
 The suse-migration-pre-checks package contains the `suse-migration-pre-checks`
@@ -122,22 +127,25 @@ These incompatibilities include:
 3. multiversion.kernels enabled and multiple kernels installed
 4. Unsupported upgrade path with enabled products
 
-This script is run during the install of SLES15-Migration. It can
-also be run anytime using
+This script is run during the install of the SLES15-Migration or
+SLES16-Migration package on a SLES 12 SP5 or SLES 15 SP7 system, respectively.
+The pre-checks can also be run anytime using
 
  /usr/bin/suse-migration-pre-checks
 
 The script must be run as root.
 
-A `-f/--fix` option that will remediate the following issues:
+A `-f/--fix` option that will remediate the following issues exists.
 
 1. Set multiversion.kernels to the correct value and remove all
 old (not currently running) kernels.
 
 == Installation
-The distribution migration system is available from the Public Cloud module.
-Therefore this module has to be enabled on the system prior to upgrade.
-For running on-demand instances this module is already enabled.
+The distribution migration system is distributed from the Public Cloud module
+in SLE 12 and therefore this module has to be enabled on the system
+prior to upgrade. For running on-demand instances this module is already
+enabled. In SLE 15 the package is part of the Basesystem module
+that is automatically enabled on all registered systems.
 
 [NOTE]
 For data center customers it is recommended to continue to use the
@@ -154,16 +162,21 @@ SLES15-Migration::
 This package contains the live migration image to upgrade to SLES15 SP7.
 SLES15-SAP_Migration::
 +
-This package contains the live migration image to upgrade to SLES15 SP4
+This package contains the live migration image to upgrade to SLES_SAP15 SP4
 with SAP extensions.
+SLES16-Migration and SLES16-SAP_Migration::
+These packages contain the live migration image to upgrade to the respective
+16.0 distribution.
 
 The distribution migration process can be invoked using different methods.
 One method of activating the migration is the `run_migration` included with
-the SLES15-Migration package. The second method to invoking the migration
-process is via reboot after installing the suse-migration-sle15-activation
-package.
+the SLES15-Migration and SLES16-Migration packages. The second method to
+invoking the migration process is via reboot after installing the
+suse-migration-sle15-activation or suse-migration-sle16-activation
+package, respectively.
 
-Option 1 - Trigger via run_migration::
+Option 1 - Trigger via run_migration, using a 12 to 15 migration on SLES
+as an example::
 +
 [listing]
 ----
@@ -171,10 +184,12 @@ tux > sudo zypper in SLES15-Migration
 ----
 +
 The `run_migration` uses `kexec` to boot into the kernel delivered with the
-upgrade image delivered by the SLES{$VERSION}-Migration package.
+upgrade image installed by the SLES{$VERSION}-Migration package.
 +
-On the s390x architecture this is the only package available and the
-the `run_migration` method is the only option to start the migration process.
+For a migration to SLE 16 on the s390x architecture the *-Migration package
+is the only package available and the the `run_migration` method is the only
+option to start the migration process.
++
 The migration process starts automatically once the `run_migration` command
 is issued.
 +
@@ -199,12 +214,12 @@ tux > sudo zypper in SLES15-Migration suse-migration-sle15-activation
 ----
 +
 Starting the migration via reboot after installing the
-suse-migration-sle15-activation package covers the Xen use case but does
-not work in cases where there is no direct access to the root file system
-from the bootloader or on architectures other than x86_64. During
-installation of the suse-migration-sle15-activation package the bootloader
+suse-migration-sle15-activation or suse-migration-sle16-activation package,
+respectively, covers the all use cases except in cases where there is no
+direct access to the root file system from the bootloader. During
+installation of the suse-migration-sle{15|16}-activation package the bootloader
 configuration is modified  such that on the next boot the system will boot
-into the upgrade image. This in turns starts the automated distribution
+into the upgrade image. This in turn starts the automated distribution
 migration process.
 
 == Optional Customization of the Upgrade Process
@@ -238,9 +253,9 @@ manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
 Specify Migration Product::
-By default the system will be migrated to SLES15 SP7 or to the
-product specific service pack. This default target can be changed via
-the `migration_product` setting. The product must be specified with
+The default migration target is dependent on the origin version and the
+product. This default target can be changed via the `migration_product`
+setting. The product must be specified with
 the triplet `name/version/arch` found in '/etc/products.d/baseproduct'
 of the target product, for example:
 +
@@ -250,7 +265,7 @@ migration_product: SLES/15.4/x86_64
 ----
 +
 [WARNING]
-Changing the default product may leads to unsupported territory and
+Changing the default product may lead to unsupported territory and
 is not tested nor covered by the SUSE support offering !
 The specified product name must be supported by the repository
 server used for the migration. If the given product does not
@@ -352,7 +367,7 @@ Configure Dependency Solver Test Case Generation::
 It is possible that during the migration packages get installed that were not
 on the system previously and are pulled in because of dependencies. This
 setting will setup the migration such that a solver test case is generated.
-The information form the test case can then be used to understand why a
+The information from the test case can then be used to understand why a
 given package was installed.
 +
 [listing]
@@ -361,8 +376,9 @@ debug_solver: true|false
 ----
 
 Ignore `wicked2nm` warnings::
-When migrating from `wicked` to `NetworkManager`, the `wicked2nm` tool may
-issue warnings. By default, these warnings abort the migration process.
+When migrating from `wicked` to `NetworkManager`, this applies to a
+migration from 15 to 16, the `wicked2nm` tool may issue warnings. By
+default, these warnings abort the migration process.
 To ignore these warnings, set the `wicked2nm-continue-migration` option.
 +
 [WARNING]
@@ -427,8 +443,8 @@ Whether the upgrade succeeded or not, a log file is available in
 upgrade process. If the upgrade failed, the file `/etc/issue` will contain
 a pointer to the respective log file.
 
-In addition, the distribution migration RPM packages `SLES15-Migration`
-and `suse-migration-sle15-activation` will be removed.
+In addition, the distribution migration RPM packages `SLES{15|16}-Migration`
+and `suse-migration-sle{15|16}-activation` will be removed.
 This is to prevent the migration from being run multiple times and causing
 a failure loop.
 To start the migration again, the RPMs will need to be reinstalled following
@@ -445,25 +461,28 @@ the commands from the Installation Section of this document.
 * Upgrade is only possible for systems that use unencrypted root file systems,
   at the OS level. Encrypting the root device using a cloud framework
   encryption mechanism happens at a different level.
-* The system is primarily intended for Public Cloud instance upgrade use. The
+* For the migration from SUSE Linux Enterprise 12 to 15 the migration system
+  is primarily intended for Public Cloud instance upgrade use. The
   system also works for simple setups in a data center setting on physical
   installations. However, for any more complex configurations the off line
   upgrade path via install ISO file should be used as documented in the
   SUSE Linux Enterprise Server documentation.
+  For the migration from SUSE Linux Enterprise 15 to 16 the migration system
+  is generally supported for all use cases.
 * In systems that contain multiple root file systems on different mount points
   only the root file system mounted on `/` (primary system) will be migrated.
 * Upgrade is not supported for systems having the SLE 12 HPC module installed.
   In SLE 15, HPC is no longer a module but rather a product. With this change,
-  there is not a migration path from SLE 12 (with the HPC module) to SLE 15 HPC.
+  there is no migration path from SLE 12 (with the HPC module) to SLE 15 HPC.
 
 === Public and Private Cloud Specific
 * Migration initiation for a cloud instance is only supported via a reboot.
   The required GRUB changes to make this process are automated and
-  provided with the suse-migration-sle15-activation package. We recommend
+  provided with the suse-migration-sle{15|16}-activation package. We recommend
   to use the provided automation.
 * Public Cloud instances from SUSE images have a custom `/etc/motd` file
   that makes a reference to the distribution version. This needs to be
-  updated manually after the upgrade.
+  updated manually after the upgrade to indicate the distribution upgrade.
 * The instance metadata will not change. As far as the
   cloud framework is concerned, you will still be running an instance
   of the SLES version you started with. This cannot be changed.
