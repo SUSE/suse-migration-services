@@ -21,6 +21,7 @@ import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.migration_target import MigrationTarget
+from suse_migration_services.prechecks.scc import get_registration_server_url
 
 
 @patch('suse_migration_services.logger.Logger.setup')
@@ -631,6 +632,13 @@ class TestPreChecks:
         with self._caplog.at_level(logging.INFO):
             check_lsm.check_lsm(migration_system=False)
             assert 'AppArmor disabled' in self._caplog.text
+
+    @patch('os.path.isfile')
+    def test_check_scc_migration_default_registration_server_url(
+        self, mock_os_path_isfile, mock_os_geteuid, mock_log
+    ):
+        mock_os_path_isfile.return_value = False
+        assert get_registration_server_url() == 'https://scc.suse.com'
 
     @patch('yaml.safe_load')
     @patch('glob.glob')
