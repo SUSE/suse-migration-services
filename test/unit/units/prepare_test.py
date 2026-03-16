@@ -209,9 +209,24 @@ class TestSetupPrepare:
         mock_logger_setup,
         mock_update_regionsrv_setup,
     ):
+        def isdir_side_effect(path):
+            if path == '/system-root/usr/share/pki/trust/anchors/foo':
+                return False
+            elif path == '/system-root/usr/share/pki/trust/anchors/bar':
+                return False
+            elif path == '/system-root/etc/pki/trust/anchors/foo':
+                return False
+            elif path == '/system-root/link_target':
+                return False
+            return True
+
+        def exists_side_effect(path):
+            if path == '/var/log/zypper.log':
+                return False
+            return True
 
         mock_readlink.return_value = 'link_target'
-        mock_path_isdir.side_effect = [True, True, True, True]
+        mock_path_isdir.side_effect = isdir_side_effect
         migration_config = Mock()
         migration_config.is_zypper_migration_plugin_requested.return_value = True
         mock_MigrationConfig.return_value = migration_config
@@ -219,7 +234,7 @@ class TestSetupPrepare:
         mock_Fstab.return_value = fstab
         mock_os_listdir.side_effect = [['foo', 'bar'], ['foo', 'bar'], ['fooSMT'], ['fooSMT']]
         mock_os_path_islink.side_effect = [False, False, False, True]
-        mock_os_path_exists.side_effect = [True, True, True, True, False, True, True, True]
+        mock_os_path_exists.side_effect = exists_side_effect
         mock_is_registered.return_value = True
         mock_Command_run.side_effect = [
             MagicMock(),

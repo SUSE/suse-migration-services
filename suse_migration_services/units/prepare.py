@@ -95,11 +95,12 @@ class PrepareMigration:
                         cert_file = os.sep.join([root_trust_anchor, cert])
                         if os.path.islink(cert_file):
                             cert_file = os.sep.join([self.root_path, os.readlink(cert_file)])
-                        self.log.info('Importing certificate: %s', cert_file)
-                        try:
-                            shutil.copy(cert_file, trust_anchor)
-                        except FileNotFoundError as issue:
-                            self.log.warning('Import of {} failed with {}'.format(cert_file, issue))
+                        if os.path.exists(cert_file) and not os.path.isdir(cert_file):
+                            self.log.info('Importing certificate: {}'.format(cert_file))
+                            try:
+                                shutil.copy(cert_file, trust_anchor)
+                            except FileNotFoundError as issue:
+                                self.log.warning('Import of {} failed with {}'.format(cert_file, issue))
                     self.log.info('Update certificate pool')
                     Command.run(['update-ca-certificates'])
 
