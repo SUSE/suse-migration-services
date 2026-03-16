@@ -151,9 +151,10 @@ class TestSetupHostNetwork:
                     '/etc/sysconfig/network/providers',
                 ]
             ),
-            call(['systemctl', 'restart', 'network']),
-            call(['nm-online', '-q']),
+            # wicked2nm runs before network restart
             call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
+            call(['systemctl', 'restart', 'network']),
+            call(['nm-online', '-q', '-t', '15']),
         ]
         fstab.read.assert_called_once_with('/etc/system-root.fstab')
         assert fstab.add_entry.call_args_list == [
@@ -164,6 +165,84 @@ class TestSetupHostNetwork:
             ),
         ]
         fstab.export.assert_called_once_with('/etc/system-root.fstab')
+
+    @patch('suse_migration_services.units.setup_host_network.Path')
+    @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.setup_host_network.Fstab')
+    @patch('os.path.exists')
+    @patch('shutil.copy')
+    @patch('glob.glob')
+    @patch('os.path.isfile')
+    @patch('os.path.islink')
+    def test_perform_nm_dirs_not_exist(
+        self,
+        mock_islink,
+        mock_isfile,
+        mock_glob,
+        mock_shutil_copy,
+        mock_os_path_exists,
+        mock_Fstab,
+        mock_Command_run,
+        mock_MigrationConfig,
+        mock_Path,
+    ):
+        """
+        Test that bind mounts for NetworkManager directories are skipped
+        when the source directories don't exist on the production system.
+        This is the case for wicked-based SLES 15 SP7 systems which do not
+        have NetworkManager installed.
+        In this case:
+        - NM bind mounts are skipped
+        - wicked2nm still runs (wicked_service symlink exists)
+        - network restart still happens
+        - nm-online is skipped (network_manager_service symlink absent)
+        """
+        fstab = Mock()
+        mock_Fstab.return_value = fstab
+        mock_glob.return_value = []
+        mock_isfile.return_value = False
+
+        def islink_side_effect(path):
+            if 'wicked.service' in path:
+                return True
+            if 'NetworkManager-wait-online' in path:
+                return False
+            return False
+
+        mock_islink.side_effect = islink_side_effect
+
+        def exists_side_effect(path):
+            # NM directories don't exist on wicked-based SLES 15 SP7
+            if 'NetworkManager' in path:
+                return False
+            # providers dir doesn't exist either
+            if 'providers' in path:
+                return False
+            # wicked config.xml exists
+            return True
+
+        mock_os_path_exists.side_effect = exists_side_effect
+        self.host_network.perform(container=False)
+
+        # Verify NM bind mounts were NOT called
+        nm_mount_calls = [
+            c for c in mock_Command_run.call_args_list
+            if 'NetworkManager' in str(c)
+        ]
+        assert nm_mount_calls == [], \
+            "NetworkManager bind mounts should not be called when dirs don't exist"
+
+        # Verify network restart was still called
+        assert call(['systemctl', 'restart', 'network']) in mock_Command_run.call_args_list
+
+        # Verify nm-online was NOT called (no NM symlink on wicked system)
+        nm_online_calls = [
+            c for c in mock_Command_run.call_args_list
+            if 'nm-online' in str(c)
+        ]
+        assert nm_online_calls == [], \
+            "nm-online should not be called when NetworkManager-wait-online symlink absent"
 
     @patch('os.path.exists')
     @patch('suse_migration_services.command.Command.run')
@@ -193,7 +272,7 @@ class TestSetupHostNetwork:
                     '/system-root/var/cache/wicked_config/config.xml',
                 ]
             ),
-            call(['nm-online', '-q']),
+            call(['nm-online', '-q', '-t', '15']),
         ]
 
     @patch('os.path.exists')
@@ -225,7 +304,7 @@ class TestSetupHostNetwork:
                     '/system-root/var/cache/wicked_config/config.xml',
                 ]
             ),
-            call(['nm-online', '-q']),
+            call(['nm-online', '-q', '-t', '15']),
         ]
 
     @patch('os.path.exists')
@@ -276,8 +355,6 @@ class TestSetupHostNetwork:
         mock_get_migration_config_file.return_value = '../data/migration-config-wicked2nm.yml'
         cmd_ret_val = Mock(self, returncode=0)
         mock_Command_run.return_value = cmd_ret_val
-        cmd_ret_val = Mock(self, returncode=0)
-        mock_Command_run.return_value = cmd_ret_val
         mock_os_path_exists.return_value = True
 
         self.host_network.wicked2nm_migrate()
@@ -297,7 +374,7 @@ class TestSetupHostNetwork:
                     '--continue-migration',
                 ]
             ),
-            call(['nm-online', '-q']),
+            call(['nm-online', '-q', '-t', '15']),
         ]
 
     @patch('suse_migration_services.logger.Logger.setup')
