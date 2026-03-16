@@ -101,16 +101,12 @@ class SetupHostNetwork:
                 for network_setup in glob.glob(sysconfig_network_setup):
                     if os.path.isfile(network_setup):
                         shutil.copy(network_setup, '/etc/sysconfig/network')
-            if not container:
-                action = 'reload'
-                if os.path.islink(network_manager_service):
-                    action = 'restart'
-                Command.run(['systemctl', action, 'network'])
-                if os.path.islink(network_manager_service):
-                    # wait for NetworkManager to be online
-                    Command.run(['nm-online', '-q'])
             if os.path.islink(wicked_service):
                 self.wicked2nm_migrate(activate_connections=False if container else True)
+            if not container:
+                Command.run(['systemctl', 'restart', 'network'])
+                if os.path.islink(network_manager_service):
+                    Command.run(['nm-online', '-q', '-t', '15'])
             system_mount.export(Defaults.get_system_mount_info_file())
             if container:
                 Command.run(['systemctl', 'stop', 'NetworkManager'])
@@ -197,7 +193,7 @@ class SetupHostNetwork:
         try:
             Command.run(wicked2nm_cmd)
             # Wait for NetworkManager online to fix dhcp race condition
-            Command.run(['nm-online', '-q'])
+            Command.run(['nm-online', '-q', '-t', '15'])
         except Exception as issue:
             wicked2nm_cmd = [
                 'wicked2nm',
