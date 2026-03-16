@@ -77,12 +77,14 @@ class SetupHostNetwork:
         try:
             self.log.info('Running setup host network service')
             if os.path.islink(network_manager_service):
-                Path.create('/etc/NetworkManager')
-                Path.create('/usr/lib/NetworkManager')
-                Command.run(['mount', '--bind', etc_network_manager, '/etc/NetworkManager'])
-                Command.run(['mount', '--bind', usr_lib_network_manager, '/usr/lib/NetworkManager'])
-                system_mount.add_entry(etc_network_manager, '/etc/NetworkManager')
-                system_mount.add_entry(usr_lib_network_manager, '/usr/lib/NetworkManager')
+                if os.path.exists(etc_network_manager):
+                    Path.create('/etc/NetworkManager')
+                    Command.run(['mount', '--bind', etc_network_manager, '/etc/NetworkManager'])
+                    system_mount.add_entry(etc_network_manager, '/etc/NetworkManager')
+                if os.path.exists(usr_lib_network_manager):
+                    Path.create('/usr/lib/NetworkManager')
+                    Command.run(['mount', '--bind', usr_lib_network_manager, '/usr/lib/NetworkManager'])
+                    system_mount.add_entry(usr_lib_network_manager, '/usr/lib/NetworkManager')
 
             if os.path.exists(sysconfig_network_providers):
                 Command.run(
