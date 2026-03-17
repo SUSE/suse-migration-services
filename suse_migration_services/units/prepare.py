@@ -237,7 +237,7 @@ class PrepareMigration:
         regionsrv_setup = ConfigParser()
         regionsrv_setup.read(self.suse_cloud_regionsrv_setup)
         dataProvider = regionsrv_setup.get('instance', 'dataProvider')
-        if 'azuremetadata' in dataProvider:
+        if 'azuremetadata' in dataProvider and '--device' not in dataProvider:
             root_disk_device = self.get_root_disk_device()
             if root_disk_device:
                 dataProvider += ' --device {0}'.format(root_disk_device)
