@@ -143,8 +143,8 @@ Migration Startup:
 SLE12 >> SLE15
 ==============
 
-Testing on local system (zypper dup mode)
------------------------------------------
+Local system (zypper dup mode)
+------------------------------
 
 In this mode a local VM image based on SLE12 will be upgraded to Leap15.
 The required Leap15 repositories must be configured by the user prior
@@ -200,19 +200,20 @@ To prepare for this migration call the following commands:
             --migration-system registry.opensuse.org/devel/dms/containers_sle15/migration:latest \
             --reboot
 
-Testing in the cloud (zypper migration plugin)
-----------------------------------------------
+Cloud/On-Premise SLES registered system (zypper migration plugin)
+-----------------------------------------------------------------
 
-In this mode a remote cloud instance in your preferred cloud service
-provider needs to be started first e.g. AWS. Make sure to run a SLE12
-on demand (SUSE registered) instance. The following link can be used
-to run an instance of `SUSE Linux Enterprise Server 12 <https://aws.amazon.com/marketplace/pp/prodview-57pmygill5vnw>`__
+In this mode and when running in a cloud, a remote cloud instance in
+your preferred cloud service provider needs to be started first e.g.
+AWS. Make sure to run a SLE12 on demand (SUSE registered) instance.
+The following link can be used to run an instance of
+`SUSE Linux Enterprise Server 12 <https://aws.amazon.com/marketplace/pp/prodview-57pmygill5vnw>`__
 
 To prepare for this migration call the following commands:
 
 .. code:: bash
 
-    # Login to the instance
+    # Login to the system
 
     sudo zypper ar \
         https://download.opensuse.org/repositories/devel:/DMS/SLE_12_SP5 \
@@ -248,8 +249,8 @@ To prepare for this migration call the following commands:
 SLE15 >> SLE16
 ==============
 
-Testing on local system (zypper dup mode)
------------------------------------------
+Local system (zypper dup mode)
+------------------------------
 
 In this mode a local VM image based on SLE15 will be upgraded to Leap16.
 The required Leap16 repositories must be configured by the user prior
@@ -306,19 +307,20 @@ To prepare for this migration call the following commands:
             --migration-system registry.opensuse.org/devel/dms/containers_sle16/migration:latest \
             --reboot
 
-Testing in the cloud (zypper migration plugin)
-----------------------------------------------
+Cloud/On-Premise SLES registered system (zypper migration plugin)
+-----------------------------------------------------------------
 
-In this mode a remote cloud instance in your preferred cloud service
-provider needs to be started first e.g. AWS. Make sure to run a SLE15
-on demand (SUSE registered) instance. The following link can be used
-to run an instance of `SUSE Linux Enterprise Server 15 <https://aws.amazon.com/marketplace/pp/prodview-o5wqlcnuzvyv2>`__
+In this mode and when running in a cloud, a remote cloud instance in
+your preferred cloud service provider needs to be started first
+e.g. AWS. Make sure to run a SLE15 on demand (SUSE registered) instance.
+The following link can be used to run an instance of
+`SUSE Linux Enterprise Server 15 <https://aws.amazon.com/marketplace/pp/prodview-o5wqlcnuzvyv2>`__
 
 To prepare for this migration call the following commands:
 
 .. code:: bash
   
-    # Login to the instance
+    # Login to the system
   
     sudo zypper ar \
         https://download.opensuse.org/repositories/devel:/DMS/SLE_15_SP7 \
