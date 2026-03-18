@@ -92,7 +92,7 @@ def main():
     log.info('Checking harmful migration conditions')
 
     log.info('--> Checking system architecture version...')
-    check_cpu_arch.cpu_arch()
+    check_cpu_arch.cpu_arch(migration_system=migration_system_mode)
 
     log.info('--> Checking for local private repos...')
     check_repos.remote_repos(migration_system=migration_system_mode)
@@ -117,7 +117,7 @@ def main():
     log.info('Done')
 
     log.info('--> Checking high availability extension...')
-    check_ha.check_ha()
+    check_ha.check_ha(migration_system=migration_system_mode)
     log.info('Done')
 
     log.info('--> Checking wicked to NetworkManager migration...')

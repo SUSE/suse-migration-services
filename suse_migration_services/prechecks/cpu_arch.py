@@ -45,6 +45,15 @@ def x86_64_version():
         )
 
 
-def cpu_arch():
+def cpu_arch(migration_system=False):
     """Function for CPU architecture related checks"""
+    if migration_system:
+        # This check must not be called inside of the
+        # migration system live iso or container image.
+        # It will only be useful on the system to migrate
+        # at install time of the Migration package or on
+        # manual user invocation of suse-migration-pre-checks
+        # prior the actual migration.
+        return
+
     x86_64_version()
