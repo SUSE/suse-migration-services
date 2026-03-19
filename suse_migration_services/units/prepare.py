@@ -100,7 +100,9 @@ class PrepareMigration:
                             try:
                                 shutil.copy(cert_file, trust_anchor)
                             except FileNotFoundError as issue:
-                                self.log.warning('Import of {} failed with {}'.format(cert_file, issue))
+                                self.log.warning(
+                                    'Import of {} failed with {}'.format(cert_file, issue)
+                                )
                     self.log.info('Update certificate pool')
                     Command.run(['update-ca-certificates'])
 

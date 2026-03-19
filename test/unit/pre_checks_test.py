@@ -948,6 +948,10 @@ class TestPreChecks:
         assert 'SLE16 requires x86_64_v2 at minimum' not in self._caplog.text
         mock_Command_run.assert_called_once_with(['zypper', 'system-architecture'])
 
+        mock_Command_run.reset_mock()
+        check_cpu_arch.cpu_arch(True)
+        mock_Command_run.assert_not_called()
+
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.migration_target.MigrationTarget.get_migration_target')
     def test_check_x86_64_v1(
