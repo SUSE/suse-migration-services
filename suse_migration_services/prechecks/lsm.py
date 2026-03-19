@@ -26,6 +26,7 @@ from textwrap import dedent
 
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.migration_target import MigrationTarget
 
 # find /etc/apparmor.d/ | wc -l
 DEFAULT_ETC_FILE_COUNT = 263
@@ -62,8 +63,19 @@ log = logging.getLogger(Defaults.get_migration_log_name())
 
 def check_lsm(migration_system=False):
     if migration_system:
-        # only relevant on the system that is being migrated
-        log.info('Skipped LSM migration checks.')
+        # This check must not be called inside of the
+        # migration system live iso or container image.
+        # It will only be useful on the system to migrate
+        # at install time of the Migration package or on
+        # manual user invocation of suse-migration-pre-checks
+        # prior the actual migration.
+        return
+
+    target = MigrationTarget.get_migration_target()
+    if not target.get('version').startswith('16'):
+        # This check is only necessary for migration to SLE16
+        # as SLE16 is the first version to support SELinux as an
+        # alternative to AppArmor.
         return
 
     if _apparmor_enabled():
@@ -88,7 +100,7 @@ def check_lsm(migration_system=False):
                         '''\n
                         Non-default AppArmor setup detected,
                         please review the details above.
-                    '''
+                        '''
                     )
                     log.error(message)
         except Exception as issue:
