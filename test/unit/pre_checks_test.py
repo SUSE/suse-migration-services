@@ -553,8 +553,10 @@ class TestPreChecks:
     @patch('builtins.open', new_callable=mock_open, read_data='Y')
     @patch('suse_migration_services.prechecks.lsm._apparmor_primitive_check')
     @patch('shutil.which')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_lsm_migration(
         self,
+        mock_get_migration_target,
         mock_shutil_which,
         mock_apparmor_primitive_check,
         mock_open,
@@ -563,6 +565,7 @@ class TestPreChecks:
         mock_os_geteuid,
         mock_log,
     ):
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_shutil_which.return_value = True
         mock_os_path_exists.return_value = True
 
@@ -594,9 +597,16 @@ class TestPreChecks:
     @patch.object(Command, 'run')
     @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
     @patch('shutil.which')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_lsm_migration_failed(
-        self, mock_shutil_which, mock_apparmor_enabled, mock_Command_run, mock_os_geteuid, mock_log
+        self,
+        mock_get_migration_target,
+        mock_shutil_which,
+        mock_apparmor_enabled,
+        mock_Command_run,
+        mock_os_geteuid, mock_log
     ):
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_shutil_which.return_value = True
         mock_apparmor_enabled.return_value = True
         mock_Command_run.side_effect = Exception
@@ -608,9 +618,16 @@ class TestPreChecks:
     @patch('os.path.exists')
     @patch.object(Command, 'run')
     @patch('shutil.which')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_lsm_migration_simple(
-        self, mock_shutil_which, mock_Command_run, mock_os_path_exists, mock_os_geteuid, mock_log
+        self,
+        mock_get_migration_target,
+        mock_shutil_which,
+        mock_Command_run,
+        mock_os_path_exists,
+        mock_os_geteuid, mock_log
     ):
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_shutil_which.return_value = False
         find_retval = Mock()
         find_retval.output = Mock()
@@ -625,9 +642,15 @@ class TestPreChecks:
                 assert 'please install "apparmor-parser" as aa-status' in self._caplog.text
 
     @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
+    @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_lsm_migration_apparmor_disabled(
-        self, mock_apparmor_enabled, mock_os_geteuid, mock_log
+        self,
+        mock_get_migration_target,
+        mock_apparmor_enabled,
+        mock_os_geteuid,
+        mock_log
     ):
+        mock_get_migration_target.return_value = {'version': '16.0'}
         mock_apparmor_enabled.return_value = False
         with self._caplog.at_level(logging.INFO):
             check_lsm.check_lsm(migration_system=False)
