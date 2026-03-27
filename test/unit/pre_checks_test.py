@@ -604,7 +604,8 @@ class TestPreChecks:
         mock_shutil_which,
         mock_apparmor_enabled,
         mock_Command_run,
-        mock_os_geteuid, mock_log
+        mock_os_geteuid,
+        mock_log,
     ):
         mock_get_migration_target.return_value = {'version': '16.0'}
         mock_shutil_which.return_value = True
@@ -625,7 +626,8 @@ class TestPreChecks:
         mock_shutil_which,
         mock_Command_run,
         mock_os_path_exists,
-        mock_os_geteuid, mock_log
+        mock_os_geteuid,
+        mock_log,
     ):
         mock_get_migration_target.return_value = {'version': '16.0'}
         mock_shutil_which.return_value = False
@@ -644,11 +646,7 @@ class TestPreChecks:
     @patch('suse_migration_services.prechecks.lsm._apparmor_enabled')
     @patch.object(MigrationTarget, 'get_migration_target')
     def test_check_lsm_migration_apparmor_disabled(
-        self,
-        mock_get_migration_target,
-        mock_apparmor_enabled,
-        mock_os_geteuid,
-        mock_log
+        self, mock_get_migration_target, mock_apparmor_enabled, mock_os_geteuid, mock_log
     ):
         mock_get_migration_target.return_value = {'version': '16.0'}
         mock_apparmor_enabled.return_value = False

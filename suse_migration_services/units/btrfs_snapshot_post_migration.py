@@ -39,35 +39,39 @@ class BtrfsSnapshotPostMigration:
     def perform(self):
         try:
             self.log.info('Running Post-migration btrfs snapshot creation')
-            with open(
-                '/run/suse_migration_snapper_btrfs_pre_snapshot_number'
-            ) as pre_snapshot_number_file:
-                pre_snapshot_number = pre_snapshot_number_file.read().strip()
-                if not pre_snapshot_number.isdigit():
-                    message = f'Invalid snapshot number: {pre_snapshot_number}'
-                    self.log.error(message)
-                    raise ValueError(message)
+            stat = Command.run(['stat', '-f', '-c', '%T', self.root_path])
+            if stat and stat.output.strip() == 'btrfs':
+                with open(
+                    '/run/suse_migration_snapper_btrfs_pre_snapshot_number'
+                ) as pre_snapshot_number_file:
+                    pre_snapshot_number = pre_snapshot_number_file.read().strip()
+                    if not pre_snapshot_number.isdigit():
+                        message = f'Invalid snapshot number: {pre_snapshot_number}'
+                        self.log.error(message)
+                        raise ValueError(message)
 
-            Command.run(
-                [
-                    'chroot',
-                    self.root_path,
-                    'snapper',
-                    '--no-dbus',
-                    'create',
-                    '--type',
-                    'single',
-                    '--read-only',
-                    '--cleanup-algorithm',
-                    'number',
-                    '--print-number',
-                    '--userdata',
-                    'important=yes',
-                    '--description',
-                    'after offline migration',
-                ]
-            )
-            self.log.info('BTRFS post-migration snapshot creation completed successfully.')
+                Command.run(
+                    [
+                        'chroot',
+                        self.root_path,
+                        'snapper',
+                        '--no-dbus',
+                        'create',
+                        '--type',
+                        'single',
+                        '--read-only',
+                        '--cleanup-algorithm',
+                        'number',
+                        '--print-number',
+                        '--userdata',
+                        'important=yes',
+                        '--description',
+                        'after offline migration',
+                    ]
+                )
+                self.log.info('BTRFS post-migration snapshot creation completed successfully.')
+            else:
+                self.log.info('The root filesystem is not btrfs, skipping snapshot creation')
         except Exception as issue:
             message = 'BTRFS post-migration snapshot creation failed with: {}'
             self.log.error(message.format(issue))
