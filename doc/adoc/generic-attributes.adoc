@@ -8,7 +8,7 @@
 :thrdmrk: *
 
 // VERSION
-:version: 2.1.32
+:version: 2.1.33
 
 // HARDWARE ARCHITECTURES AND PLATFORMS
 :x86:                        x86
