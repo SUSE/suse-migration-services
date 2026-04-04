@@ -42,7 +42,7 @@
         <source path='obsrepositories:/'/>
     </repository>
     <repository type="rpm-md" >
-        <source path="obs://SUSE:SLFO:Products:SLES:16.0/standard"/>
+        <source path="obs://SUSE:SLFO:Products:SLES:16.1/standard"/>
     </repository>
     <packages type="image">
         <package name="patterns-base-minimal_base"/>
