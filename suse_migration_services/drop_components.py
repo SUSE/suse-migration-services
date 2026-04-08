@@ -56,7 +56,7 @@ class DropComponents:
                 [
                     self.root_path,
                     Defaults.get_migration_backup_path(),
-                    datetime.now().strftime('%Y-%m-%d'),
+                    datetime.now().strftime('%Y-%m-%d-%H:%M'),
                 ]
             )
         )
