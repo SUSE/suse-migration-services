@@ -22,8 +22,6 @@ if [[ "${migration_iso}" == *SLES16*-*Migration*.iso ]]; then
     is_sles16_migration=true
 fi
 
-root_device=$(findmnt -n -v -o SOURCE /)
-
 image_fs_uuid=$(findmnt -n -o UUID /)
 image_fs_type=$(findmnt -n -o FSTYPE /)
 
@@ -38,7 +36,7 @@ boot_options="rd.live.image root=live:CDLABEL=CDROM"
 boot_options="${boot_options} migration_target=${migration_rootfs_uuid}"
 
 # add auto activation of devices in soft raid mode
-if mdadm --detail "${root_device}" &>/dev/null; then
+if [ -n "$(mdadm --detail --scan 2>/dev/null | cut -f2 -d' ')" ];then
     boot_options="${boot_options} rd.auto"
 fi
 
