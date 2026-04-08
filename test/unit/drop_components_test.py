@@ -9,7 +9,7 @@ class TestDropComponents:
     @patch('suse_migration_services.drop_components.datetime')
     def setup_method(self, cls, mock_datetime, mock_NamedTemporaryFile):
         date = Mock()
-        date.strftime.return_value = '2025-12-07'
+        date.strftime.return_value = '2025-12-07-15:08'
         mock_datetime.now.return_value = date
         tmpfile = Mock()
         tmpfile.name = 'tmpfile'
@@ -77,7 +77,7 @@ class TestDropComponents:
         with patch('builtins.open', create=True):
             self.drop.drop_path('some/directory/')
         self.drop.drop_perform()
-        mock_Path_create.assert_called_once_with('/system-root/var/migration/2025-12-07')
+        mock_Path_create.assert_called_once_with('/system-root/var/migration/2025-12-07-15:08')
         mock_Command_run.assert_called_once_with(
             [
                 'rsync',
@@ -86,7 +86,7 @@ class TestDropComponents:
                 '--files-from',
                 'tmpfile',
                 '/system-root',
-                '/system-root/var/migration/2025-12-07/',
+                '/system-root/var/migration/2025-12-07-15:08/',
             ]
         )
         mock_shutil_rmtree.assert_called_once_with('/system-root/some/directory')
@@ -104,7 +104,7 @@ class TestDropComponents:
         with patch('builtins.open', create=True):
             self.drop.drop_path('some/file')
         self.drop.drop_perform()
-        mock_Path_create.assert_called_once_with('/system-root/var/migration/2025-12-07')
+        mock_Path_create.assert_called_once_with('/system-root/var/migration/2025-12-07-15:08')
         mock_Command_run.assert_called_once_with(
             [
                 'rsync',
@@ -113,7 +113,7 @@ class TestDropComponents:
                 '--files-from',
                 'tmpfile',
                 '/system-root',
-                '/system-root/var/migration/2025-12-07/',
+                '/system-root/var/migration/2025-12-07-15:08/',
             ]
         )
         mock_pathlib_Path.assert_called_once_with('/system-root/some/file')
