@@ -108,6 +108,7 @@ Group:            System/Management
 Requires:         podman
 Requires:         sysvinit-tools
 Requires:         sudo
+Requires:         yq
 Requires:         suse-migration-scripts
 BuildArch:        noarch
 

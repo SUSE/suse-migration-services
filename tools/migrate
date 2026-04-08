@@ -20,6 +20,8 @@ set -e
 
 source /usr/share/suse_migration_services/network_pre.functions
 
+MIGRATION_CONFIG=/etc/sle-migration-service.yml
+
 # default migration system
 MIGRATION_SYSTEM=registry.opensuse.org/devel/dms/containers_sle15/migration:latest
 
@@ -152,12 +154,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-cat > /etc/sle-migration-service.yml <<-EOF
-soft_reboot: false
-EOF
+touch /etc/sle-migration-service.yml
+
+# disable soft reboot
+yq -i '.soft_reboot = false' "${MIGRATION_CONFIG}"
 
 if [ "${argDebug}" ];then
-    echo "debug: true" >> /etc/sle-migration-service.yml
+    yq -i '.debug = true' "${MIGRATION_CONFIG}"
 fi
 
 if [ "${argMigrationSystem}" ];then
@@ -165,11 +168,11 @@ if [ "${argMigrationSystem}" ];then
 fi
 
 if [ "${argProduct}" ];then
-    echo "migration_product: ${argProduct}" >> /etc/sle-migration-service.yml
+    yq -i ".migration_product = ${argProduct}" "${MIGRATION_CONFIG}"
 fi
 
 if [ "${argZypperDup}" ];then
-    echo "use_zypper_migration: false" >> /etc/sle-migration-service.yml
+    yq -i '.use_zypper_migration = false' "${MIGRATION_CONFIG}"
 fi
 
 if [ "$(migration_target)" = "code16" ]; then
