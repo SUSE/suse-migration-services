@@ -17,6 +17,7 @@ import suse_migration_services.prechecks.ha as check_ha
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
 import suse_migration_services.prechecks.sshd as check_sshd
+import suse_migration_services.prechecks.xfs as check_xfs
 import suse_migration_services.prechecks.pre_checks as check_pre_checks
 from suse_migration_services.exceptions import DistMigrationCommandException
 from suse_migration_services.defaults import Defaults
@@ -34,6 +35,7 @@ class TestPreChecks:
 
     @patch('suse_migration_services.prechecks.repos.remote_repos')
     @patch('suse_migration_services.prechecks.fs.encryption')
+    @patch('suse_migration_services.prechecks.xfs.xfs_v4')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch('suse_migration_services.prechecks.sshd.root_login')
@@ -45,6 +47,7 @@ class TestPreChecks:
         mock_sshd_root_login,
         mock_cpu_arch,
         mock_kernels,
+        mock_xfs,
         mock_fs,
         mock_repos,
         mock_os_geteuid,
@@ -57,6 +60,7 @@ class TestPreChecks:
 
     @patch('suse_migration_services.prechecks.repos.remote_repos')
     @patch('suse_migration_services.prechecks.fs.encryption')
+    @patch('suse_migration_services.prechecks.xfs.xfs_v4')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch('suse_migration_services.prechecks.sshd.root_login')
@@ -70,6 +74,7 @@ class TestPreChecks:
         mock_sshd_root_login,
         mock_cpu_arch,
         mock_kernels,
+        mock_xfs,
         mock_fs,
         mock_repos,
         mock_os_geteuid,
@@ -517,6 +522,7 @@ class TestPreChecks:
     @patch('suse_migration_services.prechecks.scc.migration')
     @patch('suse_migration_services.prechecks.repos.remote_repos')
     @patch('suse_migration_services.prechecks.fs.encryption')
+    @patch('suse_migration_services.prechecks.xfs.xfs_v4')
     @patch('suse_migration_services.prechecks.kernels.multiversion_and_multiple_kernels')
     @patch('suse_migration_services.prechecks.cpu_arch.cpu_arch')
     @patch('suse_migration_services.prechecks.sshd.root_login')
@@ -530,6 +536,7 @@ class TestPreChecks:
         mock_sshd_root_login,
         mock_cpu_arch,
         mock_kernels,
+        mock_xfs,
         mock_fs,
         mock_repos,
         mock_scc_migration,
@@ -1071,3 +1078,75 @@ class TestPreChecks:
         mock_get_migration_target.return_value = {'version': '15.7'}
         check_sshd.root_login(migration_system=False)
         mock_Command_run.assert_not_called()
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_xfs_v4_detected(self, mock_command_run, mock_os_geteuid, mock_log):
+        """Test detection of XFS v4 root filesystem"""
+
+        def command_side_effect(cmd):
+            result = Mock()
+            if cmd[0] == 'stat':
+                result.output = 'xfs\n'
+            elif cmd[0] == 'xfs_info':
+                result.output = (
+                    'meta-data=/dev/sda1              isize=256    agcount=4, agsize=6553600 blks\n'
+                    '         =                       sectsz=512   attr=2, projid32bit=0\n'
+                    '         =                       crc=0        finobt=0, sparse=0, rmapbt=0\n'
+                    '         =                       reflink=0\n'
+                    'data     =                       bsize=4096   blocks=26214400, imaxpct=25\n'
+                )
+            return result
+
+        mock_command_run.side_effect = command_side_effect
+
+        with self._caplog.at_level(logging.WARNING):
+            check_xfs.xfs_v4()
+            assert 'XFS v4 root filesystem detected' in self._caplog.text
+            assert 'deprecated' in self._caplog.text
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_xfs_v5_no_warning(self, mock_command_run, mock_os_geteuid, mock_log):
+        """Test that XFS v5 root filesystem does not trigger warning"""
+
+        def command_side_effect(cmd):
+            result = Mock()
+            if cmd[0] == 'stat':
+                result.output = 'xfs\n'
+            elif cmd[0] == 'xfs_info':
+                result.output = (
+                    'meta-data=/dev/sda1              isize=512    agcount=4, agsize=6553600 blks\n'
+                    '         =                       sectsz=512   attr=2, projid32bit=1\n'
+                    '         =                       crc=1        finobt=1, sparse=1, rmapbt=0\n'
+                    '         =                       reflink=1\n'
+                    'data     =                       bsize=4096   blocks=26214400, imaxpct=25\n'
+                )
+            return result
+
+        mock_command_run.side_effect = command_side_effect
+
+        with self._caplog.at_level(logging.WARNING):
+            check_xfs.xfs_v4()
+            assert 'XFS v4 root filesystem detected' not in self._caplog.text
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_xfs_non_xfs_filesystem(self, mock_command_run, mock_os_geteuid, mock_log):
+        """Test that non-XFS root filesystems are ignored"""
+        stat_result = Mock()
+        stat_result.output = 'ext4\n'
+        mock_command_run.return_value = stat_result
+
+        with self._caplog.at_level(logging.WARNING):
+            check_xfs.xfs_v4()
+            assert 'XFS v4 root filesystem detected' not in self._caplog.text
+            # Should only call stat, not xfs_info
+            mock_command_run.assert_called_once_with(['stat', '-f', '-c', '%T', '/'])
+
+    @patch('suse_migration_services.command.Command.run')
+    def test_check_xfs_with_migration_system(self, mock_command_run, mock_os_geteuid, mock_log):
+        """Test XFS v4 check returns early in migration system mode"""
+        with self._caplog.at_level(logging.WARNING):
+            check_xfs.xfs_v4(migration_system=True)
+            # Should not run any commands in migration system mode
+            mock_command_run.assert_not_called()
+            # Should not log any warnings
+            assert 'XFS v4 root filesystem detected' not in self._caplog.text
