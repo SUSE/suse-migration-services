@@ -168,7 +168,7 @@ if [ "${argMigrationSystem}" ];then
 fi
 
 if [ "${argProduct}" ];then
-    yq -i ".migration_product = ${argProduct}" "${MIGRATION_CONFIG}"
+    yq -i ".migration_product = \"${argProduct}\"" "${MIGRATION_CONFIG}"
 fi
 
 if [ "${argZypperDup}" ];then
