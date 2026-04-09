@@ -66,6 +66,14 @@ class TestMigration(object):
                 ),
                 call('1\n'),
             ]
+        mock_Zypper_run.reset_mock()
+        mock_Zypper_run.side_effect = None
+        zypper_call = Mock()
+        zypper_call.output = 'No migration available'
+        mock_Zypper_run.return_value = zypper_call
+        with patch('builtins.open', create=True) as mock_open:
+            with raises(DistMigrationZypperException):
+                main()
 
     @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
     @patch('suse_migration_services.logger.Logger.setup')
