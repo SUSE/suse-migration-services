@@ -159,6 +159,9 @@ touch /etc/sle-migration-service.yml
 # disable soft reboot
 yq -i '.soft_reboot = false' "${MIGRATION_CONFIG}"
 
+# disable debug
+yq -i '.debug = false' "${MIGRATION_CONFIG}"
+
 if [ "${argDebug}" ];then
     yq -i '.debug = true' "${MIGRATION_CONFIG}"
 fi
