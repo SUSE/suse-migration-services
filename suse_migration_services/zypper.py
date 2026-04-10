@@ -45,7 +45,9 @@ class Zypper:
             run zypper chrooted against the given path
         """
         log_file = Defaults.get_migration_log_file(system_root=False if chroot else True)
-        command_string = ' '.join(['zypper'] + list(args) + ['&>>', log_file])
+        command_string = ' '.join(
+            ['set -o pipefail; zypper'] + list(args) + ['|& tee -a', log_file]
+        )
         command = []
         if chroot:
             # Calling zypper in a new system root should be done in
@@ -96,7 +98,6 @@ class ZypperCall:
         self.args = args
         self.command = command
         self.output = result.output
-        self.error = result.error
         self.returncode = result.returncode
 
     @property
@@ -140,7 +141,7 @@ class ZypperCall:
             return
 
         raise DistMigrationZypperException(
-            '{0}: failed with: {1}: {2}'.format(self.command, self.output, self.error)
+            '{0}: failed with: {1}'.format(self.command, self.output)
         )
 
     def log_if_failed(self, log):
@@ -148,4 +149,4 @@ class ZypperCall:
         log output and error when failed
         """
         if not self.success:
-            log.error('{0}: failed with: {1}: {2}'.format(self.command, self.output, self.error))
+            log.error('{0}: failed with: {1}'.format(self.command, self.output))
