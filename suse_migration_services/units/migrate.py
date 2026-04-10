@@ -69,7 +69,7 @@ class MigrateSystem:
             os.environ['ZYPP_NO_USRMERGE_PROTECT'] = self.is_single_rpmtrans_requested()
 
             if migration_config.is_zypper_migration_plugin_requested():
-                Zypper.run(
+                zypper_call = Zypper.run(
                     [
                         'migration',
                         verbose_migration,
@@ -87,6 +87,10 @@ class MigrateSystem:
                         self.root_path,
                     ]
                 )
+                if 'No migration available' in zypper_call.output:
+                    raise DistMigrationZypperException(
+                        'The package management system did not receive any upgrade target information from the repository server'
+                    )
             else:
                 zypper_call = Zypper.run(
                     [
@@ -123,8 +127,8 @@ class MigrateSystem:
             # report failed(1) return code
             with open(self.exit_code_file, 'w') as exit_code:
                 exit_code.write('1{}'.format(os.linesep))
-            self.log.error('migrate service failed with {0}'.format(issue))
-            raise DistMigrationZypperException('Migration failed with {0}'.format(issue))
+            self.log.error('Migration failed with: {0}'.format(issue))
+            raise DistMigrationZypperException('Migration failed with: {0}'.format(issue))
         finally:
             self.duplicate_solver_test_case_data()
 

@@ -70,8 +70,8 @@ class TestCommand(object):
             [
                 'bash',
                 '-c',
-                'zypper in test --root /system-root '
-                '&>> /system-root/var/log/distro_migration.log',
+                'set -o pipefail; zypper in test --root /system-root '
+                '|& tee -a /system-root/var/log/distro_migration.log',
             ],
             raise_on_error=True,
         )
@@ -86,7 +86,8 @@ class TestCommand(object):
                 'root',
                 'bash',
                 '-c',
-                'zypper in test --root /system-root ' '&>> /var/log/distro_migration.log',
+                'set -o pipefail; zypper in test --root /system-root '
+                '|& tee -a /var/log/distro_migration.log',
             ],
             raise_on_error=True,
         )
@@ -104,8 +105,8 @@ class TestCommand(object):
             [
                 'bash',
                 '-c',
-                'zypper in test --root /system-root '
-                '&>> /system-root/var/log/distro_migration.log',
+                'set -o pipefail; zypper in test --root /system-root '
+                '|& tee -a /system-root/var/log/distro_migration.log',
             ],
             raise_on_error=False,
         )
@@ -117,14 +118,14 @@ class TestCommand(object):
     def test_zypper_log_if_failed(self, mock_Command_run):
         command_run_result = namedtuple('command', ['output', 'error', 'returncode'])
         mock_Command_run.return_value = command_run_result(
-            output='some_output', error='some_error', returncode=1
+            output='some_output', error='', returncode=1
         )
         zypper_call = Zypper.run(['args'], raise_on_error=False)
         log = Mock()
         zypper_call.log_if_failed(log)
         log.error.assert_called_once_with(
-            'zypper args &>> /system-root/var/log/distro_migration.log: '
-            'failed with: some_output: some_error'
+            'set -o pipefail; zypper args |& tee -a /system-root/var/log/distro_migration.log: '
+            'failed with: some_output'
         )
 
     def test_zypper_call_failed(self, mock_Command_run):
