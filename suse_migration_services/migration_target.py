@@ -48,6 +48,8 @@ class MigrationTarget:
             return {'identifier': 'SLES_SAP', 'version': '16.0', 'arch': platform.machine()}
         elif fnmatch(migration_iso, '*SLES16*-*Migration*.iso'):
             return {'identifier': 'SLES', 'version': '16.0', 'arch': platform.machine()}
+        elif fnmatch(migration_iso, '*SLES15*-*Migration*.iso'):
+            return {'identifier': 'SLES', 'version': '15.7', 'arch': platform.machine()}
         else:
             message = dedent(
                 '''\n
