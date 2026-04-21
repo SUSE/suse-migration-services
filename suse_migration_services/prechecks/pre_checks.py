@@ -33,6 +33,7 @@ import suse_migration_services.prechecks.scc as check_scc
 import suse_migration_services.prechecks.wicked2nm as check_wicked2nm
 import suse_migration_services.prechecks.cpu_arch as check_cpu_arch
 import suse_migration_services.prechecks.sshd as check_sshd
+import suse_migration_services.prechecks.xfs as check_xfs
 
 
 def main():
@@ -100,6 +101,10 @@ def main():
 
     log.info('--> Checking for encrypted rootfs...')
     check_fs.encryption(migration_system=migration_system_mode)
+    log.info('Done')
+
+    log.info('--> Checking for XFS v4 filesystems...')
+    check_xfs.xfs_v4(migration_system=migration_system_mode)
     log.info('Done')
 
     log.info('--> Checking for latest kernel in multiversion kernel system...')
