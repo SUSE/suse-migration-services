@@ -79,6 +79,8 @@ class MigrateSystem:
                         '--no-selfupdate',
                         '--auto-agree-with-licenses',
                         '--allow-vendor-change',
+                        '--download',
+                        'in-advance',
                         '--strict-errors-dist-migration',
                         '--replacefiles',
                         '--product',
