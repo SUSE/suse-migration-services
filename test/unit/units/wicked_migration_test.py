@@ -1,5 +1,5 @@
 from pytest import raises
-from unittest.mock import patch, call
+from unittest.mock import patch, call, MagicMock
 
 from suse_migration_services.drop_components import DropComponents
 from suse_migration_services.units.wicked_migration import main
@@ -7,6 +7,7 @@ from suse_migration_services.exceptions import DistMigrationWickedMigrationExcep
 
 
 class TestMigrationWicked:
+    @patch('suse_migration_services.units.wicked_migration.ResolvConf')
     @patch.object(DropComponents, 'drop_package')
     @patch.object(DropComponents, 'drop_path')
     @patch.object(DropComponents, 'drop_perform')
@@ -29,12 +30,18 @@ class TestMigrationWicked:
         mock_drop_perform,
         mock_drop_path,
         mock_drop_package,
+        mock_resolv_conf_cls,
     ):
         mock_os_path_islink.return_value = True
         mock_os_path_exists.return_value = True
         mock_package_installed.return_value = True
         mock_iglob.return_value = ['/etc/NetworkManager/system-connections/some.nmconnection']
+
+        mock_resolv_conf_instance = MagicMock()
+        mock_resolv_conf_cls.return_value = mock_resolv_conf_instance
+
         main()
+
         mock_Zypper_install.assert_called_once_with(
             'NetworkManager', 'NetworkManager-config-server', system_root='/system-root'
         )
@@ -59,12 +66,19 @@ class TestMigrationWicked:
                 ]
             ),
         ]
+
+        mock_resolv_conf_cls.assert_called_once()
+        mock_resolv_conf_instance.prepare_resolv_conf.assert_called_once()
+
         assert mock_drop_package.call_args_list == [
             call('wicked'),
             call('wicked-service'),
             call('biosdevname'),
+            call('sysconfig-netconfig'),
         ]
-        mock_drop_path.assert_called_once_with('/etc/sysconfig/network/')
+        assert mock_drop_path.call_args_list == [
+            call('/etc/sysconfig/network/')
+        ]
         mock_drop_perform.assert_called_once_with()
 
     @patch('suse_migration_services.logger.Logger.setup')

@@ -17,17 +17,11 @@
 #
 import logging
 import os
-import shutil
 
 # project
-from suse_migration_services.command import Command
-from suse_migration_services.fstab import Fstab
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
-
-from suse_migration_services.exceptions import (
-    DistMigrationNameResolverException,
-)
+from suse_migration_services.resolv_conf import ResolvConf
 
 
 class SetupNameResolver:
@@ -41,35 +35,14 @@ class SetupNameResolver:
         Logger.setup()
         self.log = logging.getLogger(Defaults.get_migration_log_name())
         self.root_path = Defaults.get_system_root_path()
-        self.resolv_conf = os.path.normpath(os.sep.join([self.root_path, 'etc', 'resolv.conf']))
+        self.resolv_conf = ResolvConf(
+            self.root_path,
+            os.path.normpath(os.sep.join([self.root_path, 'etc'])),
+            '/etc'
+        )
 
     def perform(self):
-        system_mount = Fstab()
-        system_mount.read(Defaults.get_system_mount_info_file())
-        try:
-            self.log.info('Running setup resolver service')
-            if self.has_host_resolv_setup():
-                self.log.info('Copying {}'.format(self.resolv_conf))
-                shutil.copy(self.resolv_conf, '/etc/resolv.conf')
-            else:
-                self.log.info(
-                    'Empty {0}, bind mounting /etc/resolv.conf to {0}'.format(self.resolv_conf)
-                )
-                Command.run(['mount', '--bind', '/etc/resolv.conf', self.resolv_conf])
-                system_mount.add_entry('/etc/resolv.conf', self.resolv_conf)
-                system_mount.export(Defaults.get_system_mount_info_file())
-        except Exception as issue:
-            message = 'Preparation of migration host network failed with {}'
-            self.log.error(message.format(issue))
-            raise DistMigrationNameResolverException(message.format(issue))
-
-    def has_host_resolv_setup(self):
-        with open(self.resolv_conf, 'r') as resolv:
-            for line in resolv:
-                # check there is useful information in the remaining lines
-                if line.startswith('search') or line.startswith('nameserver'):
-                    return True
-        return False
+        self.resolv_conf.prepare_resolv_conf()
 
 
 def main():
