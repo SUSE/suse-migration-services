@@ -1,11 +1,17 @@
 import io
+import logging
 from unittest.mock import patch, MagicMock
 
 from suse_migration_services.logger import Logger
+from suse_migration_services.defaults import Defaults
 
 
 @patch('suse_migration_services.logger.Path.create')
 class TestLogger:
+    def setup_method(self, method):
+        logger = logging.getLogger(Defaults.get_migration_log_name())
+        logger.handlers = []
+
     def test_setup(self, mock_Path_create):
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
