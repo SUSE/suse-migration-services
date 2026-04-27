@@ -59,9 +59,11 @@ class MountSystem:
             # is considered to represent the system to upgrade and
             # not something else. Thus if already mounted, let's use
             # what is there.
+            self.log.info(
+                'Mount system service: {0} is already mounted, skipped'.format(self.root_path)
+            )
             return
 
-        self.log.info('Mount system service: {0} is mounted'.format(self.root_path))
         # Check if booted via loopback grub
         isoscan_loop_mount = '/run/initramfs/isoscan'
         if self.is_mounted(isoscan_loop_mount):
