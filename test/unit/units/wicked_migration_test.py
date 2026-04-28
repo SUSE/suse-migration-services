@@ -63,6 +63,7 @@ class TestMigrationWicked:
             call('wicked'),
             call('wicked-service'),
             call('biosdevname'),
+            call('sysconfig-netconfig'),
         ]
         mock_drop_path.assert_called_once_with('/etc/sysconfig/network/')
         mock_drop_perform.assert_called_once_with()

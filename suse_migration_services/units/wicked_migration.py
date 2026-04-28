@@ -90,6 +90,7 @@ class WickedToNetworkManager(DropComponents):
             self.drop_package('wicked-service')
             if self.package_installed('biosdevname'):
                 self.drop_package('biosdevname')
+            self.drop_package('sysconfig-netconfig')
             self.log.info('Drop /etc/sysconfig/network from migrated system')
             self.log.info(
                 'Please find a backup of the data at {}'.format(
