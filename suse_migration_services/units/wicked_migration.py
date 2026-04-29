@@ -25,6 +25,7 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.drop_components import DropComponents
 from suse_migration_services.zypper import Zypper
+from suse_migration_services.resolv_conf import ResolvConf
 
 from suse_migration_services.exceptions import DistMigrationWickedMigrationException
 
@@ -85,6 +86,7 @@ class WickedToNetworkManager(DropComponents):
             Command.run(['mkdir', '-p', nm_connections_path])
             for connection in sorted(glob.iglob(nm_connection_pattern)):
                 Command.run(['cp', connection, nm_connections_path])
+            ResolvConf().setup_target_root()
             self.log.info('Drop wicked from migrated system')
             self.drop_package('wicked')
             self.drop_package('wicked-service')

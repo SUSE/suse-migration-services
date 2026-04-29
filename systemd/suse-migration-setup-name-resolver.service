@@ -1,7 +1,8 @@
 [Unit]
 Description=Setup Migration Name Resolver
-After=suse-migration-setup-host-network.service network-online.target
-Requires=suse-migration-setup-host-network.service network-online.target
+After=suse-migration-mount-system.service suse-migration-post-mount-system.service network-online.target
+Requires=suse-migration-mount-system.service suse-migration-post-mount-system.service network-online.target
+After=network.target
 
 [Service]
 Type=oneshot

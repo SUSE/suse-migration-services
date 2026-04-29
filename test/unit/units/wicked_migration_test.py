@@ -7,6 +7,7 @@ from suse_migration_services.exceptions import DistMigrationWickedMigrationExcep
 
 
 class TestMigrationWicked:
+    @patch('suse_migration_services.units.wicked_migration.ResolvConf.setup_target_root')
     @patch.object(DropComponents, 'drop_package')
     @patch.object(DropComponents, 'drop_path')
     @patch.object(DropComponents, 'drop_perform')
@@ -29,6 +30,7 @@ class TestMigrationWicked:
         mock_drop_perform,
         mock_drop_path,
         mock_drop_package,
+        mock_resolv_conf_setup_target_root,
     ):
         mock_os_path_islink.return_value = True
         mock_os_path_exists.return_value = True
@@ -59,6 +61,7 @@ class TestMigrationWicked:
                 ]
             ),
         ]
+        mock_resolv_conf_setup_target_root.assert_called_once()
         assert mock_drop_package.call_args_list == [
             call('wicked'),
             call('wicked-service'),
