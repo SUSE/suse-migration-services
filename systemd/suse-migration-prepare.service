@@ -1,8 +1,8 @@
 [Unit]
 Description=Prepare For Migration
-After=suse-migration-setup-name-resolver.service network-online.target
-Requisite=suse-migration-mount-system.service suse-migration-setup-name-resolver.service
-Requires=network-online.target
+After=suse-migration-setup-host-network.service
+Requisite=suse-migration-mount-system.service suse-migration-setup-host-network.service
+Requires=suse-migration-setup-host-network.service
 
 [Service]
 Type=oneshot
