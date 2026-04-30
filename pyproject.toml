@@ -21,7 +21,6 @@ packages = [
 
 include = [
    { path = ".bumpversion.cfg", format = "sdist" },
-   { path = ".coverage*", format = "sdist" },
    { path = "setup.cfg", format = "sdist" },
    { path = "grub.d", format = "sdist" },
    { path = "systemd", format = "sdist" },
@@ -31,7 +30,8 @@ include = [
    { path = "package", format = "sdist" },
    { path = "setup.py", format = "sdist" },
    { path = "MANIFEST.in", format = "sdist" },
-   { path = "test", format = "sdist" },
+   { path = "test/unit/**/*.py", format = "sdist" },
+   { path = "test/data", format = "sdist" },
 ]
 
 classifiers = [
