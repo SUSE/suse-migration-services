@@ -10,6 +10,8 @@ version := $(shell \
 )
 
 tar: clean check test
+	# remove eventually existing test artifacts
+	rm -f test/unit/.coverage
 	# build the sdist source tarball
 	poetry build --format=sdist
 
@@ -146,8 +148,7 @@ test: setup
 		--cov=suse_migration_services \
 		--no-cov-on-fail \
 		--cov-report=term-missing \
-		--cov-fail-under=100 \
-		--cov-config .coveragerc'
+		--cov-fail-under=100'
 
 black: setup
 	poetry run black --skip-string-normalization --line-length 100 suse_migration_services test/unit/
