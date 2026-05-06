@@ -62,6 +62,20 @@ class ApparmorToSelinux(DropComponents):
                 chroot=self.root_path,
             )
             zypper_call.log_if_failed(self.log)
+            if zypper_call.success and self.package_installed('venv-salt-minion'):
+                # Salt Bundle (venv-salt-minion) has its own SELinux policy
+                # which is loading in installing the package only if SELinux is available
+                # on the system. This workaround is used to enforce it to load the policy.
+                self.log.info(
+                    'Forcing reinstallation of venv-salt-minion to apply its SELinux policy'
+                )
+                zypper_call = Zypper.install(
+                    'venv-salt-minion',
+                    extra_args=['--force'],
+                    raise_on_error=False,
+                    chroot=self.root_path,
+                )
+                zypper_call.log_if_failed(self.log)
         except Exception as issue:
             message = 'Apparmor to SELinux migration failed with {0}'.format(issue)
             self.log.error(message)
