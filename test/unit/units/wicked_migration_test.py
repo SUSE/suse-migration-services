@@ -16,12 +16,14 @@ class TestMigrationWicked:
     @patch('suse_migration_services.zypper.Zypper.install')
     @patch('suse_migration_services.command.Command.run')
     @patch('glob.iglob')
+    @patch('os.path.lexists')
     @patch('os.path.exists')
     @patch('os.path.islink')
     def test_main(
         self,
         mock_os_path_islink,
         mock_os_path_exists,
+        mock_os_path_lexists,
         mock_iglob,
         mock_Command_run,
         mock_Zypper_install,
@@ -34,6 +36,7 @@ class TestMigrationWicked:
     ):
         mock_os_path_islink.return_value = True
         mock_os_path_exists.return_value = True
+        mock_os_path_lexists.side_effect = [True, False, True]
         mock_package_installed.return_value = True
         mock_iglob.return_value = ['/etc/NetworkManager/system-connections/some.nmconnection']
         main()
@@ -60,6 +63,8 @@ class TestMigrationWicked:
                     '/system-root/etc/NetworkManager/system-connections',
                 ]
             ),
+            call(['cp', '-a', '/system-root/etc/resolv.conf', '/tmp/resolv.conf.backup']),
+            call(['cp', '-a', '/tmp/resolv.conf.backup', '/system-root/etc/resolv.conf']),
         ]
         mock_resolv_conf_setup_target_root.assert_called_once()
         assert mock_drop_package.call_args_list == [
