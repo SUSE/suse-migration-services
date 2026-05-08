@@ -165,6 +165,7 @@ class MountSystem:
             'devtmpfs': os.sep.join([self.root_path, 'dev']),
             'proc': os.sep.join([self.root_path, 'proc']),
             'sysfs': os.sep.join([self.root_path, 'sys']),
+            'tmpfs': os.sep.join([self.root_path, 'run']),
         }
         try:
             for fstab_entry in fstab.get_devices():
@@ -189,19 +190,6 @@ class MountSystem:
             self.log.info(
                 'Bind mount subdirectories from /run inside chroot {0}'.format(self.root_path)
             )
-            run_network_manager = '/run/NetworkManager'
-            run_netconfig = '/run/netconfig'
-            root_run_network_manager = os.path.normpath(
-                os.sep.join([self.root_path, run_network_manager])
-            )
-            root_run_netconfig = os.path.normpath(os.sep.join([self.root_path, run_netconfig]))
-            if os.path.exists(run_network_manager):
-                os.makedirs(root_run_network_manager, exist_ok=True)
-                Command.run(['mount', '-o', 'bind', run_network_manager, root_run_network_manager])
-
-            if os.path.exists(run_netconfig):
-                os.makedirs(root_run_netconfig, exist_ok=True)
-                Command.run(['mount', '-o', 'bind', run_netconfig, root_run_netconfig])
         except Exception as issue:
             self.log.error('Mounting system for upgrade failed with {0}'.format(issue))
             raise DistMigrationSystemMountException(
