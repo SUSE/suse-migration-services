@@ -112,6 +112,23 @@ class SetupHostNetwork:
             system_mount.export(Defaults.get_system_mount_info_file())
             if container:
                 Command.run(['systemctl', 'stop', 'NetworkManager'])
+
+            # bind resolv.conf also into chroot, so commands like
+            # `suseconnect -l` have working DNS
+            for subdir in ('NetworkManager', 'netconfig'):
+                run_dir = os.path.join(self.root_path, 'run', subdir)
+                os.makedirs(run_dir, exist_ok=True)
+                Command.run(['touch', os.path.join(run_dir, 'resolv.conf')])
+                Command.run(
+                    [
+                        'mount',
+                        '--bind',
+                        '-o',
+                        'ro',
+                        '/etc/resolv.conf',
+                        os.path.join(run_dir, 'resolv.conf'),
+                    ]
+                )
         except Exception as issue:
             message = 'Preparation of migration host network failed with {}'
             self.log.error(message.format(issue))
