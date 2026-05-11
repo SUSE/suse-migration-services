@@ -166,8 +166,7 @@ class TestMountSystem:
             call(['mount', '-t', 'devtmpfs', 'devtmpfs', 'some/dev']),
             call(['mount', '-t', 'proc', 'proc', 'some/proc']),
             call(['mount', '-t', 'sysfs', 'sysfs', 'some/sys']),
-            call(['mount', '-o', 'bind', '/run/NetworkManager', 'some/run/NetworkManager']),
-            call(['mount', '-o', 'bind', '/run/netconfig', 'some/run/netconfig']),
+            call(['mount', '-t', 'tmpfs', 'tmpfs', 'some/run']),
         ]
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationSystemMountException):

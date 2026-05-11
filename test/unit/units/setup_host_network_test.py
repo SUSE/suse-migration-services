@@ -34,6 +34,7 @@ class TestSetupHostNetwork:
     @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_host_network.Fstab')
+    @patch('os.makedirs')
     @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('glob.glob')
@@ -46,6 +47,7 @@ class TestSetupHostNetwork:
         mock_glob,
         mock_shutil_copy,
         mock_os_path_exists,
+        mock_os_mkdirs,
         mock_Fstab,
         mock_Command_run,
         mock_MigrationConfig,
@@ -86,6 +88,28 @@ class TestSetupHostNetwork:
             ),
             call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
             call(['systemctl', 'stop', 'NetworkManager']),
+            call(['touch', '/system-root/run/NetworkManager/resolv.conf']),
+            call(
+                [
+                    'mount',
+                    '--bind',
+                    '-o',
+                    'ro',
+                    '/etc/resolv.conf',
+                    '/system-root/run/NetworkManager/resolv.conf',
+                ]
+            ),
+            call(['touch', '/system-root/run/netconfig/resolv.conf']),
+            call(
+                [
+                    'mount',
+                    '--bind',
+                    '-o',
+                    'ro',
+                    '/etc/resolv.conf',
+                    '/system-root/run/netconfig/resolv.conf',
+                ]
+            ),
         ]
         fstab.read.assert_called_once_with('/etc/system-root.fstab')
         assert fstab.add_entry.call_args_list == [
@@ -101,6 +125,7 @@ class TestSetupHostNetwork:
     @patch('suse_migration_services.units.setup_host_network.MigrationConfig')
     @patch('suse_migration_services.command.Command.run')
     @patch('suse_migration_services.units.setup_host_network.Fstab')
+    @patch('os.makedirs')
     @patch('os.path.exists')
     @patch('shutil.copy')
     @patch('glob.glob')
@@ -113,6 +138,7 @@ class TestSetupHostNetwork:
         mock_glob,
         mock_shutil_copy,
         mock_os_path_exists,
+        mock_os_mkdirs,
         mock_Fstab,
         mock_Command_run,
         mock_MigrationConfig,
@@ -154,6 +180,28 @@ class TestSetupHostNetwork:
             call(['systemctl', 'restart', 'network']),
             call(['nm-online', '-q']),
             call(['rpm', '--query', '--quiet', 'wicked2nm'], raise_on_error=False),
+            call(['touch', '/system-root/run/NetworkManager/resolv.conf']),
+            call(
+                [
+                    'mount',
+                    '--bind',
+                    '-o',
+                    'ro',
+                    '/etc/resolv.conf',
+                    '/system-root/run/NetworkManager/resolv.conf',
+                ]
+            ),
+            call(['touch', '/system-root/run/netconfig/resolv.conf']),
+            call(
+                [
+                    'mount',
+                    '--bind',
+                    '-o',
+                    'ro',
+                    '/etc/resolv.conf',
+                    '/system-root/run/netconfig/resolv.conf',
+                ]
+            ),
         ]
         fstab.read.assert_called_once_with('/etc/system-root.fstab')
         assert fstab.add_entry.call_args_list == [

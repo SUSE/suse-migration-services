@@ -25,6 +25,7 @@ from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
 from suse_migration_services.drop_components import DropComponents
 from suse_migration_services.zypper import Zypper
+from suse_migration_services.resolv_conf import ResolvConf
 
 from suse_migration_services.exceptions import DistMigrationWickedMigrationException
 
@@ -85,6 +86,16 @@ class WickedToNetworkManager(DropComponents):
             Command.run(['mkdir', '-p', nm_connections_path])
             for connection in sorted(glob.iglob(nm_connection_pattern)):
                 Command.run(['cp', connection, nm_connections_path])
+
+            rc_target = os.path.normpath(os.sep.join([self.root_path, 'etc/resolv.conf']))
+            rc_backup = '/tmp/resolv.conf.backup'
+            self.log.info("Setup resolv.conf from migrated system")
+            ResolvConf().setup_target_root()
+            if os.path.lexists(rc_target):
+                # Workaround for bsc#1263889, which preserve the resolv.conf
+                # on uninstalling sysconfig-netconfig
+                Command.run(['cp', '-a', rc_target, rc_backup])
+
             self.log.info('Drop wicked from migrated system')
             self.drop_package('wicked')
             self.drop_package('wicked-service')
@@ -99,6 +110,9 @@ class WickedToNetworkManager(DropComponents):
             )
             self.drop_path('/etc/sysconfig/network/')
             self.drop_perform()
+
+            if not os.path.lexists(rc_target) and os.path.lexists(rc_backup):
+                Command.run(['cp', '-a', rc_backup, rc_target])
         except Exception as issue:
             message = 'wicked to NetworkManager migration failed with {}'.format(issue)
             self.log.error(message)
