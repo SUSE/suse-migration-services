@@ -34,14 +34,23 @@ class TestMigrationWicked:
         mock_drop_package,
         mock_resolv_conf_setup_target_root,
     ):
+        def package_installed(name):
+            if name.startswith('NetworkManager'):
+                return False
+            return True
+
         mock_os_path_islink.return_value = True
         mock_os_path_exists.return_value = True
         mock_os_path_lexists.side_effect = [True, False, True]
-        mock_package_installed.return_value = True
+        mock_package_installed.side_effect = package_installed
         mock_iglob.return_value = ['/etc/NetworkManager/system-connections/some.nmconnection']
         main()
         mock_Zypper_install.assert_called_once_with(
-            'NetworkManager', 'NetworkManager-config-server', system_root='/system-root'
+            'NetworkManager',
+            'NetworkManager-config-server',
+            extra_args=['--no-recommends'],
+            raise_on_error=True,
+            chroot='/system-root',
         )
         assert mock_Command_run.call_args_list == [
             call(
