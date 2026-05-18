@@ -1150,3 +1150,110 @@ class TestPreChecks:
             mock_command_run.assert_not_called()
             # Should not log any warnings
             assert 'XFS v4 root filesystem detected' not in self._caplog.text
+
+    @patch(
+        'builtins.open',
+        new_callable=mock_open,
+        read_data='cpu\t\t: POWER10 (raw), altivec supported\n',
+    )
+    @patch('platform.machine')
+    @patch.object(MigrationTarget, 'get_migration_target')
+    def test_check_power10_sle16(
+        self, mock_get_migration_target, mock_platform_machine, mock_file, mock_os_geteuid, mock_log
+    ):
+        """Test that POWER10 is allowed for SLE16 migration"""
+        mock_get_migration_target.return_value = {'version': '16.0'}
+        mock_platform_machine.return_value = 'ppc64le'
+
+        with self._caplog.at_level(logging.ERROR):
+            check_cpu_arch.power10_version()
+            assert 'requires POWER10 or newer' not in self._caplog.text
+        mock_file.assert_called_once_with('/proc/cpuinfo', 'r')
+
+    @patch(
+        'builtins.open',
+        new_callable=mock_open,
+        read_data='cpu\t\t: POWER10 (raw), altivec supported\n',
+    )
+    @patch('platform.machine')
+    @patch.object(MigrationTarget, 'get_migration_target')
+    def test_check_power10_sle15(
+        self, mock_get_migration_target, mock_platform_machine, mock_file, mock_os_geteuid, mock_log
+    ):
+        """Test that POWER check is skipped for SLE15 migration"""
+        mock_get_migration_target.return_value = {'version': '15.7'}
+        mock_platform_machine.return_value = 'ppc64le'
+
+        with self._caplog.at_level(logging.ERROR):
+            check_cpu_arch.power10_version()
+            assert 'requires POWER10 or newer' not in self._caplog.text
+        mock_file.assert_not_called()
+
+    @patch(
+        'builtins.open',
+        new_callable=mock_open,
+        read_data='processor\t: 0\nvendor_id\t: GenuineIntel\n',
+    )
+    @patch('platform.machine')
+    @patch.object(MigrationTarget, 'get_migration_target')
+    def test_check_power10_non_power_arch(
+        self, mock_get_migration_target, mock_platform_machine, mock_file, mock_os_geteuid, mock_log
+    ):
+        """Test that POWER check is skipped for non-POWER architectures"""
+        mock_get_migration_target.return_value = {'version': '16.0'}
+        mock_platform_machine.return_value = 'x86_64'
+
+        with self._caplog.at_level(logging.ERROR):
+            check_cpu_arch.power10_version()
+            assert 'requires POWER10 or newer' not in self._caplog.text
+        mock_file.assert_not_called()
+
+    @patch(
+        'builtins.open',
+        new_callable=mock_open,
+        read_data='cpu\t\t: POWER9 (raw), altivec supported\n',
+    )
+    @patch('platform.machine')
+    @patch.object(MigrationTarget, 'get_migration_target')
+    def test_check_power9_sle16(
+        self, mock_get_migration_target, mock_platform_machine, mock_file, mock_os_geteuid, mock_log
+    ):
+        """Test that POWER9 is blocked for SLE16 migration"""
+        mock_get_migration_target.return_value = {'version': '16.0'}
+        mock_platform_machine.return_value = 'ppc64le'
+
+        with self._caplog.at_level(logging.ERROR):
+            check_cpu_arch.power10_version()
+            assert 'SLES 16 requires POWER10 or newer' in self._caplog.text
+            assert 'POWER9' in self._caplog.text
+        mock_file.assert_called_once_with('/proc/cpuinfo', 'r')
+
+    @patch('builtins.open', side_effect=FileNotFoundError('/proc/cpuinfo not found'))
+    @patch('platform.machine')
+    @patch.object(MigrationTarget, 'get_migration_target')
+    def test_check_power10_cpuinfo_read_error(
+        self, mock_get_migration_target, mock_platform_machine, mock_file, mock_os_geteuid, mock_log
+    ):
+        """Test that exception when reading cpuinfo is handled gracefully"""
+        mock_get_migration_target.return_value = {'version': '16.0'}
+        mock_platform_machine.return_value = 'ppc64le'
+
+        with self._caplog.at_level(logging.WARNING):
+            check_cpu_arch.power10_version()
+            assert 'Could not read /proc/cpuinfo' in self._caplog.text
+        mock_file.assert_called_once_with('/proc/cpuinfo', 'r')
+
+    @patch('builtins.open', new_callable=mock_open, read_data='cpu\t\t: Unknown CPU\n')
+    @patch('platform.machine')
+    @patch.object(MigrationTarget, 'get_migration_target')
+    def test_check_power_unparseable_cpuinfo(
+        self, mock_get_migration_target, mock_platform_machine, mock_file, mock_os_geteuid, mock_log
+    ):
+        """Test that unparseable cpuinfo generates a warning"""
+        mock_get_migration_target.return_value = {'version': '16.0'}
+        mock_platform_machine.return_value = 'ppc64le'
+
+        with self._caplog.at_level(logging.WARNING):
+            check_cpu_arch.power10_version()
+            assert 'Could not detect POWER generation' in self._caplog.text
+        mock_file.assert_called_once_with('/proc/cpuinfo', 'r')
