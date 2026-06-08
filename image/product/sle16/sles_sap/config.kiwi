@@ -57,6 +57,7 @@
         <package name="grub2-powerpc-ieee1275" arch="ppc64le"/>
         <package name="grub2-s390x-emu" arch="s390x" />
         <package name="lvm2"/>
+        <package name="multipath-tools"/>
         <package name="tar"/>
         <package name="parted"/>
         <package name="openssh"/>
