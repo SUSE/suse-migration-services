@@ -129,7 +129,10 @@ class MountSystem:
                             device = block_record[0]
                             uuid = self.get_uuid(device)
                             if uuid == migration_rootfs_uuid:
-                                return device
+                                if self.is_multipath() and not device.startswith('/dev/mapper/'):
+                                    self.log.info('Skipping {0} since system is multipath'.format(device))
+                                else:
+                                    return device
             # nothing was found
             raise DistMigrationSystemMountException('no match for migration_target= in cmdline')
         except Exception as issue:
@@ -205,6 +208,14 @@ class MountSystem:
         # that case is not handled
         return os.path.ismount(mount_point)
 
+    def is_multipath(self):
+        lsblk_call = Command.run(['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE'])
+        for entry in lsblk_call.output.split(os.linesep):
+            block_record = entry.split()
+            if len(block_record) >= 2:
+                block_type = block_record[1]
+                if block_type == 'mpath':
+                    return True
 
 def main():
     mount_os = MountSystem()
