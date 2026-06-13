@@ -52,6 +52,16 @@ function get_system_root_device {
     lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" "
 }
 
+function get_multipath_wwn {
+    if [ -e /sbin/multipath ]; then
+        for wwn in $(/sbin/multipath -l -v1 2>/dev/null); do
+            if [[ "$(get_system_root_device)" == *"${wwn}"* ]]; then
+                echo "${wwn}"
+            fi
+        done
+    fi
+}
+
 function get_boot_options {
     # """
     # Create boot options list for kexec
@@ -61,7 +71,10 @@ function get_boot_options {
     local migration_iso=$1
     local is_sles16_migration=$2
     local migration_rootfs_uuid
+    local migration_rootfs_wwn
     migration_rootfs_uuid=$(findmnt --noheadings --output UUID /)
+    # get multipath wnn if availiable
+    migration_rootfs_wwn="$(get_multipath_wwn)"
     # init boot options needed for live boot
     boot_options="rd.live.image root=live:CDLABEL=CDROM"
     # add live image reference filename for iso-scan module
@@ -71,6 +84,9 @@ function get_boot_options {
     # add auto activation of devices in soft raid mode
     if mdadm --detail "$(get_system_root_device)" &>/dev/null; then
         boot_options="${boot_options} rd.auto"
+    fi
+    if [ -n "${migration_rootfs_wwn}" ]; then
+	boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
     fi
     for host_boot_option in $(xargs -n1 < /proc/cmdline);do
         case "${host_boot_option}" in
