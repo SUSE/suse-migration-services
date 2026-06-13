@@ -105,6 +105,30 @@ class TestMountSystem:
             file_handle.read.return_value = 'migration_target=UUID'
             assert self.mount_os.get_target_root() == '/dev/sda4'
 
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.mount_system.MountSystem.get_uuid')
+    def test_get_target_root_match_no_multipath_root(self, mock_get_uuid, mock_Command_run):
+        mock_get_uuid.return_value = 'UUID'
+        command_run = namedtuple('command', ['output', 'error', 'returncode'])
+        mock_Command_run.return_value = command_run(output='/dev/sda4 lvm\n/dev/mapper/WWN-part2 part', error='', returncode=0)
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            file_handle.read.return_value = 'migration_target=UUID'
+            assert self.mount_os.get_target_root() == '/dev/sda4'
+
+    @patch('suse_migration_services.command.Command.run')
+    @patch('suse_migration_services.units.mount_system.MountSystem.get_uuid')
+    def test_get_target_root_match_multipath_root(self, mock_get_uuid, mock_Command_run):
+        mock_get_uuid.return_value = 'UUID'
+        command_run = namedtuple('command', ['output', 'error', 'returncode'])
+        mock_Command_run.return_value = command_run(output='/dev/sda4 lvm\n/dev/mapper/WWN-part2 part', error='', returncode=0)
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            file_handle.read.return_value = 'migration_target=UUID multipath_wwn=WWN'
+            assert self.mount_os.get_target_root() == '/dev/mapper/WWN-part2'
+
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('os.path.ismount')
     def test_is_mounted(self, mock_os_path_ismount, mock_Logger_setup):
