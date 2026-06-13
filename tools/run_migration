@@ -49,7 +49,7 @@ function get_system_root_device {
     # """
     # Looking for running system root device
     # """
-    lsblk -p -n -r -o NAME,MOUNTPOINT | grep -E "/$" | uniq | cut -f1 -d" "
+    lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" "
 }
 
 function get_boot_options {
