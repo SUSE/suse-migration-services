@@ -86,7 +86,7 @@ function get_boot_options {
         boot_options="${boot_options} rd.auto"
     fi
     if [ -n "${migration_rootfs_wwn}" ]; then
-	boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
+        boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
     fi
     for host_boot_option in $(xargs -n1 < /proc/cmdline);do
         case "${host_boot_option}" in

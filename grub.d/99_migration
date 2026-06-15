@@ -32,9 +32,9 @@ fi
 if [ -e /sbin/multipath ]; then
     migration_rootfs_device=$(lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" ")
     for wwn in $(/sbin/multipath -l -v1 2>/dev/null); do
-	if [[ "${migration_rootfs_device}" == *"${wwn}"* ]];then
-	    migration_rootfs_wwn="${wwn}"
-	fi
+        if [[ "${migration_rootfs_device}" == *"${wwn}"* ]];then
+            migration_rootfs_wwn="${wwn}"
+        fi
     done
 fi
 
