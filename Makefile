@@ -108,6 +108,7 @@ SLES16-Migration: clean check test
 	cp image/generic/sle16/config.kiwi dist/config.kiwi
 	cp image/generic/sle16/config.sh dist/config.sh
 	cp image/generic/sle16/SLES16-Migration.changes dist/SLES16-Migration.changes
+	cp image/generic/sle16/_multibuild dist/_multibuild
 
 SLES16-SAP_Migration: clean check test
 	mkdir -p dist
@@ -118,6 +119,7 @@ SLES16-SAP_Migration: clean check test
 	cp image/product/sle16/sles_sap/config.kiwi dist/config.kiwi
 	cp image/product/sle16/sles_sap/config.sh dist/config.sh
 	cp image/product/sle16/sles_sap/SLES16-SAP_Migration.changes dist/SLES16-SAP_Migration.changes
+	cp image/product/sle16/sles_sap/_multibuild dist/_multibuild
 
 SLES15-Migration: clean check test
 	mkdir -p dist
