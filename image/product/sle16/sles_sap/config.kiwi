@@ -116,6 +116,7 @@
         <package name="glibc-locale-base"/>
         <package name="cracklib-dict-small"/>
         <package name="ca-certificates"/>
+        <package name="python3-base"/>
         <package name="SLES_SAP-release"/>
     </packages>
 </image>
