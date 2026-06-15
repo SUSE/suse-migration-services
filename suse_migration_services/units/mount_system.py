@@ -135,7 +135,7 @@ class MountSystem:
                             device = block_record[0]
                             uuid = self.get_uuid(device)
                             if uuid == migration_rootfs_uuid:
-                                if is_multipath and not migration_rootfs_wwn in device:
+                                if is_multipath and migration_rootfs_wwn not in device:
                                     self.log.info('Skipping {0} since it is not the multipath root device'.format(device))
                                 else:
                                     return device
