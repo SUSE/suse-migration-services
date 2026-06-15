@@ -29,8 +29,10 @@ if [[ ${image_fs_type} =~ ^ext[[:digit:]] ]] ; then
    image_fs_type="ext2"
 fi
 
-if type -p multipath; then
-    migration_rootfs_device=$(lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" ")
+if type -p multipath &>/dev/null; then
+    migration_rootfs_device=$(
+        lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" "
+    )
     for wwn in $(multipath -l -v1 2>/dev/null); do
         if [[ "${migration_rootfs_device}" == *"${wwn}"* ]];then
             migration_rootfs_wwn="${wwn}"

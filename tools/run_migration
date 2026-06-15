@@ -53,7 +53,10 @@ function get_system_root_device {
 }
 
 function get_multipath_wwn {
-    if type -p multipath; then
+    # """
+    # Check if root device node is mapped in a multipath setup
+    # """
+    if type -p multipath &>/dev/null; then
         for wwn in $(multipath -l -v1 2>/dev/null); do
             if [[ "$(get_system_root_device)" == *"${wwn}"* ]]; then
                 echo "${wwn}"
