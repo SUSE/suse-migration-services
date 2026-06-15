@@ -110,7 +110,9 @@ class TestMountSystem:
     def test_get_target_root_match_no_multipath_root(self, mock_get_uuid, mock_Command_run):
         mock_get_uuid.return_value = 'UUID'
         command_run = namedtuple('command', ['output', 'error', 'returncode'])
-        mock_Command_run.return_value = command_run(output='/dev/sda4 lvm\n/dev/mapper/WWN-part2 part', error='', returncode=0)
+        mock_Command_run.return_value = command_run(
+            output='/dev/sda4 lvm\n/dev/mapper/WWN-part2 part', error='', returncode=0
+        )
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
@@ -122,7 +124,9 @@ class TestMountSystem:
     def test_get_target_root_match_multipath_root(self, mock_get_uuid, mock_Command_run):
         mock_get_uuid.return_value = 'UUID'
         command_run = namedtuple('command', ['output', 'error', 'returncode'])
-        mock_Command_run.return_value = command_run(output='/dev/sda4 lvm\n/dev/mapper/WWN-part2 part', error='', returncode=0)
+        mock_Command_run.return_value = command_run(
+            output='/dev/sda4 lvm\n/dev/mapper/WWN-part2 part', error='', returncode=0
+        )
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
