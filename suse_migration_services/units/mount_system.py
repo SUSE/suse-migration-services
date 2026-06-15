@@ -117,8 +117,14 @@ class MountSystem:
             with open('/proc/cmdline') as cmdline_fd:
                 cmdline = cmdline_fd.read()
             match = re.search(r'migration_target=([\w-]+)', cmdline)
+            match_wwn = re.search(r'multipath_wwn=([\w-]+)', cmdline)
+
             if match:
                 migration_rootfs_uuid = match.group(1)
+                is_multipath = False
+                if match_wwn:
+                    migration_rootfs_wwn = match_wwn.group(1)
+                    is_multipath = True
                 lsblk_call = Command.run(['lsblk', '-p', '-n', '-r', '-o', 'NAME,TYPE'])
                 considered_block_types = ['part', 'raid', 'lvm']
                 for entry in lsblk_call.output.split(os.linesep):
@@ -129,7 +135,14 @@ class MountSystem:
                             device = block_record[0]
                             uuid = self.get_uuid(device)
                             if uuid == migration_rootfs_uuid:
-                                return device
+                                if is_multipath and migration_rootfs_wwn not in device:
+                                    self.log.info(
+                                        'Skipping {0} since it is not the multipath root device'.format(
+                                            device
+                                        )
+                                    )
+                                else:
+                                    return device
             # nothing was found
             raise DistMigrationSystemMountException('no match for migration_target= in cmdline')
         except Exception as issue:

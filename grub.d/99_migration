@@ -29,6 +29,17 @@ if [[ ${image_fs_type} =~ ^ext[[:digit:]] ]] ; then
    image_fs_type="ext2"
 fi
 
+if type -p multipath &>/dev/null; then
+    migration_rootfs_device=$(
+        lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" "
+    )
+    for wwn in $(multipath -l -v1 2>/dev/null); do
+        if [[ "${migration_rootfs_device}" == *"${wwn}"* ]];then
+            migration_rootfs_wwn="${wwn}"
+        fi
+    done
+fi
+
 # init boot options needed for live boot
 boot_options="rd.live.image root=live:CDLABEL=CDROM"
 
@@ -38,6 +49,11 @@ boot_options="${boot_options} migration_target=${migration_rootfs_uuid}"
 # add auto activation of devices in soft raid mode
 if [ -n "$(mdadm --detail --scan 2>/dev/null | cut -f2 -d' ')" ];then
     boot_options="${boot_options} rd.auto"
+fi
+
+# add multipath wwn of migration target device on multipath systems
+if [ -n "${migration_rootfs_wwn}" ];then
+    boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
 fi
 
 # add relevant boot options used on the host to migrate
