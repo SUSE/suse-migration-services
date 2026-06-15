@@ -53,8 +53,8 @@ function get_system_root_device {
 }
 
 function get_multipath_wwn {
-    if [ -e /sbin/multipath ]; then
-        for wwn in $(/sbin/multipath -l -v1 2>/dev/null); do
+    if type -p multipath; then
+        for wwn in $(multipath -l -v1 2>/dev/null); do
             if [[ "$(get_system_root_device)" == *"${wwn}"* ]]; then
                 echo "${wwn}"
             fi
