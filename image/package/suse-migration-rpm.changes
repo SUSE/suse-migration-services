@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jun 16 16:19:40 UTC 2026 - Marcus Schäfer <marcus.schaefer@gmail.com>
+
+- Add handling for Staging builds
+
+  Make sure the profile name does not interfere with the
+  built package name
+
+-------------------------------------------------------------------
 Tue Oct  7 16:04:17 UTC 2025 - Marcus Schäfer <marcus.schaefer@gmail.com>
 
 - Fix MinSLEVersion value depending on target
