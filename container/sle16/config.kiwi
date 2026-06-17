@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- OBS-Profiles: @BUILD_FLAVOR@ -->
 
 <image schemaversion="7.5" name="Migration">
     <description type="system">
@@ -8,6 +9,10 @@
             DMS system next generation, container based
         </specification>
     </description>
+    <profiles>
+        <profile name="Production" description="Production, released SLE16"/>
+        <profile name="Staging" description="Staging, current SLE16"/>
+    </profiles>
     <preferences>
         <version>2.1.34</version>
         <packagemanager>zypper</packagemanager>
@@ -22,8 +27,17 @@
     <users>
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/root" name="root" groups="root"/>
     </users>
-    <repository type="rpm-md">
-        <source path="obsrepositories:/"/>
+    <repository type="rpm-md" profiles="Production">
+        <source path='obsrepositories:/'/>
+    </repository>
+    <repository type="rpm-md" profiles="Staging">
+        <source path="obs://devel:DMS/SLE_16.1"/>
+    </repository>
+    <repository type="rpm-md" profiles="Staging">
+        <source path="obs://SUSE:SLFO:Products:SLES:16.1/standard"/>
+    </repository>
+    <repository type="rpm-md" profiles="Staging">
+        <source path="obs://SUSE:SLFO:Main/standard"/>
     </repository>
     <packages type="image">
         <package name="patterns-base-minimal_base"/>
@@ -72,6 +86,7 @@
         <package name="glibc-locale-base"/>
         <package name="ca-certificates"/>
         <package name="ca-certificates-mozilla"/>
+        <package name="python3-base"/>
         <package name="shadow"/>
     </packages>
 </image>
