@@ -19,21 +19,25 @@
 """Module for checking for CPU architecture support"""
 import logging
 import os
+import platform
+import re
 
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.command import Command
 from suse_migration_services.migration_target import MigrationTarget
 
+log = logging.getLogger(Defaults.get_migration_log_name())
+
 
 def x86_64_version():
     """Function to check whether current CPU architecture is new enough to support SLE16"""
     target = MigrationTarget.get_migration_target()
+    version = target.get('version')
 
-    if target.get('version') != '16.0':
+    if not version or not version.startswith('16'):
         # This check is only necessary for migration to SLE16
         return
 
-    log = logging.getLogger(Defaults.get_migration_log_name())
     os.environ['ZYPP_READONLY_HACK'] = '1'
     zypper_call = Command.run(['zypper', 'system-architecture'])
     arch = zypper_call.output
@@ -43,6 +47,43 @@ def x86_64_version():
             'SLE16 requires x86_64_v2 at minimum. The architecture version '
             'of this system is too old.'
         )
+
+
+def power10_version():
+    """Function to check whether the system has at least POWER10 CPU for SLE16 migration"""
+    target = MigrationTarget.get_migration_target()
+    version = target.get('version')
+
+    if not version or not version.startswith('16'):
+        # This check is only necessary for migration to SLE16
+        return
+
+    machine = platform.machine()
+
+    if machine not in ['ppc64', 'ppc64le']:
+        return
+
+    try:
+        with open('/proc/cpuinfo', 'r') as cpuinfo_file:
+            cpuinfo_content = cpuinfo_file.read()
+
+            # Extract POWER generation number from cpuinfo
+            power_match = re.search(r'POWER(\d+)', cpuinfo_content)
+
+            if power_match:
+                power_generation = int(power_match.group(1))
+                if power_generation < 10:
+                    log.error(
+                        f'SLES 16 requires POWER10 or newer. This system is running '
+                        f'POWER{power_generation}, which is not supported for migration to SLES 16.'
+                    )
+            else:
+                log.warning(
+                    'Could not detect POWER generation from /proc/cpuinfo. '
+                    'Unable to verify POWER10 requirement for SLES 16 migration.'
+                )
+    except Exception as error:
+        log.warning(f'Could not read /proc/cpuinfo to check CPU model: {error}')
 
 
 def cpu_arch(migration_system=False):
@@ -57,3 +98,4 @@ def cpu_arch(migration_system=False):
         return
 
     x86_64_version()
+    power10_version()
