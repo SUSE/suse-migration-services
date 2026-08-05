@@ -22,6 +22,7 @@ import logging
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
 from suse_migration_services.logger import Logger
+from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.zypper import Zypper
 
 
@@ -34,6 +35,8 @@ class UpdateBootLoader:
         Logger.setup()
         self.log = logging.getLogger(Defaults.get_migration_log_name())
         self.root_path = Defaults.get_system_root_path()
+        migration_config = MigrationConfig()
+        self.zypper_install_args = migration_config.get_zypper_install_args()
 
     def perform(self):
         self.log.info('Running update bootloader service')
@@ -48,7 +51,7 @@ class UpdateBootLoader:
         """
         Install the shim package
         """
-        Zypper.install('shim', system_root=self.root_path)
+        Zypper.install('shim', system_root=self.root_path, extra_args=self.zypper_install_args)
 
     def install_secure_bootloader(self):
         """
