@@ -2,5 +2,7 @@ zypper:
   migrate:
     - --no-allow-vendor-change
     - --dry-run
+    - --non-interactive
   install:
     - --no-recommends
+    - --non-interactive

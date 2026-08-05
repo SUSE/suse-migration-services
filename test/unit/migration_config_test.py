@@ -172,7 +172,11 @@ class TestMigrationConfig(object):
         mock_get_migration_config_file.return_value = '../data/migration-config-zypper-args.yml'
         mock_get_system_migration_config_custom_file.return_value = '/nonexistent'
         config = MigrationConfig()
-        assert config.get_zypper_migrate_args() == ['--no-allow-vendor-change', '--dry-run']
+        assert config.get_zypper_migrate_args() == [
+            '--no-allow-vendor-change',
+            '--dry-run',
+            '--non-interactive',
+        ]
 
     @patch.object(Defaults, 'get_migration_config_dir')
     @patch.object(Defaults, 'get_migration_config_file')
@@ -187,7 +191,7 @@ class TestMigrationConfig(object):
         mock_get_migration_config_file.return_value = '../data/migration-config-zypper-args.yml'
         mock_get_system_migration_config_custom_file.return_value = '/nonexistent'
         config = MigrationConfig()
-        assert config.get_zypper_install_args() == ['--no-recommends']
+        assert config.get_zypper_install_args() == ['--no-recommends', '--non-interactive']
 
     @patch('yaml.dump')
     def test_write_config_file(self, mock_yaml_dump):
