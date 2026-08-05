@@ -100,8 +100,7 @@ class DropComponents:
                     'remove',
                     '--clean-deps',
                 ]
-                + self.drop_packages
-                + self.zypper_migrate_args,
+                + self.drop_packages,
                 raise_on_error=False,
             )
             zypper_call.raise_if_failed()
