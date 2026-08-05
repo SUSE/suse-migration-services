@@ -57,7 +57,7 @@ class ApparmorToSelinux(DropComponents):
             # after the migration
             zypper_call = Zypper.install(
                 'patterns-base-selinux',
-                extra_args=['--no-recommends'],
+                extra_args=['--no-recommends'] + self.zypper_install_args,
                 raise_on_error=False,
                 chroot=self.root_path,
             )
@@ -71,7 +71,7 @@ class ApparmorToSelinux(DropComponents):
                 )
                 zypper_call = Zypper.install(
                     'venv-salt-minion',
-                    extra_args=['--force'],
+                    extra_args=['--force'] + self.zypper_install_args,
                     raise_on_error=False,
                     chroot=self.root_path,
                 )

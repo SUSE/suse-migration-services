@@ -1,0 +1,6 @@
+zypper:
+  migrate:
+    - --no-allow-vendor-change
+    - --dry-run
+  install:
+    - --no-recommends
