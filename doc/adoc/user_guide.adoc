@@ -252,6 +252,36 @@ workflow is not used, the setup of the repositories must be performed
 manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
+Add Custom Zypper Call Options::
+For the main zypper migration call and for eventual further package
+installations after the migration, it is possible to add custom options
+to the zypper call. The following example shows how to add the `--recommends`
+option to the zypper migration call and the `--no-recommends` option to
+the zypper package installation call. If there are further installation calls
+in the process of the system migration depends on the subsystems that are
+subject to the migration. For example, if the system is based on apparmor
+and the migration is from SLE 15 to SLE 16 additional packages from the
+`selinux` stack will be installed. Only in such cases the `install` section
+of the configuration file is used to add custom options to that zypper call.
+As such the `install` should not be confused with a general zypper
+installation call and it may well happen that there are no further package
+installations as part of the migration process.
++
+[listing]
+----
+zypper:
+  migrate:
+    - --recommends
+  install:
+    - --no-recommends
+----
++
+[NOTE]
+The provided option settings are add-on settings to the caller options
+we use for the zypper migration/dup workflow and for eventual
+package installation after the migration. The default zypper options are
+not changed by this setting.
+
 Specify Migration Product::
 The default migration target is dependent on the origin version and the
 product. This default target can be changed via the `migration_product`
