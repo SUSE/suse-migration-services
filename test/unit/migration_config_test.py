@@ -153,6 +153,46 @@ class TestMigrationConfig(object):
     def test_is_pre_checks_fix_requested(self):
         assert self.config.is_pre_checks_fix_requested() is True
 
+    def test_get_zypper_migrate_args_empty(self):
+        assert self.config.get_zypper_migrate_args() == []
+
+    def test_get_zypper_install_args_empty(self):
+        assert self.config.get_zypper_install_args() == []
+
+    @patch.object(Defaults, 'get_migration_config_dir')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    def test_get_zypper_migrate_args(
+        self,
+        mock_get_system_migration_config_custom_file,
+        mock_get_migration_config_file,
+        mock_get_migration_config_dir,
+    ):
+        mock_get_migration_config_dir.return_value = '/nonexistent'
+        mock_get_migration_config_file.return_value = '../data/migration-config-zypper-args.yml'
+        mock_get_system_migration_config_custom_file.return_value = '/nonexistent'
+        config = MigrationConfig()
+        assert config.get_zypper_migrate_args() == [
+            '--no-allow-vendor-change',
+            '--dry-run',
+            '--non-interactive',
+        ]
+
+    @patch.object(Defaults, 'get_migration_config_dir')
+    @patch.object(Defaults, 'get_migration_config_file')
+    @patch.object(Defaults, 'get_system_migration_custom_config_file')
+    def test_get_zypper_install_args(
+        self,
+        mock_get_system_migration_config_custom_file,
+        mock_get_migration_config_file,
+        mock_get_migration_config_dir,
+    ):
+        mock_get_migration_config_dir.return_value = '/nonexistent'
+        mock_get_migration_config_file.return_value = '../data/migration-config-zypper-args.yml'
+        mock_get_system_migration_config_custom_file.return_value = '/nonexistent'
+        config = MigrationConfig()
+        assert config.get_zypper_install_args() == ['--no-recommends', '--non-interactive']
+
     @patch('yaml.dump')
     def test_write_config_file(self, mock_yaml_dump):
         with patch('builtins.open', create=True) as mock_open:

@@ -27,6 +27,7 @@ from suse_migration_services.path import Path
 from suse_migration_services.zypper import Zypper
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.migration_config import MigrationConfig
 
 log = logging.getLogger(Defaults.get_migration_log_name())
 
@@ -60,6 +61,9 @@ class DropComponents:
                 ]
             )
         )
+        migration_config = MigrationConfig()
+        self.zypper_migrate_args = migration_config.get_zypper_migrate_args()
+        self.zypper_install_args = migration_config.get_zypper_install_args()
 
     def drop_package(self, name):
         self.drop_packages.append(name)

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with suse-migration-services. If not, see <http://www.gnu.org/licenses/>
 #
+from collections import OrderedDict
 import os
 
 # project
@@ -44,6 +45,7 @@ class Zypper:
         chroot:
             run zypper chrooted against the given path
         """
+        args = list(OrderedDict.fromkeys(args))
         log_file = Defaults.get_migration_log_file(system_root=False if chroot else True)
         command_string = ' '.join(
             ['set -o pipefail; zypper'] + list(args) + ['|& tee -a', log_file]
@@ -75,9 +77,8 @@ class Zypper:
         ]
         if system_root:
             zypper_args += ['--root', system_root]
-        return Zypper.run(
-            zypper_args
-            + [
+        zypper_args += (
+            [
                 'install',
                 '--auto-agree-with-licenses',
                 '--allow-vendor-change',
@@ -87,7 +88,10 @@ class Zypper:
                 '--allow-downgrade',
             ]
             + extra_args
-            + list(pkgs),
+            + list(pkgs)
+        )
+        return Zypper.run(
+            list(OrderedDict.fromkeys(zypper_args)),
             raise_on_error=raise_on_error,
             chroot=chroot,
         )

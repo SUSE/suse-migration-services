@@ -21,4 +21,12 @@ schema = {
         'type': 'dict',
         'schema': {'wicked2nm-continue-migration': {'required': False, 'type': 'boolean'}},
     },
+    'zypper': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'migrate': {'required': False, 'type': 'list', 'nullable': False},
+            'install': {'required': False, 'type': 'list', 'nullable': False},
+        },
+    },
 }

@@ -63,7 +63,7 @@ class WickedToNetworkManager(DropComponents):
                 Zypper.install(
                     'NetworkManager',
                     'NetworkManager-config-server',
-                    extra_args=['--no-recommends'],
+                    extra_args=['--no-recommends'] + self.zypper_install_args,
                     raise_on_error=True,
                     chroot=self.root_path,
                 )

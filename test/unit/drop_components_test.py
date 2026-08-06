@@ -5,15 +5,20 @@ from suse_migration_services.drop_components import DropComponents
 
 
 class TestDropComponents:
+    @patch('suse_migration_services.drop_components.MigrationConfig')
     @patch('suse_migration_services.drop_components.NamedTemporaryFile')
     @patch('suse_migration_services.drop_components.datetime')
-    def setup_method(self, cls, mock_datetime, mock_NamedTemporaryFile):
+    def setup_method(self, cls, mock_datetime, mock_NamedTemporaryFile, mock_MigrationConfig):
         date = Mock()
         date.strftime.return_value = '2025-12-07-15:08'
         mock_datetime.now.return_value = date
         tmpfile = Mock()
         tmpfile.name = 'tmpfile'
         mock_NamedTemporaryFile.return_value = tmpfile
+        migration_config = Mock()
+        migration_config.get_zypper_migrate_args.return_value = []
+        migration_config.get_zypper_install_args.return_value = []
+        mock_MigrationConfig.return_value = migration_config
         self.drop = DropComponents()
 
     def test_drop_package(self):
