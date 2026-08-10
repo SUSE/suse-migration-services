@@ -87,10 +87,8 @@ class DropComponents:
     def _uninstall_packages(self):
         if self.drop_packages and self.root_path:
             zypper_call = Zypper.run(
-                [
-                    '--no-cd',
-                    '--non-interactive',
-                    '--gpg-auto-import-keys',
+                Zypper.global_args()
+                + [
                     '--root',
                     self.root_path,
                     'remove',

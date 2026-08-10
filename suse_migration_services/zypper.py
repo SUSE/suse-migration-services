@@ -67,12 +67,19 @@ class Zypper:
         return ZypperCall(args, command_string, result)
 
     @staticmethod
-    def install(*pkgs: str, raise_on_error=True, system_root=None, chroot='', extra_args=[]):
-        zypper_args = [
+    def global_args():
+        """
+        Global zypper options shared by all migration zypper calls
+        """
+        return [
             '--no-cd',
             '--non-interactive',
             '--gpg-auto-import-keys',
         ]
+
+    @staticmethod
+    def install(*pkgs: str, raise_on_error=True, system_root=None, chroot='', extra_args=[]):
+        zypper_args = Zypper.global_args()
         if system_root:
             zypper_args += ['--root', system_root]
         return Zypper.run(
