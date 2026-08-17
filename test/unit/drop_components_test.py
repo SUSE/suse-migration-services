@@ -38,9 +38,11 @@ class TestDropComponents:
             file_handle.write.assert_called_once_with('some/\n')
         assert self.drop.drop_files_and_directories == ['/system-root/some']
 
+    @patch('suse_migration_services.zypper.MigrationConfig')
     @patch('suse_migration_services.drop_components.Zypper.run')
     @patch('suse_migration_services.drop_components.Command.run')
-    def test_drop_perform_package(self, mock_Command_run, mock_Zypper_run):
+    def test_drop_perform_package(self, mock_Command_run, mock_Zypper_run, mock_MigrationConfig):
+        mock_MigrationConfig.return_value.are_cd_repos_requested.return_value = False
         package_call = Mock()
         package_call.returncode = 0
         mock_Command_run.return_value = package_call
@@ -58,6 +60,31 @@ class TestDropComponents:
                 '--clean-deps',
                 'some',
                 'some_other',
+            ],
+            raise_on_error=False,
+        )
+
+    @patch('suse_migration_services.zypper.MigrationConfig')
+    @patch('suse_migration_services.drop_components.Zypper.run')
+    @patch('suse_migration_services.drop_components.Command.run')
+    def test_drop_perform_package_with_cd_repos(
+        self, mock_Command_run, mock_Zypper_run, mock_MigrationConfig
+    ):
+        mock_MigrationConfig.return_value.are_cd_repos_requested.return_value = True
+        package_call = Mock()
+        package_call.returncode = 0
+        mock_Command_run.return_value = package_call
+        self.drop.drop_package('some')
+        self.drop.drop_perform()
+        mock_Zypper_run.assert_called_once_with(
+            [
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--root',
+                '/system-root',
+                'remove',
+                '--clean-deps',
+                'some',
             ],
             raise_on_error=False,
         )

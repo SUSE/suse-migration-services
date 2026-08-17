@@ -252,6 +252,26 @@ workflow is not used, the setup of the repositories must be performed
 manually. Once done, the upgrade process uses `zypper dup` and expects
 all required repositories to be setup correctly.
 
+Migrate From an Installation Medium::
+By default the upgrade process ignores every CD/DVD repository of the
+system to be migrated. Letting them take part is what allows an
+installation medium, such as a SLE Full media, to be used as the package
+source:
++
+[listing]
+----
+use_zypper_migration: false
+use_cd_repos: true
+----
++
+[NOTE]
+Since an installation medium is not registered against a repository
+server, `use_zypper_migration` has to be switched off as well. The medium
+must be added as a repository on the system to be migrated before the
+migration is started. Every other CD/DVD repository that is still
+configured takes part in the upgrade as well, so remove or disable the
+ones left over from the original installation.
+
 Specify Migration Product::
 The default migration target is dependent on the origin version and the
 product. This default target can be changed via the `migration_product`
