@@ -12,6 +12,7 @@ schema = {
     },
     'soft_reboot': {'required': False, 'type': 'boolean'},
     'use_zypper_migration': {'required': False, 'type': 'boolean'},
+    'use_cd_repos': {'required': False, 'type': 'boolean'},
     'verbose_migration': {'required': False, 'type': 'boolean'},
     'build_host_independent_initrd': {'required': False, 'type': 'boolean'},
     'pre_checks_fix': {'required': False, 'type': 'boolean'},
