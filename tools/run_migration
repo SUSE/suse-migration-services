@@ -65,6 +65,14 @@ function get_multipath_wwn {
     fi
 }
 
+function root_is_multipath {
+    # """
+    # Check if the root device stack contains a multipath map
+    # """
+    lsblk -s -n -r -o TYPE "$(get_system_root_device)" 2>/dev/null |
+        grep -qx mpath
+}
+
 function get_boot_options {
     # """
     # Create boot options list for kexec
@@ -88,9 +96,6 @@ function get_boot_options {
     if mdadm --detail "$(get_system_root_device)" &>/dev/null; then
         boot_options="${boot_options} rd.auto"
     fi
-    if [ -n "${migration_rootfs_wwn}" ]; then
-        boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
-    fi
     for host_boot_option in $(xargs -n1 < /proc/cmdline);do
         case "${host_boot_option}" in
             root=*)
@@ -111,6 +116,14 @@ function get_boot_options {
         esac
         boot_options="${boot_options} ${host_boot_option}"
     done
+    # add multipath wwn of migration target device on multipath systems,
+    # switch multipath off if the root device is not mapped. Set last to
+    # take precedence over a multipath option of the host
+    if [ -n "${migration_rootfs_wwn}" ]; then
+        boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
+    elif ! root_is_multipath; then
+        boot_options="${boot_options} multipath=off"
+    fi
     echo "${boot_options}"
 }
 
