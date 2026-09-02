@@ -244,8 +244,10 @@ class TestMigration(object):
     @patch('suse_migration_services.defaults.Defaults.log_env')
     @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
+    @patch('suse_migration_services.zypper.MigrationConfig')
     def test_main_zypper_dup(
         self,
+        mock_zypper_MigrationConfig,
         mock_MigrationConfig,
         mock_update_env,
         mock_log_env,
@@ -253,6 +255,7 @@ class TestMigration(object):
         mock_logger_setup,
         mock_is_single_rpmtrans_requested,
     ):
+        mock_zypper_MigrationConfig.return_value.are_cd_repos_requested.return_value = False
         mock_MigrationConfig.return_value = self.migration_config_dup
         zypper_call = Mock()
         mock_Zypper_run.return_value = zypper_call
@@ -284,12 +287,56 @@ class TestMigration(object):
     @patch('suse_migration_services.defaults.Defaults.log_env')
     @patch('suse_migration_services.defaults.Defaults.update_env')
     @patch('suse_migration_services.units.migrate.MigrationConfig')
+    @patch('suse_migration_services.zypper.MigrationConfig')
+    def test_main_zypper_dup_with_cd_repos(
+        self,
+        mock_zypper_MigrationConfig,
+        mock_MigrationConfig,
+        mock_update_env,
+        mock_log_env,
+        mock_Zypper_run,
+        mock_logger_setup,
+        mock_is_single_rpmtrans_requested,
+    ):
+        mock_zypper_MigrationConfig.return_value.are_cd_repos_requested.return_value = True
+        mock_MigrationConfig.return_value = self.migration_config_dup
+        zypper_call = Mock()
+        mock_Zypper_run.return_value = zypper_call
+        mock_is_single_rpmtrans_requested.return_value = '0'
+        with patch('builtins.open', create=True):
+            main()
+        mock_Zypper_run.assert_called_once_with(
+            [
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--root',
+                '/system-root',
+                'dup',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download',
+                'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+            ],
+            raise_on_error=False,
+        )
+        zypper_call.raise_if_failed.assert_called_once()
+
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.zypper.Zypper.run')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
+    @patch('suse_migration_services.units.migrate.MigrationConfig')
+    @patch('suse_migration_services.zypper.MigrationConfig')
     @patch('os.path.isdir')
     @patch('suse_migration_services.units.migrate.Command.run')
     def test_main_zypper_dup_with_solver_test_case(
         self,
         mock_Command_run,
         mock_os_path_isdir,
+        mock_zypper_MigrationConfig,
         mock_MigrationConfig,
         mock_update_env,
         mock_log_env,

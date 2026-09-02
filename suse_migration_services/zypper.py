@@ -20,6 +20,7 @@ import os
 # project
 from suse_migration_services.command import Command
 from suse_migration_services.defaults import Defaults
+from suse_migration_services.migration_config import MigrationConfig
 from suse_migration_services.exceptions import DistMigrationZypperException
 
 
@@ -67,12 +68,29 @@ class Zypper:
         return ZypperCall(args, command_string, result)
 
     @staticmethod
-    def install(*pkgs: str, raise_on_error=True, system_root=None, chroot='', extra_args=[]):
-        zypper_args = [
-            '--no-cd',
+    def global_args():
+        """
+        Global zypper options shared by all migration zypper calls
+
+        The options that depend on the migration configuration are
+        resolved here rather than by the caller. Every unit runs as its
+        own process against the same configuration file, so a caller
+        could only repeat that lookup, and settings affecting all
+        zypper calls stay in one place as they get added.
+        """
+        migration_config = MigrationConfig()
+        zypper_args = []
+        if not migration_config.are_cd_repos_requested():
+            zypper_args.append('--no-cd')
+        zypper_args += [
             '--non-interactive',
             '--gpg-auto-import-keys',
         ]
+        return zypper_args
+
+    @staticmethod
+    def install(*pkgs: str, raise_on_error=True, system_root=None, chroot='', extra_args=[]):
+        zypper_args = Zypper.global_args()
         if system_root:
             zypper_args += ['--root', system_root]
         return Zypper.run(
