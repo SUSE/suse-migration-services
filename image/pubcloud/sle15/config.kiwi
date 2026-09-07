@@ -128,6 +128,5 @@
         <package name="cracklib-dict-full"/>
         <package name="ca-certificates"/>
         <package name="sles-release"/>
-        <package name="python3-base"/>
     </packages>
 </image>

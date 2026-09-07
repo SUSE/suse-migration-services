@@ -18,7 +18,6 @@
 %define pythons %{primary_python}
 %define pythonpkgname suse-migration-services-common
 %else
-%define primary_python python3
 %define pythons python3
 %define pythonpkgname %{pythons}-migration
 %endif
@@ -46,6 +45,7 @@ BuildRequires:    %{pythons}-pip
 BuildRequires:    %{pythons}-wheel
 %endif
 BuildRequires:    systemd-rpm-macros
+Requires:         %{pythons}-base
 Requires:         %{pythons}-Cerberus
 Requires:         %{pythons}-PyYAML
 Requires:         %{pythons}-setuptools
