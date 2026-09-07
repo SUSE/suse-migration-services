@@ -88,6 +88,7 @@ class MigrateSystem:
                         '--root',
                         self.root_path,
                     ]
+                    + migration_config.get_zypper_migrate_args()
                 )
                 if 'No migration available' in zypper_call.output:
                     raise DistMigrationZypperException(
@@ -108,7 +109,8 @@ class MigrateSystem:
                         'in-advance',
                         '--replacefiles',
                         '--allow-downgrade',
-                    ],
+                    ]
+                    + migration_config.get_zypper_migrate_args(),
                     raise_on_error=False,
                 )
                 zypper_call.raise_if_failed()

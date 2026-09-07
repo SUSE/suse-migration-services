@@ -19,6 +19,8 @@ class TestMigration(object):
         self.migration_config_dup = MigrationConfig()
         mock_get_migration_config_file.return_value = '../data/migration-config-solver-case.yml'
         self.migration_config_solver_case = MigrationConfig()
+        mock_get_migration_config_file.return_value = '../data/migration-config-zypper-args.yml'
+        self.migration_config_zypper_args = MigrationConfig()
 
     @patch.object(Defaults, 'get_migration_config_file')
     def setup_method(self, cls, mock_get_migration_config_file):
@@ -66,12 +68,32 @@ class TestMigration(object):
                 ),
                 call('1\n'),
             ]
-        mock_Zypper_run.reset_mock()
-        mock_Zypper_run.side_effect = None
+
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.zypper.Zypper.run')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
+    @patch.object(MigrationConfig, 'get_migration_product')
+    @patch('suse_migration_services.units.migrate.MigrationConfig')
+    def test_main_zypper_migration_plugin_returns_with_no_migration_available(
+        self,
+        mock_MigrationConfig,
+        mock_get_system_root_path,
+        mock_update_env,
+        mock_log_env,
+        mock_Zypper_run,
+        mock_logger_setup,
+        mock_is_single_rpmtrans_requested,
+    ):
+        mock_is_single_rpmtrans_requested.return_value = '0'
+        self.migration_config.is_zypper_migration_plugin_requested = Mock(return_value=True)
+        mock_MigrationConfig.return_value = self.migration_config
+        mock_get_system_root_path.return_value = 'SLES/15/x86_64'
         zypper_call = Mock()
         zypper_call.output = 'No migration available'
         mock_Zypper_run.return_value = zypper_call
-        with patch('builtins.open', create=True) as mock_open:
+        with patch('builtins.open', create=True):
             with raises(DistMigrationZypperException):
                 main()
 
@@ -235,6 +257,64 @@ class TestMigration(object):
                 'SLES/15/x86_64',
                 '--root',
                 '/system-root',
+            ]
+        )
+
+    @patch('suse_migration_services.units.migrate.MigrateSystem.is_single_rpmtrans_requested')
+    @patch('suse_migration_services.logger.Logger.setup')
+    @patch('suse_migration_services.zypper.Zypper.run')
+    @patch('suse_migration_services.defaults.Defaults.log_env')
+    @patch('suse_migration_services.defaults.Defaults.update_env')
+    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
+    @patch('suse_migration_services.units.migrate.MigrationConfig')
+    def test_main_zypper_migration_plugin_with_zypper_args(
+        self,
+        mock_MigrationConfig,
+        mock_get_system_root_path,
+        mock_update_env,
+        mock_log_env,
+        mock_Zypper_run,
+        mock_logger_setup,
+        mock_is_single_rpmtrans_requested,
+    ):
+        migration_config = Mock()
+        migration_config.get_migration_product.return_value = 'SLES/15/x86_64'
+        migration_config.is_zypper_migration_plugin_requested.return_value = True
+        migration_config.get_preserve_info.return_value = False
+        migration_config.is_verbosity_requested.return_value = False
+        migration_config.is_zypp_solver_test_case_requested.return_value = False
+        migration_config.get_zypper_migrate_args.return_value = [
+            '--no-allow-vendor-change',
+            '--dry-run',
+        ]
+        mock_MigrationConfig.return_value = migration_config
+        mock_get_system_root_path.return_value = '/system-root'
+        mock_is_single_rpmtrans_requested.return_value = '0'
+        zypper_call = Mock()
+        zypper_call.output = ''
+        mock_Zypper_run.return_value = zypper_call
+        with patch('builtins.open', create=True):
+            main()
+        mock_Zypper_run.assert_called_once_with(
+            [
+                'migration',
+                '--no-verbose',
+                '',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--no-selfupdate',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download',
+                'in-advance',
+                '--strict-errors-dist-migration',
+                '--replacefiles',
+                '--product',
+                'SLES/15/x86_64',
+                '--root',
+                '/system-root',
+                '--no-allow-vendor-change',
+                '--dry-run',
             ]
         )
 

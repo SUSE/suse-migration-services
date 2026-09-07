@@ -1,5 +1,5 @@
 from pytest import raises
-from unittest.mock import patch, call
+from unittest.mock import patch, call, Mock
 
 from suse_migration_services.drop_components import DropComponents
 from suse_migration_services.units.wicked_migration import main
@@ -7,6 +7,7 @@ from suse_migration_services.exceptions import DistMigrationWickedMigrationExcep
 
 
 class TestMigrationWicked:
+    @patch('suse_migration_services.drop_components.MigrationConfig')
     @patch('suse_migration_services.units.wicked_migration.ResolvConf.setup_target_root')
     @patch.object(DropComponents, 'drop_package')
     @patch.object(DropComponents, 'drop_path')
@@ -33,7 +34,13 @@ class TestMigrationWicked:
         mock_drop_path,
         mock_drop_package,
         mock_resolv_conf_setup_target_root,
+        mock_MigrationConfig,
     ):
+        migration_config = Mock()
+        migration_config.get_zypper_migrate_args.return_value = []
+        migration_config.get_zypper_install_args.return_value = []
+        mock_MigrationConfig.return_value = migration_config
+
         def package_installed(name):
             if name.startswith('NetworkManager'):
                 return False
@@ -85,22 +92,39 @@ class TestMigrationWicked:
         mock_drop_path.assert_called_once_with('/etc/sysconfig/network/')
         mock_drop_perform.assert_called_once_with()
 
+    @patch('suse_migration_services.drop_components.MigrationConfig')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.exists')
     @patch('os.path.islink')
     def test_main_raises(
-        self, mock_os_path_islink, mock_os_path_exists, mock_Command_run, mock_logger_setup
+        self,
+        mock_os_path_islink,
+        mock_os_path_exists,
+        mock_Command_run,
+        mock_logger_setup,
+        mock_MigrationConfig,
     ):
+        migration_config = Mock()
+        migration_config.get_zypper_migrate_args.return_value = []
+        migration_config.get_zypper_install_args.return_value = []
+        mock_MigrationConfig.return_value = migration_config
         mock_os_path_exists.return_value = True
         mock_Command_run.side_effect = Exception
         with raises(DistMigrationWickedMigrationException):
             main()
 
+    @patch('suse_migration_services.drop_components.MigrationConfig')
     @patch('suse_migration_services.logger.Logger.setup')
     @patch('suse_migration_services.command.Command.run')
     @patch('os.path.islink')
-    def test_main_skip(self, mock_os_path_islink, mock_Command_run, mock_logger_setup):
+    def test_main_skip(
+        self, mock_os_path_islink, mock_Command_run, mock_logger_setup, mock_MigrationConfig
+    ):
+        migration_config = Mock()
+        migration_config.get_zypper_migrate_args.return_value = []
+        migration_config.get_zypper_install_args.return_value = []
+        mock_MigrationConfig.return_value = migration_config
         mock_os_path_islink.return_value = False
         main()
         assert not mock_Command_run.called
