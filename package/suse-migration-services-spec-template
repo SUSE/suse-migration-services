@@ -18,6 +18,7 @@
 %define pythons %{primary_python}
 %define pythonpkgname suse-migration-services-common
 %else
+%define primary_python python3
 %define pythons python3
 %define pythonpkgname %{pythons}-migration
 %endif
