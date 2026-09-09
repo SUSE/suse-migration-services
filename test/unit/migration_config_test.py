@@ -144,6 +144,11 @@ class TestMigrationConfig(object):
     def test_is_zypper_migration_plugin_requested(self):
         assert self.config.is_zypper_migration_plugin_requested() is True
 
+    def test_are_cd_repos_requested(self):
+        assert self.config.are_cd_repos_requested() is False
+        self.config.config_data['use_cd_repos'] = True
+        assert self.config.are_cd_repos_requested() is True
+
     def test_is_debug_requested(self):
         assert self.config.is_debug_requested() is False
 
