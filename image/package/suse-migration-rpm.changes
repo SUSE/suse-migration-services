@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Aug 14 17:34:04 UTC 2026 - Christian Hueller <chuller@suse.com>
+
+- Allow the migration packages to install on Leap 16
+
+  The SLES16-Migration package requires product(SLES), which causes
+  an installation on Leap to fail. This extends the product
+  requirement to Leap products.
+
+-------------------------------------------------------------------
 Tue Jun 16 16:19:40 UTC 2026 - Marcus Schäfer <marcus.schaefer@gmail.com>
 
 - Add handling for Staging builds
