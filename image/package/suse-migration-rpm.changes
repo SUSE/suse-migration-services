@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Aug 14 17:34:04 UTC 2026 - Tachi Koma <chuller@suse.com>
+
+- Allow the migration packages to install on Leap 16
+
+  The SLES16-Migration package requires product(SLES), which causes
+  an installation on Leap to fail. This change extends the product
+  requirement to Leap products.
+
+-------------------------------------------------------------------
 Tue Oct  7 16:04:17 UTC 2025 - Marcus Schäfer <marcus.schaefer@gmail.com>
 
 - Fix MinSLEVersion value depending on target

@@ -31,7 +31,14 @@ ARCH="$(uname -m)"
 NAME=$(echo "$IMAGE" | cut -f1 -d.)
 VERSION=$(echo "$IMAGE" | cut -f3 -d-)
 RELEASE=$(echo "$IMAGE" | cut -f4 -d- | sed -e "s@Build@@" | sed -e 's@.iso$@@')
-PRODUCT='product(SLES) >= %{MinSLEVersion}'
+case "$NAME" in
+    SLES16*)
+        PRODUCT='(product(SLES) >= %{MinSLEVersion} or product(Leap) >= 16.0)'
+        ;;
+    *)
+        PRODUCT='product(SLES) >= %{MinSLEVersion}'
+        ;;
+esac
 
 # SAP product check
 if echo "$NAME" | grep -q SAP_; then
