@@ -9,8 +9,10 @@ from suse_migration_services.exceptions import DistMigrationZypperException
 
 @patch('suse_migration_services.command.Command.run')
 class TestCommand(object):
+    @patch('suse_migration_services.zypper.MigrationConfig')
     @patch('suse_migration_services.zypper.Zypper.run')
-    def test_zypper_install(self, mock_Zypper_run, mock_Command_run):
+    def test_zypper_install(self, mock_Zypper_run, mock_MigrationConfig, mock_Command_run):
+        mock_MigrationConfig.return_value.are_cd_repos_requested.return_value = False
         Zypper.install(
             'package_a',
             'package_b',
@@ -39,12 +41,42 @@ class TestCommand(object):
             chroot='root',
         )
 
+    @patch('suse_migration_services.zypper.MigrationConfig')
     @patch('suse_migration_services.zypper.Zypper.run')
-    def test_zypper_install_system_root(self, mock_Zypper_run, mock_Command_run):
+    def test_zypper_install_system_root(
+        self, mock_Zypper_run, mock_MigrationConfig, mock_Command_run
+    ):
+        mock_MigrationConfig.return_value.are_cd_repos_requested.return_value = False
         Zypper.install('package', system_root='/root')
         mock_Zypper_run.assert_called_once_with(
             [
                 '--no-cd',
+                '--non-interactive',
+                '--gpg-auto-import-keys',
+                '--root',
+                '/root',
+                'install',
+                '--auto-agree-with-licenses',
+                '--allow-vendor-change',
+                '--download',
+                'in-advance',
+                '--replacefiles',
+                '--allow-downgrade',
+                'package',
+            ],
+            raise_on_error=True,
+            chroot='',
+        )
+
+    @patch('suse_migration_services.zypper.MigrationConfig')
+    @patch('suse_migration_services.zypper.Zypper.run')
+    def test_zypper_install_use_cd_repos(
+        self, mock_Zypper_run, mock_MigrationConfig, mock_Command_run
+    ):
+        mock_MigrationConfig.return_value.are_cd_repos_requested.return_value = True
+        Zypper.install('package', system_root='/root')
+        mock_Zypper_run.assert_called_once_with(
+            [
                 '--non-interactive',
                 '--gpg-auto-import-keys',
                 '--root',

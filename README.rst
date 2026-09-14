@@ -114,7 +114,25 @@ Upgrade Modes:
   .. code:: bash
 
       use_zypper_migration: false
-  
+
+Migration From an Installation Medium:
+  Every CD/DVD repository of the system to migrate is ignored by default,
+  which keeps the stale **cd:** repositories left behind by the original
+  installation out of the upgrade. Switching **use_cd_repos** on lets them
+  take part, which is what allows an installation medium such as a SLE Full
+  media to serve as the package source. Such a medium is not registered
+  against a repository server, so **dup** mode is required as well:
+
+  .. code:: bash
+
+      use_zypper_migration: false
+      use_cd_repos: true
+
+  The medium has to be added as a repository on the system to migrate before
+  the migration is started, and any other CD/DVD repository that is still
+  configured should be removed or disabled, as it takes part in the upgrade
+  as well.
+
 Migration Startup:
   There are three ways to perform the migration
 

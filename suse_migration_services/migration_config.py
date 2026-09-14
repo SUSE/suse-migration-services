@@ -179,6 +179,17 @@ class MigrationConfig:
     def is_zypper_migration_plugin_requested(self):
         return self.config_data.get('use_zypper_migration', True)
 
+    def are_cd_repos_requested(self):
+        """
+        Return whether CD/DVD repositories may take part in the migration
+
+        By default they are ignored, which keeps the stale cd: repositories
+        left behind by the original installation out of the upgrade.
+        Switching this on is what allows an installation medium to serve
+        as the package source.
+        """
+        return self.config_data.get('use_cd_repos', False)
+
     def is_soft_reboot_requested(self):
         return self.config_data.get('soft_reboot', False)
 

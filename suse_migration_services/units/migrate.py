@@ -96,10 +96,8 @@ class MigrateSystem:
                     )
             else:
                 zypper_call = Zypper.run(
-                    [
-                        '--no-cd',
-                        '--non-interactive',
-                        '--gpg-auto-import-keys',
+                    Zypper.global_args()
+                    + [
                         '--root',
                         self.root_path,
                         'dup',
