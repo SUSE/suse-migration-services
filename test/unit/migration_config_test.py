@@ -32,9 +32,10 @@ class TestMigrationConfig(object):
         self.config = MigrationConfig()
 
     @patch.object(Defaults, 'get_os_release')
+    @patch.object(Defaults, 'get_migration_image_root_path')
     @patch.object(Defaults, 'get_system_root_path')
     def test_get_migration_product_auto_detected(
-        self, mock_get_system_root_path, mock_get_os_release
+        self, mock_get_system_root_path, mock_get_migration_image_root_path, mock_get_os_release
     ):
         os_release_tuple = namedtuple(
             'OSRelease',
@@ -60,14 +61,20 @@ class TestMigrationConfig(object):
             cpe_name='cpe:/o:suse:sles:15:sp3',
         )
         mock_get_system_root_path.return_value = '../data'
+        mock_get_migration_image_root_path.return_value = '../data'
         mock_get_os_release.return_value = os_release_result
         assert self.config.get_migration_product() == 'SLES/15.3/x86_64'
 
     @patch.object(Defaults, 'get_os_release')
     @patch.object(SUSEBaseProduct, 'get_tag')
+    @patch.object(Defaults, 'get_migration_image_root_path')
     @patch.object(Defaults, 'get_system_root_path')
     def test_get_migration_product_targets(
-        self, mock_get_system_root_path, mock_get_product_name, mock_get_os_release
+        self,
+        mock_get_system_root_path,
+        mock_get_migration_image_root_path,
+        mock_get_product_name,
+        mock_get_os_release,
     ):
         os_release_tuple = namedtuple(
             'OSRelease',
@@ -93,6 +100,7 @@ class TestMigrationConfig(object):
             cpe_name='cpe:/o:suse:sles:15:sp3',
         )
         mock_get_system_root_path.return_value = '../data'
+        mock_get_migration_image_root_path.return_value = '../data'
         mock_get_os_release.return_value = os_release_result
         mock_get_product_name.side_effect = Exception
         self.config.config_data = {'not_migration_product': 'another_info'}

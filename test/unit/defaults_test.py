@@ -20,6 +20,9 @@ class TestDefaults(object):
     def test_get_migration_config_file(self):
         assert self.defaults.get_migration_config_file() == '/etc/migration-config.yml'
 
+    def test_get_migration_image_root_path(self):
+        assert self.defaults.get_migration_image_root_path() == '/'
+
     def test_get_grub_default_file(self):
         assert self.defaults.get_grub_default_file() == '/system-root/etc/default/grub'
 

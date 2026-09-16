@@ -36,3 +36,23 @@ class TestSUSEProduct(object):
     def test_baseproduct_tag_text_raises(self, mock_ElementTree):
         mock_ElementTree().parse.side_effect = Exception
         self.suse_product.get_tag('name')
+
+    @patch.object(Defaults, 'get_os_release')
+    @patch.object(Defaults, 'get_migration_image_root_path')
+    def test_get_product_name(
+        self, mock_get_migration_image_root_path, mock_get_os_release, mock_ElementTree
+    ):
+        # the system to migrate is SLES/12.3/x86_64, see ../data/etc/products.d,
+        # the migration image provides SLES_SAP/16.1/aarch64
+        mock_ElementTree.return_value = ElementTree()
+        mock_get_migration_image_root_path.return_value = '../data/migration-image'
+        mock_get_os_release.return_value = Mock(version_id='16.1')
+        assert self.suse_product.get_product_name() == 'SLES_SAP/16.1/x86_64'
+
+    @patch.object(Defaults, 'get_migration_image_root_path')
+    def test_get_product_name_without_migration_image_product(
+        self, mock_get_migration_image_root_path, mock_ElementTree
+    ):
+        mock_ElementTree.return_value = ElementTree()
+        mock_get_migration_image_root_path.return_value = '../data/no-such-image'
+        assert self.suse_product.get_product_name() is None
