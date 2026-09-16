@@ -28,12 +28,15 @@ from suse_migration_services.exceptions import DistMigrationSUSEBaseProductExcep
 class SUSEBaseProduct:
     def __init__(self, log):
         self.log = log
-        root_path = Defaults.get_system_root_path()
-        self.products_metadata = os.sep.join([root_path, 'etc', 'products.d'])
-        self.prod_filenames = glob.glob(os.path.join(self.products_metadata, '*.prod'))
+        self.base_product = self.read_product(Defaults.get_system_root_path())
+
+    def read_product(self, root_path):
+        """Get the base product file below root_path."""
+        products_metadata = os.sep.join([root_path, 'etc', 'products.d'])
+        prod_filenames = glob.glob(os.path.join(products_metadata, '*.prod'))
         base_product_files = []
         xml = ElementTree()
-        for prod_filename in self.prod_filenames:
+        for prod_filename in prod_filenames:
             try:
                 xml.parse(prod_filename)
                 register_sections = xml.findall('register')
@@ -44,7 +47,7 @@ class SUSEBaseProduct:
 
             except Exception as issue:
                 message = 'Parsing XML file {0} failed with: {1}'.format(prod_filename, issue)
-                log.warning(message)
+                self.log.warning(message)
 
         if len(base_product_files) != 1:
             if not base_product_files:
@@ -54,10 +57,10 @@ class SUSEBaseProduct:
                     'Found multiple product definitions '
                     'without element <flavor>: \n{0}'.format('\n'.join(base_product_files))
                 )
-            log.error(message)
+            self.log.error(message)
             raise DistMigrationSUSEBaseProductException(message)
 
-        self.base_product = base_product_files[0]
+        return base_product_files[0]
 
     def delete_target_registration(self):
         self.backup_products_metadata()
@@ -81,35 +84,45 @@ class SUSEBaseProduct:
         previous state. The rollback restores this info back in place.
         """
         self.log.info('Creating backup of Product data')
+        products_metadata = os.sep.join([Defaults.get_system_root_path(), 'etc', 'products.d'])
         Command.run(
             [
                 'rsync',
                 '-zav',
                 '--delete',
-                self.products_metadata + os.sep,
+                products_metadata + os.sep,
                 '/tmp/products.d.backup/',
             ]
         )
 
-    def get_tag(self, tag):
+    def get_tag(self, tag, base_product=None):
         """Get the content of tag if any."""
+        base_product = base_product or self.base_product
         xml = ElementTree()
         try:
-            xml.parse(self.base_product)
+            xml.parse(base_product)
             tag_nodes = xml.findall(tag)
             return [tag_node.text for tag_node in tag_nodes]
         except Exception as issue:
             # if we are here, it means no potentially no migration
             # product is defined
-            self.log.warning(
-                'Parsing XML file {0} failed with: {1}'.format(self.base_product, issue)
-            )
+            self.log.warning('Parsing XML file {0} failed with: {1}'.format(base_product, issue))
 
     def get_product_name(self):
-        """Get the product name to be migrated to."""
+        """
+        Get the product name to be migrated to.
+
+        The name is read from the base product of the migration image,
+        which ships the release package of the product to migrate to.
+        The system to migrate does not provide it. The architecture is
+        read from the system to migrate, migrations do not change it.
+        """
         migration_product_name = None
         try:
-            name = self.get_tag('name')[0]
+            base_product_migration_image = self.read_product(
+                Defaults.get_migration_image_root_path()
+            )
+            name = self.get_tag('name', base_product_migration_image)[0]
             arch = self.get_tag('arch')[0]
             if name and arch:
                 migration_product_name = '/'.join([name, self.get_default_target_version(), arch])

@@ -32,6 +32,10 @@ class Defaults:
         return '/system-root'
 
     @staticmethod
+    def get_migration_image_root_path():
+        return '/'
+
+    @staticmethod
     def get_zypper_solver_test_case_dir():
         return '/var/log/zypper.solverTestCase'
 

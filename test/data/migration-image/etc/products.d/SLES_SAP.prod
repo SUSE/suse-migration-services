@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<product schemeversion="0">
+  <vendor>SUSE</vendor>
+  <name>SLES_SAP</name>
+  <version>16.1</version>
+  <release>0</release>
+  <arch>aarch64</arch>
+  <cpeid>cpe:/o:suse:sles_sap:16.1</cpeid>
+  <productline>sles_sap</productline>
+  <register>
+    <target>sle-16.1-aarch64</target>
+    <updates />
+  </register>
+  <summary>SUSE Linux Enterprise Server for SAP Applications 16.1</summary>
+  <shortsummary>SLES_SAP16.1</shortsummary>
+  <installconfig>
+    <releasepackage flag="EQ" name="SLES_SAP-release" release="1.1" version="16.1" />
+  </installconfig>
+</product>
