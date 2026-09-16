@@ -46,7 +46,7 @@ class BtrfsSnapshotPostMigration:
                 ) as pre_snapshot_number_file:
                     pre_snapshot_number = pre_snapshot_number_file.read().strip()
                     if not pre_snapshot_number.isdigit():
-                        message = f'Invalid snapshot number: {pre_snapshot_number}'
+                        message = 'Invalid snapshot number: {0}'.format(pre_snapshot_number)
                         self.log.error(message)
                         raise ValueError(message)
 

@@ -74,8 +74,9 @@ def power10_version():
                 power_generation = int(power_match.group(1))
                 if power_generation < 10:
                     log.error(
-                        f'SLES 16 requires POWER10 or newer. This system is running '
-                        f'POWER{power_generation}, which is not supported for migration to SLES 16.'
+                        'SLES 16 requires POWER10 or newer. This system is running '
+                        'POWER{0}, which is not supported for migration to '
+                        'SLES 16.'.format(power_generation)
                     )
             else:
                 log.warning(
@@ -83,7 +84,7 @@ def power10_version():
                     'Unable to verify POWER10 requirement for SLES 16 migration.'
                 )
     except Exception as error:
-        log.warning(f'Could not read /proc/cpuinfo to check CPU model: {error}')
+        log.warning('Could not read /proc/cpuinfo to check CPU model: {0}'.format(error))
 
 
 def cpu_arch(migration_system=False):
