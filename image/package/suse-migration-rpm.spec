@@ -43,7 +43,7 @@ ISO image in an rpm package.
 %install
 mkdir -p %{buildroot}/usr/lib/build/
 
-%if 0%{?suse_version} >= 1600 && 0%{?is_opensuse}
+%if 0%{?suse_version} >= 1600 && !0%{?is_opensuse}
 # suse-migration-rpm building for SLE16, is used when building the SLE16
 # based live migration image for SLE15. As such the later package with
 # the image gets installed to a SLE15 system. The min SLE version must
