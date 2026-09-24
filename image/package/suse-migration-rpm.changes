@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep 24 06:52:37 UTC 2026 - Marcus Schäfer <marcus.schaefer@suse.com>
+
+- Fix sles version check for SLE16
+    
+  The current check does not match for SLE16 as it requires
+  is_opensuse to be true which is not the case for SLE16+
+
+-------------------------------------------------------------------
 Fri Aug 14 17:34:04 UTC 2026 - Christian Hueller <chuller@suse.com>
 
 - Allow the migration packages to install on Leap 16
