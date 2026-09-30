@@ -17,6 +17,7 @@
 #
 """systemd service to install the shim package and update the bootloader"""
 import logging
+import platform
 
 # project
 from suse_migration_services.command import Command
@@ -40,10 +41,11 @@ class UpdateBootLoader:
 
     def perform(self):
         self.log.info('Running update bootloader service')
-        self.log.info('Installing the shim package')
-        self.install_shim_package()
-        self.log.info('Updating the shimbootloader')
-        self.install_secure_bootloader()
+        if platform.machine() in ['x86_64', 'aarch64']:
+            self.log.info('Installing the shim package')
+            self.install_shim_package()
+            self.log.info('Updating the shimbootloader')
+            self.install_secure_bootloader()
         self.log.info('Updating the bootloader')
         self.update_bootloader_config()
 
