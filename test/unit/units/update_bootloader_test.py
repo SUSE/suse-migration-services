@@ -14,7 +14,12 @@ class TestUpdateBootloader:
     @patch('suse_migration_services.zypper.Zypper.install')
     @patch('suse_migration_services.command.Command.run')
     def test_main(
-        self, mock_Command_run, mock_Zypper_install, mock_logger_setup, mock_MigrationConfig, mock_platform_machine
+        self,
+        mock_Command_run,
+        mock_Zypper_install,
+        mock_logger_setup,
+        mock_MigrationConfig,
+        mock_platform_machine,
     ):
         mock_platform_machine.return_value = 'x86_64'
         migration_config = Mock()
@@ -35,7 +40,12 @@ class TestUpdateBootloader:
     @patch('suse_migration_services.zypper.Zypper.install')
     @patch('suse_migration_services.command.Command.run')
     def test_main_ppc64le(
-        self, mock_Command_run, mock_Zypper_install, mock_logger_setup, mock_MigrationConfig, mock_platform_machine
+        self,
+        mock_Command_run,
+        mock_Zypper_install,
+        mock_logger_setup,
+        mock_MigrationConfig,
+        mock_platform_machine,
     ):
         mock_platform_machine.return_value = 'ppc64le'
         migration_config = Mock()
