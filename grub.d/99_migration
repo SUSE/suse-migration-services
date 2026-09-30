@@ -29,15 +29,22 @@ if [[ ${image_fs_type} =~ ^ext[[:digit:]] ]] ; then
    image_fs_type="ext2"
 fi
 
+migration_rootfs_device=$(
+    lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" "
+)
+
 if type -p multipath &>/dev/null; then
-    migration_rootfs_device=$(
-        lsblk -p -n -r -o NAME,MOUNTPOINTS | grep -E "/$" | uniq | cut -f1 -d" "
-    )
     for wwn in $(multipath -l -v1 2>/dev/null); do
         if [[ "${migration_rootfs_device}" == *"${wwn}"* ]];then
             migration_rootfs_wwn="${wwn}"
         fi
     done
+fi
+
+# check if the root device stack contains a multipath map
+migration_rootfs_is_multipath=false
+if lsblk -s -n -r -o TYPE "${migration_rootfs_device}" 2>/dev/null | grep -qx mpath;then
+    migration_rootfs_is_multipath=true
 fi
 
 # init boot options needed for live boot
@@ -49,11 +56,6 @@ boot_options="${boot_options} migration_target=${migration_rootfs_uuid}"
 # add auto activation of devices in soft raid mode
 if [ -n "$(mdadm --detail --scan 2>/dev/null | cut -f2 -d' ')" ];then
     boot_options="${boot_options} rd.auto"
-fi
-
-# add multipath wwn of migration target device on multipath systems
-if [ -n "${migration_rootfs_wwn}" ];then
-    boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
 fi
 
 # add relevant boot options used on the host to migrate
@@ -74,6 +76,15 @@ for host_boot_option in $(xargs -n1 < /proc/cmdline);do
     esac
     boot_options="${boot_options} ${host_boot_option}"
 done
+
+# add multipath wwn of migration target device on multipath systems,
+# switch multipath off if the root device is not mapped. Set last to
+# take precedence over a multipath option of the host
+if [ -n "${migration_rootfs_wwn}" ];then
+    boot_options="${boot_options} multipath_wwn=${migration_rootfs_wwn}"
+elif ! ${migration_rootfs_is_multipath};then
+    boot_options="${boot_options} multipath=off"
+fi
 
 ARCH=$(uname -m)
 
