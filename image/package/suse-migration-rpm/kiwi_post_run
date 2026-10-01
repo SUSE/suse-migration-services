@@ -33,7 +33,7 @@ VERSION=$(echo "$IMAGE" | cut -f3 -d-)
 RELEASE=$(echo "$IMAGE" | sed -e "s@-Staging@@" | sed -e "s@-Production@@" | cut -f4 -d- | sed -e "s@Build@@" | sed -e 's@.iso$@@')
 case "$NAME" in
     SLES16*)
-        PRODUCT='(product(SLES) >= %{MinSLEVersion} or product(Leap) >= 16.0)'
+        PRODUCT='(product(SLES) >= %{MinSLEVersion} or product(Leap) >= 16.0 or product(SLE_RT) >= 15.7)'
         ;;
     *)
         PRODUCT='product(SLES) >= %{MinSLEVersion}'
