@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Oct  8 07:38:54 UTC 2026 - Marcus Schäfer <marcus.schaefer@suse.com>
+
+- Allow the migration packages to install on SLES_RT
+
+  The SLES16-Migration package should also be installable on
+  the SUSE_RT product family. This Fixes bsc#1280087
+
+-------------------------------------------------------------------
 Thu Sep 24 06:52:37 UTC 2026 - Marcus Schäfer <marcus.schaefer@suse.com>
 
 - Fix sles version check for SLE16
