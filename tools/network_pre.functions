@@ -98,18 +98,19 @@ function setup_wicked_to_NetworkManager_prereqs {
     # (bsc#1250076)
     for netdev in /sys/class/net/*; do
         dev=$(basename "${netdev}")
-
+        test -e /sys/class/net/"${dev}"/device || continue
         if grep -E '^(00:0c:29:|00:50:56:|00:15:5d:)' \
               /sys/class/net/"${dev}"/address >/dev/null; then
             create_systemd_linkfile "$dev"
         fi
     done
 
-    # Creating systemd.link files for all interfaces, 
+    # Creating systemd.link files for all interfaces,
     # renamed by biosdevname. (bsc#1253963)
     if biosdevname_enabled; then
         for netdev in /sys/class/net/*; do
             dev=$(basename "${netdev}")
+            test -e /sys/class/net/"${dev}"/device || continue
             biosname=$(biosdevname --policy physical --smbios 2.6 --nopirq -i "$dev")
             if [ "$dev" == "$biosname" ]; then
                 create_systemd_linkfile "$dev"
