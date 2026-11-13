@@ -3,6 +3,7 @@ import argparse
 import logging
 import os
 import subprocess
+import tempfile
 from unittest.mock import patch, call, Mock, MagicMock, mock_open
 from pytest import fixture
 
@@ -240,6 +241,24 @@ class TestPreChecks:
             check_fs.encryption(True)
             assert warning_message_remote_repos in self._caplog.text
             assert warning_message_show_repos in self._caplog.text
+
+    @patch('suse_migration_services.defaults.Defaults.get_system_root_path')
+    def test_repos_with_mirrorlist(self, mock_get_system_root_path, mock_os_geteuid, mock_log):
+        """
+        Test repos defined with mirrorlist= or metalink= instead of baseurl=
+        """
+        with tempfile.TemporaryDirectory() as root:
+            mock_get_system_root_path.return_value = root
+            repos_dir = os.path.join(root, 'etc/zypp/repos.d')
+            os.makedirs(repos_dir)
+            with open(os.path.join(repos_dir, 'remote.repo'), 'w') as repo:
+                repo.write('[remote]\nenabled=0\nmirrorlist=https://example.com/mirrorlist\n')
+            with open(os.path.join(repos_dir, 'local.repo'), 'w') as repo:
+                repo.write('[local]\nenabled=1\nmetalink=file:///srv/metalink\n')
+            with self._caplog.at_level(logging.WARNING):
+                check_repos.remote_repos(migration_system=True)
+            assert 'file:///srv/metalink' in self._caplog.text
+            assert 'https://example.com/mirrorlist' not in self._caplog.text
 
     @patch('os.listdir')
     @patch('os.path.exists')
