@@ -155,7 +155,7 @@ function store_snapper_pre_snapshot {
                 --disable-used-space \
                 --columns subvolume,number,type 2>/dev/null| grep '^/,[^,]*,pre' |sed -e '$!d' -e 's|/,\([^,]*\),pre|\1|g'
         )
-        if [ "x$PRE_SNAPSHOT" != x ]; then
+        if [ "${PRE_SNAPSHOT}" != "" ]; then
             echo "${PRE_SNAPSHOT}" > /var/cache/suse_migration_snapper_btrfs_pre_snapshot_number
         fi
     fi
