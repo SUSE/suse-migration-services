@@ -46,10 +46,16 @@ def remote_repos(migration_system=False):
             repo_section = dict(config)
             for section in repo_section.keys():
                 repo_info = dict(config.items(section))
-                if repo_info:
-                    if not repo_info['baseurl'].startswith(migration_accepted_prefixes):
-                        if repo_info['baseurl'] not in no_remote_repos:
-                            no_remote_repos.append(repo_info['baseurl'])
+                # zypper also accepts mirrorlist= and metalink= instead of baseurl=
+                repo_url = (
+                    repo_info.get('baseurl')
+                    or repo_info.get('mirrorlist')
+                    or repo_info.get('metalink')
+                )
+                if repo_url:
+                    if not repo_url.startswith(migration_accepted_prefixes):
+                        if repo_url not in no_remote_repos:
+                            no_remote_repos.append(repo_url)
 
     if no_remote_repos:
         zypper_cmd = 'zypper repos --url'
